@@ -1,0 +1,98 @@
+\begin{thebibliography}{12}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[noa({\natexlab{a}})]{noauthor_2d_nodate}
+2d {Semantic} {Labeling} - {ISPRS}, {\natexlab{a}}.
+\newblock URL
+  \url{http://www2.isprs.org/commissions/comm3/wg4/semantic-labeling.html}.
+
+\bibitem[noa({\natexlab{b}})]{noauthor_github_nodate}
+{GitHub} - nightrome/really-awesome-gan: {A} list of papers on {Generative}
+  {Adversarial} ({Neural}) {Networks}, {\natexlab{b}}.
+\newblock URL \url{https://github.com/nightrome/really-awesome-gan}.
+
+\bibitem[Ammour et~al.(2017)Ammour, Alhichri, Bazi, Benjdira, Alajlan, and
+  Zuair]{ammour_deep_2017}
+N.~Ammour, H.~Alhichri, Y.~Bazi, B.~Benjdira, N.~Alajlan, and M.~Zuair.
+\newblock Deep {Learning} {Approach} for {Car} {Detection} in {UAV} {Imagery}.
+\newblock \emph{Remote Sensing}, 9\penalty0 (4):\penalty0 312, Mar. 2017.
+\newblock \doi{10.3390/rs9040312}.
+\newblock URL \url{http://www.mdpi.com/2072-4292/9/4/312}.
+
+\bibitem[Arbelle and Raviv(2017)]{arbelle_microscopy_2017}
+A.~Arbelle and T.~R. Raviv.
+\newblock Microscopy {Cell} {Segmentation} via {Adversarial} {Neural}
+  {Networks}.
+\newblock \emph{arXiv:1709.05860 [cs]}, Sept. 2017.
+\newblock URL \url{http://arxiv.org/abs/1709.05860}.
+\newblock arXiv: 1709.05860.
+
+\bibitem[Audebert et~al.(2017)Audebert, Le~Saux, and
+  Lefèvre]{audebert_segment-before-detect:_2017}
+N.~Audebert, B.~Le~Saux, and S.~Lefèvre.
+\newblock Segment-before-{Detect}: {Vehicle} {Detection} and {Classification}
+  through {Semantic} {Segmentation} of {Aerial} {Images}.
+\newblock \emph{Remote Sensing}, 9\penalty0 (4):\penalty0 368, Apr. 2017.
+\newblock \doi{10.3390/rs9040368}.
+\newblock URL \url{http://www.mdpi.com/2072-4292/9/4/368}.
+
+\bibitem[Goodfellow(2016)]{goodfellow_nips_2016}
+I.~Goodfellow.
+\newblock {NIPS} 2016 {Tutorial}: {Generative} {Adversarial} {Networks}.
+\newblock \emph{arXiv:1701.00160 [cs]}, Dec. 2016.
+\newblock URL \url{http://arxiv.org/abs/1701.00160}.
+\newblock arXiv: 1701.00160.
+
+\bibitem[Holt et~al.(2009)Holt, Seto, Rivard, and Gong]{holt_object-based_2009}
+A.~C. Holt, E.~Y.~W. Seto, T.~Rivard, and P.~Gong.
+\newblock Object-based detection and classification of {Vehicles} from
+  high-resolution aerial photography.
+\newblock \emph{Photogrammetric Engineering and Remote Sensing}, 75\penalty0
+  (7):\penalty0 871--880, July 2009.
+\newblock ISSN 0099-1112.
+\newblock URL
+  \url{https://iths.pure.elsevier.com/en/publications/object-based-detection-and-classification-of-vehicles-from-high-r}.
+
+\bibitem[Luc et~al.(2016)Luc, Couprie, Chintala, and
+  Verbeek]{luc_semantic_2016}
+P.~Luc, C.~Couprie, S.~Chintala, and J.~Verbeek.
+\newblock Semantic {Segmentation} using {Adversarial} {Networks}.
+\newblock \emph{arXiv:1611.08408 [cs]}, Nov. 2016.
+\newblock URL \url{http://arxiv.org/abs/1611.08408}.
+\newblock arXiv: 1611.08408.
+
+\bibitem[Mundhenk()]{mundhenk_cars_nodate}
+T.~N. Mundhenk.
+\newblock Cars {Overhead} {With} {Context} {Dataset} at {LLNL}.
+\newblock URL \url{http://gdo-datasci.ucllnl.org/cowc/}.
+
+\bibitem[Razakarivony and Jurie(2015)]{razakarivony_vehicle_2015}
+S.~Razakarivony and F.~Jurie.
+\newblock Vehicle {Detection} in {Aerial} {Imagery} : {A} small target
+  detection benchmark.
+\newblock \emph{Journal of Visual Communication and Image Representation,
+  Elsevier}, Mar. 2015.
+\newblock URL \url{https://hal.archives-ouvertes.fr/hal-01122605}.
+
+\bibitem[Son et~al.(2017)Son, Park, and Jung]{son_retinal_2017}
+J.~Son, S.~J. Park, and K.-H. Jung.
+\newblock Retinal {Vessel} {Segmentation} in {Fundoscopic} {Images} with
+  {Generative} {Adversarial} {Networks}.
+\newblock \emph{arXiv:1706.09318 [cs]}, June 2017.
+\newblock URL \url{http://arxiv.org/abs/1706.09318}.
+\newblock arXiv: 1706.09318.
+
+\bibitem[Zhong et~al.(2017)Zhong, Lei, and Yao]{zhong_robust_2017}
+J.~Zhong, T.~Lei, and G.~Yao.
+\newblock Robust {Vehicle} {Detection} in {Aerial} {Images} {Based} on
+  {Cascaded} {Convolutional} {Neural} {Networks}.
+\newblock \emph{Sensors (Basel, Switzerland)}, 17\penalty0 (12), Nov. 2017.
+\newblock ISSN 1424-8220.
+\newblock \doi{10.3390/s17122720}.
+\newblock URL \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5751529/}.
+
+\end{thebibliography}

@@ -1,0 +1,112 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[swedish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[affil-it]{authblk}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{enumerate}
+\usepackage{gensymb}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{color}
+
+
+
+\title{Degree Project Specification}
+\author{Joar Gruneau \\ joar@gruneau.se}
+\affil{}
+\begin{document}
+\maketitle
+\section{Formalities}
+\textbf{Preliminary thesis title:} Aerial image analysis with generative adversarial networks\\
+\textbf{Student's name:} Joar Gruneau \textbf{Email:} joar@gruneau.se\\
+\textbf{Supervisor at CSC:} Kevin Smith
+\textbf{Principal:} BlackRock
+\textbf{Supervisor at principal's workspace:} Pascal Marcellini Pascal.Marcellini@blackrock.com
+\section{Background and objective}
+
+\section{Research question and method} The project aims to investigate if the generative part of the GAN can be used for image segmentation and the discriminative part for vehicle classification in aerial images.
+\section{Evaluation and news value}
+\section{Pilot study}
+\subsection{Area of research and connection to development} 
+In areal images the objects we are searching for will be small. This requires some form of image segmentation to boost performance. This has been done with several different techniques, for example, sliding window, mean-shift-algorithm and most recently with fast R-CNN. This is still an area under research and we can expect new results from this area. GANs are a relatively new type of network which has had much success when it comes to image manipulation and generating new images. In this project I will investigate if they also can generate bounding boxes with good performance.\\
+\\
+Today we have an abundance of aerial images but we still lack proper algorithms to analyse all this data with acceptable computational cost. Hence the improvement of such algorithms is of great interest also to businesses since it can help them to make better informed decisions.
+\subsection{Examination method} The answer to the question will be determined by constructing and training a generative adversarial network and testing if it can predict bounding boxes and identify vehicles with a good accuracy.
+\subsection{Hypothesis} I think that the generative adversarial network will be able to produce bounding boxes. It is possible that some form of clustering is needed after this to reduce noise, but the computational cost should still be lower than for example sliding window techniques.
+\subsection{Evaluation} 
+There are several aerial image datasets of vehicles with bounding boxes that can be used to determine the methods performance.
+\section{Supervisor at company and resources}
+\subsection{Supervisor at the company}
+My supervisor at Blackrock is Pascal Marcellini. He is a architect of the team APG-Alphagen-Active Equity, which implements and support the models of “Scientific Active Equity”, the quantitative equity investment team in Blackrock. He will act as an interface to the Scientific Active Equity researchers at Blackrock with any questions I will have. An example of a recent big data project he was involved in was the estimation of an industry sentiment using news feeds.
+\subsection*{Resources}
+There are several open source aerial image datasets of vehicles. The network will be trained on on the APG-Alphagen departments Amazon Web Services account. Here I will have access to both GPUs and a place to host the data. 
+\section{Eligibility and study planing}
+I have completed all courses from my bachelor degree and I have completed more than 60 hp of my master degree courses. I have also completed the scientific theory and methodology course. I have no courses remaining but I have not yet received a grade for all of the courses I took this autumn since I was studying as an exchange student in Norway.
+\end{document}
+%Degree Project Specification
+%Student name
+%Email
+%
+%Date
+%
+%
+%1. Formalities
+%Preliminary title:
+%Degree project student’s name and email address:
+%Name of supervisor at CSC:
+%Name of the principal:
+%Name and contact of supervisor at principal’s workplace:
+%
+%2. Background and objective
+%Description of the area within which the degree project is being carried out (e.g. in connection to research/development, state-of-the-art, scientific and/or social interest). It is often a good idea to open with a broad description of the problem - perhaps using the principal to give context to the problem.
+%
+%The principal’s interest. Here give a background of the specific assignment to be conducted. Narrow down the problem from the first section and explain why it is interesting.
+%
+%Objective. What is the desired outcome from the principal’s perspective, and from the perspective from the degree project?
+%
+%3. Research question and method
+%The QUESTION that will be carried out. Formulate your research question as an explicit and evaluable question.
+%
+%Specified problem definition. Elaborate on what does the assignment entail and what are the challenges involved.
+%
+%Examination method. Give a preliminary description of, for example, algorithms that will be tested, data that will be used, new ideas you will test.
+%
+%Expected scientific results. How is the work scientifically relevant and what is the hypothesis being tested? How will you go about testing the hypothesis?
+%
+%4. Evaluation and news value
+%Evaluation. How will you determine if the objective of the degree project has been fulfilled and if the question has been adequately answered? What criteria must be met? Give a preliminary description of the evaluation method, the measures you will use, and the data you will use.
+%
+%The work’s innovation/news value. Explain why someone would want to read the finished work. Who would be the interested audience?
+%
+%5. Pilot study
+%Description of the literature study. What areas will your literature study focus on? How will the necessary knowledge on background and state-of-the-art be acquired? What preliminary references have you identified?
+%
+%6. Conditions and schedule
+%List of the resources expected to be needed to solve the problem (unless the project involves investigating what equipment shall be used). This can include technical equipment, computational resources, but also experimental data and/or interview subjects.
+%
+%Defined limitations. Clarify what is to be included and what is not to be included in the degree project. Specify if certain aspects of the problem are out of the scope of the project.
+%
+%Collaboration with the principal (external supervisor). Describe the way in which the principal will be involved in the project and what the external supervisor has agreed to do (eg. in terms of discussion, implementation, report reading, guidance). 
+%
+%Schedule. Provide a schedule showing not only the order in which the elements will be performed, but also the scope of the elements and when they will be performed. The schedule should contain clear intermediate goals. A Gantt chart is preferred, but a table with week numbers or dates is also acceptable.
+%
+%References
+%Description of the literature study. Give a preliminary list of references. They should be cited in the appropriate places throughout the specification, using an accepted style (eg. [1] or (Bengio et al., 2013).
+%
+%Bengio, Y et al.. "Representation learning: A review and new perspectives." IEEE transactions on pattern analysis and machine intelligence 35.8 (2013): 1798-1828.
+%Cheddad A et al. Area and Volumetric Density Estimation in Processed Full-Field Digital Mammograms for Risk Assessment of Breast Cancer. PloS one. 2014;9(10):e110690.
+%Deng, Jia, et al. "Imagenet: A large-scale hierarchical image database." Computer Vision and Pattern Recognition, 2009. CVPR 2009. IEEE Conference on. IEEE, 2009.
+%Collobert R and Weston J. "A unified architecture for natural language processing: Deep neural networks with multitask learning." International conference on Machine learning. ACM, 2008.
+%Goodfellow I, et al. "Generative adversarial nets." Advances in neural information processing systems. 2014
+%Haukka J, et al. "Trends in breast cancer mortality in Sweden before and after implementation of mammography screening." PLoS One 6.9 (2011): e22422.
+%Kourou K, et al. "Machine learning applications in cancer prognosis and prediction." Computational and structural biotechnology journal 13 (2015): 8-17.
+%Krizhevsky A, et al. ImageNet classification with deep convolutional networks. In Proc. NIPS, 2012.
+

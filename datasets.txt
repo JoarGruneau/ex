@@ -1,0 +1,18 @@
+vheicle datasets:
+Small side view dataset (1500 img) vith bounding boxes
+https://drive.google.com/drive/folders/0B3d1MsRdDYG3fjJ3alhPaFl2bmtubUtHMUhCc1RDdDFHdjBiWkRkbWc5MDI2c0FWanRFTVU
+
+veda dataset smaller
+https://downloads.greyc.fr/vedai/
+
+very larg dataset high res pictures both counting and detection
+https://gdo-datasci.ucllnl.org/cowc/
+
+semantic labeling arial dataset
+http://www2.isprs.org/commissions/comm3/wg4/2d-sem-label-potsdam.html
+
+usefull pages:
+https://medium.com/the-downlinq/car-localization-and-counting-with-overhead-imagery-an-interactive-exploration-9d5a029a596b
+
+extensive summary:
+https://lafi.github.io/LPN/

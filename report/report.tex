@@ -1,0 +1,137 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[affil-it]{authblk}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{enumerate}
+\usepackage{gensymb}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{color}
+\usepackage{url}
+\usepackage{color}
+\usepackage{tikz}
+\usepackage{rotating}
+\usepackage{amsmath,amssymb}
+
+\DeclareRobustCommand{\bbone}{\text{\usefont{U}{bbold}{m}{n}1}}
+
+\DeclareMathOperator{\EX}{\mathbb{E}}
+\DeclareMathOperator{\Lagr}{\mathcal{L}}
+
+\usepackage[square,numbers]{natbib}
+\bibliographystyle{abbrvnat}
+
+
+\title{Aerila image analysis with generative adversarial networks}
+\author{Joar Gruneau \\ joar@gruneau.se}
+\affil{}
+\begin{document}
+\maketitle
+\newpage
+\section{Introduction}
+\section{Relevant Theory}
+\subsection{Generative adversarial networks}
+Goodfellow \textit{et al} \cite{goodfellow_nips_2016} first proposed the generative adversarial network (GAN). The network consists of two parts, a generator and a discriminator. The generators task is to generate samples from some data distribution. The discriminators task is to differentiate these generated samples from the true samples. This results in a counter fitting game where the generator continuously tries to produce better generated data to fool the discriminator and the discriminator is forced to become better at differentiating these generated samples from the true samples.\\
+\\
+A common solution to try to force the generator to generate samples from the entire distribution is to input a noise vector into the generator \cite{reed_generative_2016}. Since we in this work are only interested in segmentation where a deterministic mapping from the image to the segmentation map is desired we will not input any  noise vector into the generator.
+
+\subsubsection{Unconditional generative adversarial networks}
+Unconditional GANs are the simplest form of GANs. Here the discriminator does not observe the input to the generator. This means that the discriminator will learn a loss function which does not depend on the generators input \cite{isola_image--image_2016}. We first define the binary cross entropy loss.
+\begin{equation}\label{eq:bce}
+\ell_{bce}(\hat{z}, z)=-(zln(\hat{z})+(1-z)ln(1-\hat{z}))
+\end{equation}
+Here $\hat{z}$ is the prediction and $z$ is the ground truth.
+The loss function for a unconditional GAN can then be described as.
+ \begin{equation}
+\Lagr(G, D) = -(\ell_{bce}(D(y), 1) + \ell_{bce}(D(G(x)), 0))
+\end{equation}
+Here D stands for the discriminating network and G for the generating network. G tries to minimize this function and D tries to maximize it. Hence we get a minimax game 
+\begin{equation}
+G^{*}=argmin_{G}[max_{D}[\Lagr(G, D)]]\label{eq:minimax}
+\end{equation}
+\subsubsection{Conditional generative adversarial networks}
+A conditional generative adversarial network (cGAN) was proposed by \cite{mirza_conditional_2014}.
+By letting the discriminator observe the input to the generator we can condition the loss function the discriminator learns on this input. This is of great importance here since we are not just trying to generate any semantic maps but semantic maps corresponding to the input image. The objective function will in this case be given by and the networks is trained with the minimax equation \eqref{eq:minimax}.
+\begin{equation}
+\Lagr(G, D) =  -(\ell_{bce}(D(x, y), 1) + \ell_{bce}(D(x, G(x)), 0))
+\end{equation}
+It has been shown that a multi term loss function can improve the quality of the generator \cite{pathak_context_2016, isola_image--image_2016}. For image to image mappings a $\Lagr_1$ or $\Lagr_2$ loss is usually used. However for multi class image segmentation a multi class cross entropy loss is a better option to enforce the generator to assign a high probability to the correct class. The multi class cross entropy loss is given below.
+\begin{equation}\label{eq:mce}
+\ell_{mce}(\hat{y}, y) = - \sum_{n=1}^{H*W} \sum_{n=1}^{C}y*log(\hat{y})
+\end{equation}
+Here $y$ is the ground truth segmentation maps while $\hat{y}$ is the predicted maps. The discriminators objective is unchanged but the generator now has to fool the discriminator as well as minimizing the distance to the ground truth.
+\begin{equation}
+G^{*}=argmin_{G}[max_{D}[\Lagr(G, D)] + \lambda \ell_{mce}(G)]
+\end{equation}
+Here $\lambda$ is just a constant which controls the importance of the second  loss term.
+\subsection{Fully convolutional networks and U-NET}
+A fully convolotional network (FCN) was first proposed Shelhamer and Long \textit{et al} \citep{shelhamer_fully_2016}. A FCN is a CNN without any fully connected layers. A network with fully connected layers must have a specific input size on the image while a FCN network can take inputs of any size. The key insight is that by the authors were that fully connected layers can be viewed as convolutions with kernels that cover their entire input region. Hencea CNN with fully conected layers can be viewed as a FCN since it takes patches from a image of any size and outputs a spatial output map when the patches are aggregated. While the resulting maps are equivalent the computational cost for the FCN is greatly reduced. This is because no overlapping regions between patches has to be computed. This makes these networks ideal for generating dense output maps such as for image segmentation\\
+\\
+Ronneberger \textit{et al} \cite{ronneberger_u-net:_2015} builds on the advancements of the FCN to propose a new type of segmentation network. The U-NET uses a encoder decoder structure with skip connections from bottleneck layers to upsampled layers. Thess skip connections are crucial to segmentation tasks as the initial feature
+maps maintain low-level features such that can be properly exploited for accurate segmentation.The network has been shown to produce high accuracy results even on small sized datasets \cite{son_retinal_2017, ronneberger_u-net:_2015, isola_image--image_2016, xue_segan:_2017, yang_automatic_2017}. Ronneberger \textit{et al} \cite{ronneberger_u-net:_2015} attributes this to the networks structure which creates internal data augmentation.
+\section{Related work}
+In most cases the segmentation networks needs some post processing to improve the accuracy of the segmentation maps. Conditional random markov fields CRF have been very successfully to enforce spatial contiguity in the output maps \cite{arnab_higher_2015, luc_semantic_2016}. There have been wor that used mean field inference expressed as a recurrent convolutional networks to do CRF like post processing \cite{schwing_fully_2015, zheng_conditional_2015}. Luc \textit{et al} \cite{luc_semantic_2016} proposed a adveserial segmentation network to enforce higher order potentials without being limited to a single class. Instead on directly enforcing these higher order potentials in a CRF model as post processing the goal was to enforce them in the generator directly with adversarial training. This technique also has the benefit of lower complexity since at test time only the generator will be used.\\
+\\
+The generators task was to produce segmentation maps for the C classes. One initial concern was that the discriminator would trivially be able to differentiate the generated segmentation maps from the ground truth by only examining if they were continuous or discrete. To combat this a scaling method was proposed where the ground truth segmentation maps were processed so that a mass of $\tau$ where placed on the correct label but were otherwise made as similar as possible to the generated maps (in regard to KL divergence). The scaling method showed no improvement over the basic method with no pre processing.\\
+\\
+Son and Jung \textit{et al} \cite{son_retinal_2017} showed that a U-NET combined with an adversarial loss could achieve state of the art performance for retinal vessel segmentation in fundoscopic images. The team investigated several types on adversarial networks proposed in \cite{isola_image--image_2016} such as image-GAN, patch-GAN and pixel-GAN. For Image-GAN the discriminator make a decision on a image level if the image is generated or not. For patch-GAN the images are split into patches and the discriminator analyses each individually. The result is the aggregated result from all patches. For pixel-GAN the discriminator makes it decision on pixel per pixel level. The team found that a image-GAN togheter with a cross entropy term preformed the best and outperformed the non adversarial segmentor trained only with the cross entropy loss by a significant margin.\\
+\\
+\section{Network Architecture}
+For the generator network a U-NET will be used. The objective function for the GAN will be.  Using the definition of the binary cross entropy loss \eqref{eq:bce} and the multi class cross entropy loss \eqref{eq:mce} we can now define our loss function as.
+\begin{equation}
+\Lagr(G, D) = \ell_{mce}(G(x),y)-\lambda(\ell_{bce}(D(x,y), 1)+\ell_{bce}(D(x,G(x)), 0))
+\end{equation}
+The generator will try to minimize this loss while the descriminator will try to maximize it. Following the example of \cite{goodfellow_generative_2014, luc_semantic_2016} and replace the term $-\lambda\ell_{bce}(D(G(x),y), 0)$ with  $+\lambda\ell_{bce}(D(G(x),y), 1)$. Hence instead of minimizing the probability of the descriminative network to predict the generated map to be synthetic we maximize the probability of predicting the generated map as ground truth. The reason for this is that it leads a stronger gradient for the discriminator when making predictions on ground truth and generated maps. The binary cross entropy loss then becomes,
+\begin{equation}
+\Lagr_{bce}(G, D) =\lambda(\ell_{bce}(D(x,G(x)), 1)-\ell_{bce}(D(x,y), 1))
+\end{equation}
+The objective for the network hence becomes.
+\begin{equation}
+G^{*}=argmin_{G}[max_{D}[\Lagr_{bce}(G, D)] + \ell_{mce}(G(x),y)]
+\end{equation}
+\\
+\\
+The generated segmentation maps will be concatinated with the image the basic manner since \cite{luc_semantic_2016} did not gain any improvements with a product or scaling approach above the basic. Pinheiro \textit{et al} \cite{pinheiro_learning_2016} showed that it is preferable to have the same number of channels for each input to avoid that one input becomes dominating. Therefore the individual kernels will be applied to the image before concatenating them with the semantic maps. This also allows for a different low level representation of the image.
+\section{The dataset}
+\subsection{The VEDAI dataset}
+The VEDAI dataset \cite{razakarivony_vehicle_2015} consists of 9 different classes, these classes and the number of objects are given in the table below.\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+\textbf{Classes} & \textbf{Number}\\
+\hline
+Car & 1340\\
+Pick-up & 950\\
+Truck & 300\\
+Plane & 47\\
+Boat & 170\\
+Camping car & 390\\
+Tractor & 190\\
+Vans & 100\\
+Other & 100\\
+\hline
+\end{tabular}
+\end{center}
+To make the results comparable with the extensive research of different methods done by \cite{zhong_robust_2017} the classes plane, boat tractor van and other were removed due to scarcity of data. The annotations for each target consists on the centre coordinates of the target the angle of the center line of the bounding box as well as the corners of the bounding box. The bounding box fits the target closely so no extra information is given on the sides. The evaluation metrics on the VEDAI dataset are:\\
+\begin{equation}\label{eq:precision}
+Precision=\frac{True\textit{ }positive}{True\textit{ }Positive+False\textit{ }poitive}
+\end{equation}
+\begin{equation}\label{eq:recall}
+Recall=\frac{True\textit{ }positive}{True\textit{ }Positive+False\textit{ }negative}
+\end{equation}
+\begin{equation}\label{eq:f1}
+F1\textit{ }score=\frac{2*Recall*Precision}{Recall+Precision}
+\end{equation}
+\section{Related Work}
+
+\bibliographystyle{ieeetr}
+\bibliography{ex}
+\end{document}
+

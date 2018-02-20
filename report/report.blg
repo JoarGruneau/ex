@@ -1,0 +1,52 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: report.aux
+The style file: abbrvnat.bst
+Illegal, another \bibstyle command---line 52 of file report.aux
+ : \bibstyle
+ :          {ieeetr}
+I'm skipping whatever remains of this command
+Database file #1: ex.bib
+Warning--empty journal in reed_generative_2016
+You've used 18 entries,
+            2773 wiz_defined-function locations,
+            706 strings with 8828 characters,
+and the built_in function-call counts, 9196 in all, are:
+= -- 798
+> -- 727
+< -- 5
++ -- 243
+- -- 225
+* -- 812
+:= -- 1517
+add.period$ -- 90
+call.type$ -- 18
+change.case$ -- 129
+chr.to.int$ -- 18
+cite$ -- 37
+duplicate$ -- 368
+empty$ -- 574
+format.name$ -- 249
+if$ -- 1854
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 18
+newline$ -- 134
+num.names$ -- 72
+pop$ -- 223
+preamble$ -- 1
+purify$ -- 111
+quote$ -- 0
+skip$ -- 296
+stack$ -- 0
+substring$ -- 76
+swap$ -- 46
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 198
+warning$ -- 1
+while$ -- 57
+width$ -- 0
+write$ -- 296
+(There was 1 error message)

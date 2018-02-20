@@ -1,0 +1,48 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[swedish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[affil-it]{authblk}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{enumerate}
+\usepackage{gensymb}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{color}
+
+
+
+\title{Project proposal}
+\author{Joar Gruneau \\ joar@gruneau.se}
+\affil{Degree project}
+\date{}
+\begin{document}
+\maketitle
+\section{General information}
+\textbf{Student's name:} Joar Gruneau \textbf{Email:} joar@gruneau.se\\
+\textbf{Preliminary thesis title:} Aerial image analysis with generative adversarial networks\\
+\textbf{Background and conditions:} The degree project will be done for BlackRock and and agreement concerning the degree project has been signed.
+\section{Research questions} The project aims to investigate if the generative part of the GAN can be used for image segmentation and the discriminative part for vehicle classification in aerial images.
+\subsection{Area of research and connection to development} 
+In areal images the objects we are searching for will be small. This requires some form of image segmentation to boost performance. This has been done with several different techniques, for example, sliding window, mean-shift-algorithm and most recently with fast R-CNN. This is still an area under research and we can expect new results from this area. GANs are a relatively new type of network which has had much success when it comes to image manipulation and generating new images. In this project I will investigate if they also can generate bounding boxes with good performance.\\
+\\
+Today we have an abundance of aerial images but we still lack proper algorithms to analyse all this data with acceptable computational cost. Hence the improvement of such algorithms is of great interest also to businesses since it can help them to make better informed decisions.
+\subsection{Examination method} The answer to the question will be determined by constructing and training a generative adversarial network and testing if it can predict bounding boxes and identify vehicles with a good accuracy.
+\subsection{Hypothesis} I think that the generative adversarial network will be able to produce bounding boxes. It is possible that some form of clustering is needed after this to reduce noise, but the computational cost should still be lower than for example sliding window techniques.
+\subsection{Evaluation} 
+There are several aerial image datasets of vehicles with bounding boxes that can be used to determine the methods performance.
+\section{Supervisor at company and resources}
+\subsection{Supervisor at the company}
+My supervisor at Blackrock is Pascal Marcellini. He is a architect of the team APG-Alphagen-Active Equity, which implements and support the models of “Scientific Active Equity”, the quantitative equity investment team in Blackrock. He will act as an interface to the Scientific Active Equity researchers at Blackrock with any questions I will have. An example of a recent big data project he was involved in was the estimation of an industry sentiment using news feeds.
+\subsection*{Resources}
+There are several open source aerial image datasets of vehicles. The network will be trained on on the APG-Alphagen departments Amazon Web Services account. Here I will have access to both GPUs and a place to host the data. 
+\section{Eligibility and study planing}
+I have completed all courses from my bachelor degree and I have completed more than 60 hp of my master degree courses. I have also completed the scientific theory and methodology course. I have no courses remaining but I have not yet received a grade for all of the courses I took this autumn since I was studying as an exchange student in Norway.
+\end{document}

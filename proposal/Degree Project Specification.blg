@@ -1,0 +1,56 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: Degree Project Specification.aux
+The style file: abbrvnat.bst
+Illegal, another \bibstyle command---line 44 of file Degree Project Specification.aux
+ : \bibstyle
+ :          {ieeetr}
+I'm skipping whatever remains of this command
+Database file #1: ex.bib
+Warning--to sort, need author or key in noauthor_2d_nodate
+Warning--to sort, need author or key in noauthor_github_nodate
+Warning--empty year in noauthor_2d_nodate
+Warning--empty year in noauthor_github_nodate
+Warning--empty year in mundhenk_cars_nodate
+You've used 12 entries,
+            2773 wiz_defined-function locations,
+            667 strings with 7287 characters,
+and the built_in function-call counts, 5011 in all, are:
+= -- 453
+> -- 287
+< -- 4
++ -- 100
+- -- 87
+* -- 430
+:= -- 777
+add.period$ -- 52
+call.type$ -- 12
+change.case$ -- 65
+chr.to.int$ -- 11
+cite$ -- 31
+duplicate$ -- 225
+empty$ -- 402
+format.name$ -- 101
+if$ -- 1039
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 9
+newline$ -- 84
+num.names$ -- 40
+pop$ -- 124
+preamble$ -- 1
+purify$ -- 53
+quote$ -- 0
+skip$ -- 172
+stack$ -- 0
+substring$ -- 69
+swap$ -- 23
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 132
+warning$ -- 5
+while$ -- 34
+width$ -- 0
+write$ -- 186
+(There was 1 error message)

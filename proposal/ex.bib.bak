@@ -1,0 +1,211 @@
+
+@article{holt_object-based_2009,
+	title = {Object-based detection and classification of {Vehicles} from high-resolution aerial photography},
+	volume = {75},
+	issn = {0099-1112},
+	url = {https://iths.pure.elsevier.com/en/publications/object-based-detection-and-classification-of-vehicles-from-high-r},
+	language = {English},
+	number = {7},
+	urldate = {2018-02-07},
+	journal = {Photogrammetric Engineering and Remote Sensing},
+	author = {Holt, Ashley C. and Seto, Edmund Y. W. and Rivard, Tom and Gong, Peng},
+	month = jul,
+	year = {2009},
+	pages = {871--880},
+	file = {Snapshot:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/9SSHR54P/object-based-detection-and-classification-of-vehicles-from-high-r.html:text/html}
+}
+
+@article{ammour_deep_2017,
+	title = {Deep {Learning} {Approach} for {Car} {Detection} in {UAV} {Imagery}},
+	volume = {9},
+	copyright = {http://creativecommons.org/licenses/by/3.0/},
+	url = {http://www.mdpi.com/2072-4292/9/4/312},
+	doi = {10.3390/rs9040312},
+	abstract = {This paper presents an automatic solution to the problem of detecting and counting cars in unmanned aerial vehicle (UAV) images. This is a challenging task given the very high spatial resolution of UAV images (on the order of a few centimetres) and the extremely high level of detail, which require suitable automatic analysis methods. Our proposed method begins by segmenting the input image into small homogeneous regions, which can be used as candidate locations for car detection. Next, a window is extracted around each region, and deep learning is used to mine highly descriptive features from these windows. We use a deep convolutional neural network (CNN) system that is already pre-trained on huge auxiliary data as a feature extraction tool, combined with a linear support vector machine (SVM) classifier to classify regions into “car” and “no-car” classes. The final step is devoted to a fine-tuning procedure which performs morphological dilation to smooth the detected regions and fill any holes. In addition, small isolated regions are analysed further using a few sliding rectangular windows to locate cars more accurately and remove false positives. To evaluate our method, experiments were conducted on a challenging set of real UAV images acquired over an urban area. The experimental results have proven that the proposed method outperforms the state-of-the-art methods, both in terms of accuracy and computational time.},
+	language = {en},
+	number = {4},
+	urldate = {2018-02-07},
+	journal = {Remote Sensing},
+	author = {Ammour, Nassim and Alhichri, Haikel and Bazi, Yakoub and Benjdira, Bilel and Alajlan, Naif and Zuair, Mansour},
+	month = mar,
+	year = {2017},
+	keywords = {car counting, convolutional neural networks (CNNs), deep learning, mean-shift segmentation, support vector machines (SVM), UAV imagery},
+	pages = {312},
+	file = {Full Text PDF:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/923NA9BY/Ammour et al. - 2017 - Deep Learning Approach for Car Detection in UAV Im.pdf:application/pdf;Snapshot:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/EW3VJ8KZ/312.html:text/html}
+}
+
+@article{luc_semantic_2016,
+	title = {Semantic {Segmentation} using {Adversarial} {Networks}},
+	url = {http://arxiv.org/abs/1611.08408},
+	abstract = {Adversarial training has been shown to produce state of the art results for generative image modeling. In this paper we propose an adversarial training approach to train semantic segmentation models. We train a convolutional semantic segmentation network along with an adversarial network that discriminates segmentation maps coming either from the ground truth or from the segmentation network. The motivation for our approach is that it can detect and correct higher-order inconsistencies between ground truth segmentation maps and the ones produced by the segmentation net. Our experiments show that our adversarial training approach leads to improved accuracy on the Stanford Background and PASCAL VOC 2012 datasets.},
+	urldate = {2018-02-07},
+	journal = {arXiv:1611.08408 [cs]},
+	author = {Luc, Pauline and Couprie, Camille and Chintala, Soumith and Verbeek, Jakob},
+	month = nov,
+	year = {2016},
+	note = {arXiv: 1611.08408},
+	keywords = {Computer Science - Computer Vision and Pattern Recognition},
+	file = {arXiv\:1611.08408 PDF:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/S23TNTUT/Luc et al. - 2016 - Semantic Segmentation using Adversarial Networks.pdf:application/pdf;arXiv.org Snapshot:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/BPKKTLN4/1611.html:text/html}
+}
+
+@article{audebert_segment-before-detect:_2017,
+	title = {Segment-before-{Detect}: {Vehicle} {Detection} and {Classification} through {Semantic} {Segmentation} of {Aerial} {Images}},
+	volume = {9},
+	copyright = {http://creativecommons.org/licenses/by/3.0/},
+	shorttitle = {Segment-before-{Detect}},
+	url = {http://www.mdpi.com/2072-4292/9/4/368},
+	doi = {10.3390/rs9040368},
+	abstract = {Like computer vision before, remote sensing has been radically changed by the introduction of deep learning and, more notably, Convolution Neural Networks. Land cover classification, object detection and scene understanding in aerial images rely more and more on deep networks to achieve new state-of-the-art results. Recent architectures such as Fully Convolutional Networks can even produce pixel level annotations for semantic mapping. In this work, we present a deep-learning based segment-before-detect method for segmentation and subsequent detection and classification of several varieties of wheeled vehicles in high resolution remote sensing images. This allows us to investigate object detection and classification on a complex dataset made up of visually similar classes, and to demonstrate the relevance of such a subclass modeling approach. Especially, we want to show that deep learning is also suitable for object-oriented analysis of Earth Observation data as effective object detection can be obtained as a byproduct of accurate semantic segmentation. First, we train a deep fully convolutional network on the ISPRS Potsdam and the NZAM/ONERA Christchurch datasets and show how the learnt semantic maps can be used to extract precise segmentation of vehicles. Then, we show that those maps are accurate enough to perform vehicle detection by simple connected component extraction. This allows us to study the repartition of vehicles in the city. Finally, we train a Convolutional Neural Network to perform vehicle classification on the VEDAI dataset, and transfer its knowledge to classify the individual vehicle instances that we detected.},
+	language = {en},
+	number = {4},
+	urldate = {2018-02-07},
+	journal = {Remote Sensing},
+	author = {Audebert, Nicolas and Le Saux, Bertrand and Lefèvre, Sébastien},
+	month = apr,
+	year = {2017},
+	keywords = {deep learning, object classification, semantic segmentation, vehicle detection},
+	pages = {368},
+	file = {Full Text PDF:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/VRGTR9WP/Audebert et al. - 2017 - Segment-before-Detect Vehicle Detection and Class.pdf:application/pdf;Snapshot:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/U2F94FGB/368.html:text/html}
+}
+
+@article{goodfellow_nips_2016,
+	title = {{NIPS} 2016 {Tutorial}: {Generative} {Adversarial} {Networks}},
+	shorttitle = {{NIPS} 2016 {Tutorial}},
+	url = {http://arxiv.org/abs/1701.00160},
+	abstract = {This report summarizes the tutorial presented by the author at NIPS 2016 on generative adversarial networks (GANs). The tutorial describes: (1) Why generative modeling is a topic worth studying, (2) how generative models work, and how GANs compare to other generative models, (3) the details of how GANs work, (4) research frontiers in GANs, and (5) state-of-the-art image models that combine GANs with other methods. Finally, the tutorial contains three exercises for readers to complete, and the solutions to these exercises.},
+	urldate = {2018-02-07},
+	journal = {arXiv:1701.00160 [cs]},
+	author = {Goodfellow, Ian},
+	month = dec,
+	year = {2016},
+	note = {arXiv: 1701.00160},
+	keywords = {Computer Science - Learning},
+	annote = {Comment: v2-v4 are all typo fixes. No substantive changes relative to v1},
+	file = {arXiv\:1701.00160 PDF:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/C4RTQVK5/Goodfellow - 2016 - NIPS 2016 Tutorial Generative Adversarial Network.pdf:application/pdf;arXiv.org Snapshot:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/67UBH6X9/1701.html:text/html}
+}
+
+@article{arbelle_microscopy_2017,
+	title = {Microscopy {Cell} {Segmentation} via {Adversarial} {Neural} {Networks}},
+	url = {http://arxiv.org/abs/1709.05860},
+	abstract = {We present a novel method for cell segmentation in microscopy images which is inspired by the Generative Adversarial Neural Network (GAN) approach. Our framework is built on a pair of two competitive artificial neural networks, with a unique architecture, termed Rib Cage, which are trained simultaneously and together define a min-max game resulting in an accurate segmentation of a given image. Our approach has two main strengths, similar to the GAN, the method does not require a formulation of a loss function for the optimization process. This allows training on a limited amount of annotated data in a weakly supervised manner. Promising segmentation results on real fluorescent microscopy data are presented. The code is freely available at: https://github.com/arbellea/DeepCellSeg.git},
+	urldate = {2018-02-07},
+	journal = {arXiv:1709.05860 [cs]},
+	author = {Arbelle, Assaf and Raviv, Tammy Riklin},
+	month = sep,
+	year = {2017},
+	note = {arXiv: 1709.05860},
+	keywords = {Computer Science - Computer Vision and Pattern Recognition},
+	annote = {Comment: Accepted to IEEE International Symposium on Biomedical Imaging (ISBI) 2018},
+	file = {arXiv\:1709.05860 PDF:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/PXI22QDJ/Arbelle and Raviv - 2017 - Microscopy Cell Segmentation via Adversarial Neura.pdf:application/pdf;arXiv.org Snapshot:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/8CSETM6L/1709.html:text/html}
+}
+
+@article{son_retinal_2017,
+	title = {Retinal {Vessel} {Segmentation} in {Fundoscopic} {Images} with {Generative} {Adversarial} {Networks}},
+	url = {http://arxiv.org/abs/1706.09318},
+	abstract = {Retinal vessel segmentation is an indispensable step for automatic detection of retinal diseases with fundoscopic images. Though many approaches have been proposed, existing methods tend to miss fine vessels or allow false positives at terminal branches. Let alone under-segmentation, over-segmentation is also problematic when quantitative studies need to measure the precise width of vessels. In this paper, we present a method that generates the precise map of retinal vessels using generative adversarial training. Our methods achieve dice coefficient of 0.829 on DRIVE dataset and 0.834 on STARE dataset which is the state-of-the-art performance on both datasets.},
+	urldate = {2018-02-07},
+	journal = {arXiv:1706.09318 [cs]},
+	author = {Son, Jaemin and Park, Sang Jun and Jung, Kyu-Hwan},
+	month = jun,
+	year = {2017},
+	note = {arXiv: 1706.09318},
+	keywords = {Computer Science - Computer Vision and Pattern Recognition, Computer Science - Learning},
+	annote = {Comment: 9 pages, submitted to DLMIA 2017},
+	file = {arXiv\:1706.09318 PDF:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/B6MJ2TAB/Son et al. - 2017 - Retinal Vessel Segmentation in Fundoscopic Images .pdf:application/pdf;arXiv.org Snapshot:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/49VZ8EA7/1706.html:text/html}
+}
+
+@misc{mundhenk_cars_nodate,
+	title = {Cars {Overhead} {With} {Context} {Dataset} at {LLNL}},
+	url = {http://gdo-datasci.ucllnl.org/cowc/},
+	abstract = {A large diverse set of cars from overhead images, 
+                                                  which are useful for training a deep learner to binary classify,
+                                                  detect and count them.},
+	urldate = {2018-02-07},
+	author = {Mundhenk, T. Nathan},
+	file = {Snapshot:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/JK7BNH2V/cowc.html:text/html}
+}
+
+@misc{noauthor_2d_nodate,
+	title = {2D {Semantic} {Labeling} - {ISPRS}},
+	url = {http://www2.isprs.org/commissions/comm3/wg4/semantic-labeling.html},
+	urldate = {2018-02-07},
+	file = {2D Semantic Labeling - ISPRS:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/YIAYBXVN/semantic-labeling.html:text/html}
+}
+
+@misc{noauthor_github_nodate,
+	title = {{GitHub} - nightrome/really-awesome-gan: {A} list of papers on {Generative} {Adversarial} ({Neural}) {Networks}},
+	url = {https://github.com/nightrome/really-awesome-gan},
+	urldate = {2018-02-07},
+	file = {GitHub - nightrome/really-awesome-gan\: A list of papers on Generative Adversarial (Neural) Networks:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/EVI2KYE4/really-awesome-gan.html:text/html}
+}
+
+@article{razakarivony_vehicle_2015,
+	title = {Vehicle {Detection} in {Aerial} {Imagery} : {A} small target detection benchmark},
+	shorttitle = {Vehicle {Detection} in {Aerial} {Imagery}},
+	url = {https://hal.archives-ouvertes.fr/hal-01122605},
+	abstract = {This paper introduces VEDAI: Vehicle Detection in Aerial Imagery a new database of aerial images provided as a tool to benchmark automatic target recognition algorithms in unconstrained environments. The vehicles contained in the database, in addition of being small, exhibit different variabil-ities such as multiple orientations, lighting/shadowing changes, specularities or occlusions. Furthermore, each image is available in several spectral bands and resolutions. A precise experimental protocol is also given, ensuring that the experimental results obtained by different people can be properly reproduce and compared. Finally, the paper also gives the performance of baseline algorithms on this dataset, for different settings of these algorithms, to illustrate the difficulties of the task and provide baseline comparisons.},
+	urldate = {2018-02-07},
+	journal = {Journal of Visual Communication and Image Representation, Elsevier},
+	author = {Razakarivony, Sébastien and Jurie, Frédéric},
+	month = mar,
+	year = {2015},
+	keywords = {Aerial Imagery, Database, Detection, Infrared Imagery, Low Resolution Images, Vehicles},
+	file = {HAL PDF Full Text:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/IDUK6AKR/Razakarivony and Jurie - 2015 - Vehicle Detection in Aerial Imagery  A small targ.pdf:application/pdf}
+}
+
+@article{reed_generative_2016,
+	title = {Generative {Adversarial} {Text} to {Image} {Synthesis}},
+	url = {https://arxiv.org/abs/1605.05396},
+	language = {en},
+	urldate = {2018-02-18},
+	author = {Reed, Scott and Akata, Zeynep and Yan, Xinchen and Logeswaran, Lajanugen and Schiele, Bernt and Lee, Honglak},
+	month = may,
+	year = {2016}
+}
+
+@article{mirza_conditional_2014,
+	title = {Conditional {Generative} {Adversarial} {Nets}},
+	url = {http://arxiv.org/abs/1411.1784},
+	abstract = {Generative Adversarial Nets [8] were recently introduced as a novel way to train generative models. In this work we introduce the conditional version of generative adversarial nets, which can be constructed by simply feeding the data, y, we wish to condition on to both the generator and discriminator. We show that this model can generate MNIST digits conditioned on class labels. We also illustrate how this model could be used to learn a multi-modal model, and provide preliminary examples of an application to image tagging in which we demonstrate how this approach can generate descriptive tags which are not part of training labels.},
+	urldate = {2018-02-18},
+	journal = {arXiv:1411.1784 [cs, stat]},
+	author = {Mirza, Mehdi and Osindero, Simon},
+	month = nov,
+	year = {2014},
+	note = {arXiv: 1411.1784},
+	keywords = {Computer Science - Computer Vision and Pattern Recognition, Computer Science - Learning, Computer Science - Artificial Intelligence, Statistics - Machine Learning},
+	file = {arXiv\:1411.1784 PDF:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/A63UHF3E/Mirza and Osindero - 2014 - Conditional Generative Adversarial Nets.pdf:application/pdf;arXiv.org Snapshot:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/WZYG8SNE/1411.html:text/html}
+}
+
+@article{isola_image--image_2016,
+	title = {Image-to-{Image} {Translation} with {Conditional} {Adversarial} {Networks}},
+	url = {http://arxiv.org/abs/1611.07004},
+	abstract = {We investigate conditional adversarial networks as a general-purpose solution to image-to-image translation problems. These networks not only learn the mapping from input image to output image, but also learn a loss function to train this mapping. This makes it possible to apply the same generic approach to problems that traditionally would require very different loss formulations. We demonstrate that this approach is effective at synthesizing photos from label maps, reconstructing objects from edge maps, and colorizing images, among other tasks. Indeed, since the release of the pix2pix software associated with this paper, a large number of internet users (many of them artists) have posted their own experiments with our system, further demonstrating its wide applicability and ease of adoption without the need for parameter tweaking. As a community, we no longer hand-engineer our mapping functions, and this work suggests we can achieve reasonable results without hand-engineering our loss functions either.},
+	urldate = {2018-02-18},
+	journal = {arXiv:1611.07004 [cs]},
+	author = {Isola, Phillip and Zhu, Jun-Yan and Zhou, Tinghui and Efros, Alexei A.},
+	month = nov,
+	year = {2016},
+	note = {arXiv: 1611.07004},
+	keywords = {Computer Science - Computer Vision and Pattern Recognition},
+	annote = {Comment: Website: https://phillipi.github.io/pix2pix/},
+	file = {arXiv\:1611.07004 PDF:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/M96T4WQ4/Isola et al. - 2016 - Image-to-Image Translation with Conditional Advers.pdf:application/pdf;arXiv.org Snapshot:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/QPZLAU3V/1611.html:text/html}
+}
+
+@article{zhong_robust_2017,
+	title = {Robust {Vehicle} {Detection} in {Aerial} {Images} {Based} on {Cascaded} {Convolutional} {Neural} {Networks}},
+	volume = {17},
+	issn = {1424-8220},
+	url = {https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5751529/},
+	doi = {10.3390/s17122720},
+	abstract = {Vehicle detection in aerial images is an important and challenging task. Traditionally, many target detection models based on sliding-window fashion were developed and achieved acceptable performance, but these models are time-consuming in the detection phase. Recently, with the great success of convolutional neural networks (CNNs) in computer vision, many state-of-the-art detectors have been designed based on deep CNNs. However, these CNN-based detectors are inefficient when applied in aerial image data due to the fact that the existing CNN-based models struggle with small-size object detection and precise localization. To improve the detection accuracy without decreasing speed, we propose a CNN-based detection model combining two independent convolutional neural networks, where the first network is applied to generate a set of vehicle-like regions from multi-feature maps of different hierarchies and scales. Because the multi-feature maps combine the advantage of the deep and shallow convolutional layer, the first network performs well on locating the small targets in aerial image data. Then, the generated candidate regions are fed into the second network for feature extraction and decision making. Comprehensive experiments are conducted on the Vehicle Detection in Aerial Imagery (VEDAI) dataset and Munich vehicle dataset. The proposed cascaded detection model yields high performance, not only in detection accuracy but also in detection speed.},
+	number = {12},
+	urldate = {2018-02-18},
+	journal = {Sensors (Basel, Switzerland)},
+	author = {Zhong, Jiandan and Lei, Tao and Yao, Guangle},
+	month = nov,
+	year = {2017},
+	pmid = {29186756},
+	pmcid = {PMC5751529},
+	file = {PubMed Central Full Text PDF:/home/joar/.zotero/zotero/97ry1s8l.default/zotero/storage/HRZHNJR8/Zhong et al. - 2017 - Robust Vehicle Detection in Aerial Images Based on.pdf:application/pdf}
+}

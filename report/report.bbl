@@ -1,0 +1,157 @@
+\begin{thebibliography}{18}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Arnab et~al.(2015)Arnab, Jayasumana, Zheng, and
+  Torr]{arnab_higher_2015}
+A.~Arnab, S.~Jayasumana, S.~Zheng, and P.~Torr.
+\newblock Higher {Order} {Conditional} {Random} {Fields} in {Deep} {Neural}
+  {Networks}.
+\newblock \emph{arXiv:1511.08119 [cs]}, Nov. 2015.
+\newblock URL \url{http://arxiv.org/abs/1511.08119}.
+\newblock arXiv: 1511.08119.
+
+\bibitem[Goodfellow(2016)]{goodfellow_nips_2016}
+I.~Goodfellow.
+\newblock {NIPS} 2016 {Tutorial}: {Generative} {Adversarial} {Networks}.
+\newblock \emph{arXiv:1701.00160 [cs]}, Dec. 2016.
+\newblock URL \url{http://arxiv.org/abs/1701.00160}.
+\newblock arXiv: 1701.00160.
+
+\bibitem[Goodfellow et~al.(2014)Goodfellow, Pouget-Abadie, Mirza, Xu,
+  Warde-Farley, Ozair, Courville, and Bengio]{goodfellow_generative_2014}
+I.~J. Goodfellow, J.~Pouget-Abadie, M.~Mirza, B.~Xu, D.~Warde-Farley, S.~Ozair,
+  A.~Courville, and Y.~Bengio.
+\newblock Generative {Adversarial} {Networks}.
+\newblock \emph{arXiv:1406.2661 [cs, stat]}, June 2014.
+\newblock URL \url{http://arxiv.org/abs/1406.2661}.
+\newblock arXiv: 1406.2661.
+
+\bibitem[Isola et~al.(2016)Isola, Zhu, Zhou, and
+  Efros]{isola_image--image_2016}
+P.~Isola, J.-Y. Zhu, T.~Zhou, and A.~A. Efros.
+\newblock Image-to-{Image} {Translation} with {Conditional} {Adversarial}
+  {Networks}.
+\newblock \emph{arXiv:1611.07004 [cs]}, Nov. 2016.
+\newblock URL \url{http://arxiv.org/abs/1611.07004}.
+\newblock arXiv: 1611.07004.
+
+\bibitem[Luc et~al.(2016)Luc, Couprie, Chintala, and
+  Verbeek]{luc_semantic_2016}
+P.~Luc, C.~Couprie, S.~Chintala, and J.~Verbeek.
+\newblock Semantic {Segmentation} using {Adversarial} {Networks}.
+\newblock \emph{arXiv:1611.08408 [cs]}, Nov. 2016.
+\newblock URL \url{http://arxiv.org/abs/1611.08408}.
+\newblock arXiv: 1611.08408.
+
+\bibitem[Mirza and Osindero(2014)]{mirza_conditional_2014}
+M.~Mirza and S.~Osindero.
+\newblock Conditional {Generative} {Adversarial} {Nets}.
+\newblock \emph{arXiv:1411.1784 [cs, stat]}, Nov. 2014.
+\newblock URL \url{http://arxiv.org/abs/1411.1784}.
+\newblock arXiv: 1411.1784.
+
+\bibitem[Pathak et~al.(2016)Pathak, Krahenbuhl, Donahue, Darrell, and
+  Efros]{pathak_context_2016}
+D.~Pathak, P.~Krahenbuhl, J.~Donahue, T.~Darrell, and A.~A. Efros.
+\newblock Context {Encoders}: {Feature} {Learning} by {Inpainting}.
+\newblock \emph{arXiv:1604.07379 [cs]}, Apr. 2016.
+\newblock URL \url{http://arxiv.org/abs/1604.07379}.
+\newblock arXiv: 1604.07379.
+
+\bibitem[Pinheiro et~al.(2016)Pinheiro, Lin, Collobert, and
+  Dollàr]{pinheiro_learning_2016}
+P.~O. Pinheiro, T.-Y. Lin, R.~Collobert, and P.~Dollàr.
+\newblock Learning to {Refine} {Object} {Segments}.
+\newblock \emph{arXiv:1603.08695 [cs]}, Mar. 2016.
+\newblock URL \url{http://arxiv.org/abs/1603.08695}.
+\newblock arXiv: 1603.08695.
+
+\bibitem[Razakarivony and Jurie(2015)]{razakarivony_vehicle_2015}
+S.~Razakarivony and F.~Jurie.
+\newblock Vehicle {Detection} in {Aerial} {Imagery} : {A} small target
+  detection benchmark.
+\newblock \emph{Journal of Visual Communication and Image Representation,
+  Elsevier}, Mar. 2015.
+\newblock URL \url{https://hal.archives-ouvertes.fr/hal-01122605}.
+
+\bibitem[Reed et~al.(2016)Reed, Akata, Yan, Logeswaran, Schiele, and
+  Lee]{reed_generative_2016}
+S.~Reed, Z.~Akata, X.~Yan, L.~Logeswaran, B.~Schiele, and H.~Lee.
+\newblock Generative {Adversarial} {Text} to {Image} {Synthesis}.
+\newblock May 2016.
+\newblock URL \url{https://arxiv.org/abs/1605.05396}.
+
+\bibitem[Ronneberger et~al.(2015)Ronneberger, Fischer, and
+  Brox]{ronneberger_u-net:_2015}
+O.~Ronneberger, P.~Fischer, and T.~Brox.
+\newblock U-{Net}: {Convolutional} {Networks} for {Biomedical} {Image}
+  {Segmentation}.
+\newblock \emph{arXiv:1505.04597 [cs]}, May 2015.
+\newblock URL \url{http://arxiv.org/abs/1505.04597}.
+\newblock arXiv: 1505.04597.
+
+\bibitem[Schwing and Urtasun(2015)]{schwing_fully_2015}
+A.~G. Schwing and R.~Urtasun.
+\newblock Fully {Connected} {Deep} {Structured} {Networks}.
+\newblock \emph{arXiv:1503.02351 [cs]}, Mar. 2015.
+\newblock URL \url{http://arxiv.org/abs/1503.02351}.
+\newblock arXiv: 1503.02351.
+
+\bibitem[Shelhamer et~al.(2016)Shelhamer, Long, and
+  Darrell]{shelhamer_fully_2016}
+E.~Shelhamer, J.~Long, and T.~Darrell.
+\newblock Fully {Convolutional} {Networks} for {Semantic} {Segmentation}.
+\newblock \emph{arXiv:1605.06211 [cs]}, May 2016.
+\newblock URL \url{http://arxiv.org/abs/1605.06211}.
+\newblock arXiv: 1605.06211.
+
+\bibitem[Son et~al.(2017)Son, Park, and Jung]{son_retinal_2017}
+J.~Son, S.~J. Park, and K.-H. Jung.
+\newblock Retinal {Vessel} {Segmentation} in {Fundoscopic} {Images} with
+  {Generative} {Adversarial} {Networks}.
+\newblock \emph{arXiv:1706.09318 [cs]}, June 2017.
+\newblock URL \url{http://arxiv.org/abs/1706.09318}.
+\newblock arXiv: 1706.09318.
+
+\bibitem[Xue et~al.(2017)Xue, Xu, Zhang, Long, and Huang]{xue_segan:_2017}
+Y.~Xue, T.~Xu, H.~Zhang, R.~Long, and X.~Huang.
+\newblock {SegAN}: {Adversarial} {Network} with {Multi}-scale \${L}\_1\$ {Loss}
+  for {Medical} {Image} {Segmentation}.
+\newblock \emph{arXiv:1706.01805 [cs]}, June 2017.
+\newblock URL \url{http://arxiv.org/abs/1706.01805}.
+\newblock arXiv: 1706.01805.
+
+\bibitem[Yang et~al.(2017)Yang, Xu, Zhou, Georgescu, Chen, Grbic, Metaxas, and
+  Comaniciu]{yang_automatic_2017}
+D.~Yang, D.~Xu, S.~K. Zhou, B.~Georgescu, M.~Chen, S.~Grbic, D.~Metaxas, and
+  D.~Comaniciu.
+\newblock Automatic {Liver} {Segmentation} {Using} an {Adversarial}
+  {Image}-to-{Image} {Network}.
+\newblock \emph{arXiv:1707.08037 [cs]}, July 2017.
+\newblock URL \url{http://arxiv.org/abs/1707.08037}.
+\newblock arXiv: 1707.08037.
+
+\bibitem[Zheng et~al.(2015)Zheng, Jayasumana, Romera-Paredes, Vineet, Su, Du,
+  Huang, and Torr]{zheng_conditional_2015}
+S.~Zheng, S.~Jayasumana, B.~Romera-Paredes, V.~Vineet, Z.~Su, D.~Du, C.~Huang,
+  and P.~H.~S. Torr.
+\newblock Conditional {Random} {Fields} as {Recurrent} {Neural} {Networks}.
+\newblock \emph{arXiv:1502.03240 [cs]}, pages 1529--1537, Dec. 2015.
+\newblock \doi{10.1109/ICCV.2015.179}.
+\newblock URL \url{http://arxiv.org/abs/1502.03240}.
+\newblock arXiv: 1502.03240.
+
+\bibitem[Zhong et~al.(2017)Zhong, Lei, and Yao]{zhong_robust_2017}
+J.~Zhong, T.~Lei, and G.~Yao.
+\newblock Robust {Vehicle} {Detection} in {Aerial} {Images} {Based} on
+  {Cascaded} {Convolutional} {Neural} {Networks}.
+\newblock \emph{Sensors (Basel, Switzerland)}, 17\penalty0 (12), Nov. 2017.
+\newblock ISSN 1424-8220.
+\newblock \doi{10.3390/s17122720}.
+\newblock URL \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5751529/}.
+
+\end{thebibliography}
