@@ -1,3 +1,6 @@
 *.pyc
-/code/*
+/code/infoGAN
+/code/tf_unet
+/code/UGAN/*
 !/code/UGAN/*.py
+
