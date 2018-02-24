@@ -152,7 +152,11 @@ def create_conv_net(x, keep_prob, channels, n_class, layers=3, features_root=16,
 
         for k in up_h_convs.keys():
             tf.summary.histogram("up_convolution_%s"%k + '/activations', up_h_convs[k])
-            
+
+        # tf.summary.image("train", x_image)
+        # tf.summary.image("pred", )
+        # test_x, test_y
+        #
     variables = []
     for w1,w2 in weights:
         variables.append(w1)
