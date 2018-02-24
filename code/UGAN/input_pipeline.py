@@ -8,7 +8,7 @@ from tensorflow.python.framework import dtypes
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 
-class InputPipeline():
+class InputPipeline(object):
     # creates an put pipleine from data stored in file
     def __init__(self, x_path, y_path, x_dim, y_dim):
         self.x_path = x_path
