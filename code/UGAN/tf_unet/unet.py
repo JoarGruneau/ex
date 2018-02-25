@@ -242,8 +242,12 @@ class Unet(object):
             eps = 1e-5
             logits = pixel_wise_softmax_2(logits)
             inter=tf.reduce_sum(logits[...,1] * self.y[...,1])
-            union=tf.reduce_sum(logits)+tf.reduce_sum(self.y[...,1])-inter
-            loss=1.0 - tf.div(inter,union + eps)
+            sum_labels_map =tf.reduce_sum(self.y[...,1])
+            if sum_labels_map == 0:
+                loss=0
+            else:
+                union=tf.reduce_sum(logits)+sum_labels_map-inter
+                loss=1.0 - tf.div(inter,union + eps)
             
         else:
             raise ValueError("Unknown cost function: "%cost_name)
