@@ -241,10 +241,11 @@ class Unet(object):
         elif cost_name=='IoU':
             eps = 1e-5
             logits = pixel_wise_softmax_2(logits)
-            inter=tf.reduce_sum(logits[...,1] * self.y[...,1])
-            sum_labels_map =tf.reduce_sum(self.y[...,1])
+            inter=tf.reduce_sum(logits * self.y)
+            sum_labels_map =tf.reduce_sum(self.y)
             union = tf.reduce_sum(logits) + sum_labels_map - inter
-            loss = tf.cond(sum_labels_map > 0, lambda: 1.0 - tf.div(inter,union + eps), lambda: 0.0)
+            loss=-tf.div(inter, union + eps)
+            # loss = tf.cond(sum_labels_map > 0, lambda: 1.0 - tf.div(inter,union + eps), lambda: 0.0)
 
             
         else:
