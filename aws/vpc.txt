@@ -1,0 +1,4 @@
+subnetId=subnet-e76366bc
+True
+securityGroupId=sg-b2b53bc8
+

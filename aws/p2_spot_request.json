@@ -1,0 +1,30 @@
+{
+  "ImageId": "ami-7730580e",
+  "KeyName": "aws_agt_ae",
+  "InstanceType": "p2.xlarge",
+  "Placement": {
+    "AvailabilityZone": "eu-west-1b"
+  },
+  "BlockDeviceMappings": [
+    {
+      "DeviceName": "/dev/sda1",
+      "Ebs": {
+        "DeleteOnTermination": true,
+        "VolumeType": "gp2",
+        "VolumeSize": 100,
+        "SnapshotId": "snap-0808bea8bfa838c9c"
+      }
+    }
+  ],
+  "NetworkInterfaces": [
+    {
+      "DeviceIndex": 0,
+      "SubnetId": "subnet-858eb6de",
+      "DeleteOnTermination": true,
+      "Groups": [
+        "sg-57e2602d"
+      ],
+      "AssociatePublicIpAddress": true
+    }
+  ]
+}
