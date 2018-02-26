@@ -8,7 +8,7 @@ if __name__ == '__main__':
     trainer = unet.Trainer(net, batch_size=1, optimizer='momentum',
                            opt_kwargs={'momentum': 0.5, "learning_rate": 0.02, "decay_rate": 1})
     path = trainer.train(data_provider, "train/", dropout=0.5,
-                         training_iters=5, epochs=25, display_step=5,  restore=False)
+                         training_iters=100, epochs=25, display_step=50,  restore=False)
     x_test = a._load_file("images/00000000.png")
     x_test = a._process_data([x_test])
     prediction = net.predict(path, x_test)
