@@ -38,7 +38,7 @@ class BaseDataProvider(object):
     channels = 1
     n_class = 2
 
-    def __init__(self, border_size, a_min=None, a_max=None):
+    def __init__(self, border_size=0, a_min=None, a_max=None):
         self.bordes_size = border_size
         self.a_min = a_min if a_min is not None else -np.inf
         self.a_max = a_max if a_min is not None else np.inf
@@ -159,7 +159,7 @@ class ImageDataProvider(BaseDataProvider):
     
     """
     
-    def __init__(self, search_path, border_size, a_min=None, a_max=None, data_suffix=".tif", mask_suffix='_mask.tif', shuffle_data=True, n_class = 2):
+    def __init__(self, search_path, border_size=0, a_min=None, a_max=None, data_suffix=".tif", mask_suffix='_mask.tif', shuffle_data=True, n_class = 2):
         super(ImageDataProvider, self).__init__(border_size, a_min, a_max)
         self.data_suffix = data_suffix
         self.mask_suffix = mask_suffix
