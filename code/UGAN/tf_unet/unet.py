@@ -249,7 +249,7 @@ class Unet(object):
             pred_loss = -tf.div(inter_pred,
                                 tf.reduce_sum(logits[...,1])
                                 + tf.reduce_sum(self.y[...,1]) - inter_pred + eps)
-            loss=pred_loss+ground_loss
+            loss=1+pred_loss
             # loss = tf.cond(sum_labels_map > 0, lambda: 1.0 - tf.div(inter,union + eps), lambda: 0.0)
 
             
