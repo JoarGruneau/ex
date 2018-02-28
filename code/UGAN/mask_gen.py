@@ -123,11 +123,33 @@ def save_binary_masks():
     for image_name in sorted(glob.glob(image_path + '/*.png')):
         id = os.path.basename(image_name).split('.')[0]
         print(id)
-        mask = create_binary_mask(id, fill=255)
+        mask = create_binary_mask(id, fill=0)
         if mask:
             mask.save(os.path.join(save_path, id + '_mask.png'))
         else:
             os.remove(image_name)
+
+def postdam_mapping():
+    data_root=os.path.join(os.getcwd(), 'Potsdam')
+    data_path = os.path.join(data_root, 'Labels')
+    save_path=os.path.join(data_root, 'bin_lables')
+    if os.path.exists(save_path):
+        shutil.rmtree(save_path)
+    os.makedirs(save_path)
+    size = 6000
+    for image_name in sorted(glob.glob(data_path + '/*.tif')):
+        id = os.path.basename(image_name).split('.')[0]
+        print(id)
+        img =Image.open(image_name, 'r').load()
+        mask = Image.new('L', (size, size))
+        mask_pixels=mask.load()
+        for x in range(size):
+            for y in range(size):
+                if img[x, y] == (255, 255, 0):
+                    mask_pixels[x, y]=255
+
+        mask.save(os.path.join(save_path, id + '_mask.tif'))
+
 
 
 
@@ -151,7 +173,7 @@ def save_binary_masks():
 
 
 if __name__ == "__main__":
-    save_binary_masks()
+    postdam_mapping()
     #create_ground_truth()
     # save_masks()
 

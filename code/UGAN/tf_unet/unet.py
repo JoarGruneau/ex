@@ -192,7 +192,7 @@ class Unet(object):
         
         logits, self.variables, self.offset = create_conv_net(self.x, self.keep_prob, channels, n_class, **kwargs)
         
-        self.cost = self._get_cost(logits, cost, cost_kwargs)
+        self.cost, self.pred = self._get_cost(logits, cost, cost_kwargs)
         
         self.gradients_node = tf.gradients(self.cost, self.variables)
          
@@ -261,7 +261,7 @@ class Unet(object):
             regularizers = sum([tf.nn.l2_loss(variable) for variable in self.variables])
             loss += (regularizer * regularizers)
             
-        return loss
+        return loss, logits
 
     def predict(self, model_path, x_test):
         """
@@ -321,7 +321,7 @@ class Trainer(object):
     
     """
     
-    verification_batch_size = 4
+    verification_batch_size = 2
     
     def __init__(self, net, batch_size=1, norm_grads=False, optimizer="momentum", opt_kwargs={}):
         self.net = net
@@ -437,7 +437,7 @@ class Trainer(object):
                     batch_x, batch_y = data_provider(self.batch_size)
                      
                     # Run optimization op (backprop)
-                    _, loss, lr, gradients = sess.run((self.optimizer, self.net.cost, self.learning_rate_node, self.net.gradients_node), 
+                    _, loss, pred, y, lr, gradients = sess.run((self.optimizer, self.net.cost, self.net.pred, self.net.y, self.learning_rate_node, self.net.gradients_node),
                                                       feed_dict={self.net.x: batch_x,
                                                                  self.net.y: util.crop_to_shape(batch_y, pred_shape),
                                                                  self.net.keep_prob: dropout})

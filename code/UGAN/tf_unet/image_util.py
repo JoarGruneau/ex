@@ -52,13 +52,13 @@ class BaseDataProvider(object):
         train_data, labels = self._post_process(train_data, labels)
         nx = train_data.shape[1]+2*self.bordes_size
         ny = train_data.shape[0]+2*self.bordes_size
-
-        train_data = cv2.copyMakeBorder(train_data, top=self.bordes_size, bottom=self.bordes_size,
-                                        left=self.bordes_size, right=self.bordes_size,
-                                  borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
-        labels = cv2.copyMakeBorder(labels, top=self.bordes_size, bottom=self.bordes_size, left=self.bordes_size,
-                                        right=self.bordes_size,
-                                        borderType=cv2.BORDER_CONSTANT, value=[0, 0, 0])
+        #
+        # train_data = cv2.copyMakeBorder(train_data, top=self.bordes_size, bottom=self.bordes_size,
+        #                                 left=self.bordes_size, right=self.bordes_size,
+        #                           borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
+        # labels = cv2.copyMakeBorder(labels, top=self.bordes_size, bottom=self.bordes_size, left=self.bordes_size,
+        #                                 right=self.bordes_size,
+        #                                 borderType=cv2.BORDER_CONSTANT, value=[0, 0, 0])
 
 
         return train_data.reshape(1, ny, nx, self.channels), labels.reshape(1, ny, nx, self.n_class),
@@ -70,6 +70,9 @@ class BaseDataProvider(object):
             labels = np.zeros((ny, nx, self.n_class), dtype=np.float32)
             labels[..., 1] = label
             labels[..., 0] = ~label
+            labels=labels/255
+            # print(np.amax(labels))
+            # print(np.amin(labels))
             return labels
         
         return label
@@ -174,8 +177,9 @@ class ImageDataProvider(BaseDataProvider):
         
         assert len(self.data_files) > 0, "No training files"
         print("Number of files used: %s" % len(self.data_files))
-        
-        img = self._load_file(self.data_files[0])
+        img = self._load_file(self.data_files[0], 1, dtype=np.float32)
+        # print(np.amax(img))
+        # print (np.amin(img))
         self.channels = 1 if len(img.shape) == 2 else img.shape[-1]
         
     def _find_data_files(self, search_path):
@@ -183,8 +187,16 @@ class ImageDataProvider(BaseDataProvider):
         return [name for name in all_files if self.data_suffix in name and not self.mask_suffix in name]
     
     
-    def _load_file(self, path, dtype=np.float32):
-        img = np.array(Image.open(path), dtype)
+    def _load_file(self, path, type, dtype=np.float32):
+        # if dtype==3:
+        #     img = cv2.imread(path, type)
+        #     # print (path)
+        #     # print(img.shape)
+        #     img.astype(dtype=dtype)
+        # else:
+        img=Image.open(path)
+        # print (type(img))
+        img = np.array(img, dtype=dtype)
         return img
         # return np.squeeze(cv2.imread(image_name, cv2.IMREAD_GRAYSCALE))
 
@@ -200,7 +212,7 @@ class ImageDataProvider(BaseDataProvider):
         image_name = self.data_files[self.file_idx]
         label_name = image_name.replace(self.data_suffix, self.mask_suffix)
         
-        img = self._load_file(image_name, np.float32)
-        label = self._load_file(label_name, np.bool)
+        img = self._load_file(image_name, cv2.IMREAD_COLOR, dtype=np.float32)
+        label = self._load_file(label_name, 0, dtype=np.uint8)
     
         return img,label
