@@ -3,5 +3,6 @@
 /code/tf_unet
 /code/UGAN/*
 !/code/UGAN/*.py
+!/code/UGAN/*.txt
 !/code/UGAN/*tf_unet
 

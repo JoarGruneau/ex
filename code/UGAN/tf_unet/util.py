@@ -75,6 +75,18 @@ def to_rgb(img):
     img *= 255
     return img
 
+def rgb_multi_prediction(img):
+    mapping = {0: [255, 255, 255], 1: [0, 0, 255], 2: [0, 255, 255], 3: [0, 255, 0], 4: [255, 255, 0], 5: [255, 0, 0]}
+    shape=img.shape
+    out= np.zeros((shape[1], shape[2], 3))
+    arg_max = np.argmax(img, axis=3)
+    arg_max = arg_max.reshape((img.shape[1], img.shape[2]))
+    print (arg_max.shape)
+    for x in range(shape[1]):
+        for y in range(shape[2]):
+            out[x,y,:]=mapping[arg_max[x,y]]
+    return out
+
 def crop_to_shape(data, shape):
     """
     Crops the array to the given image shape by removing the border (expects a tensor of shape [batches, nx, ny, channels].

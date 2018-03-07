@@ -19,7 +19,13 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import cv2
 import glob
 import numpy as np
+import os
+import pickle
+import shutil
 from PIL import Image
+mapping={0:[255, 255, 255], 1:[0, 0, 255], 2:[0, 255, 255], 3:[0, 255, 0], 4:[255, 255, 0], 5:[255, 0, 0]}
+inv_mapping={str(v): k for k, v in mapping.items()}
+
 
 class BaseDataProvider(object):
     """
@@ -35,11 +41,13 @@ class BaseDataProvider(object):
 
     """
     
-    channels = 1
-    n_class = 2
+    # channels = 1
+    # n_class = 2
 
-    def __init__(self, border_size=0, a_min=None, a_max=None):
-        self.bordes_size = border_size
+    def __init__(self, channels, n_class, border_size=0, a_min=None, a_max=None):
+        self.channels = channels
+        self.n_class = n_class
+        self.border_size = border_size
         self.a_min = a_min if a_min is not None else -np.inf
         self.a_max = a_max if a_min is not None else np.inf
 
@@ -50,32 +58,45 @@ class BaseDataProvider(object):
         labels = self._process_labels(label)
         
         train_data, labels = self._post_process(train_data, labels)
-        nx = train_data.shape[1]+2*self.bordes_size
-        ny = train_data.shape[0]+2*self.bordes_size
-        #
-        # train_data = cv2.copyMakeBorder(train_data, top=self.bordes_size, bottom=self.bordes_size,
-        #                                 left=self.bordes_size, right=self.bordes_size,
-        #                           borderType=cv2.BORDER_CONSTANT, value=[0,0,0])
-        # labels = cv2.copyMakeBorder(labels, top=self.bordes_size, bottom=self.bordes_size, left=self.bordes_size,
-        #                                 right=self.bordes_size,
-        #                                 borderType=cv2.BORDER_CONSTANT, value=[0, 0, 0])
+        # nx = train_data.shape[0]+2*self.border_size
+        # ny = train_data.shape[1]+2*self.border_size
+        # border_train = np.zeros((nx, ny, self.channels))
+        # border_label = np.zeros((nx, ny, self.n_class))
+        # border_train[self.border_size:-self.border_size, self.border_size:-self.border_size, :] = train_data
+        # border_label[self.border_size:-self.border_size, self.border_size:-self.border_size, :] = labels
+        nx = train_data.shape[0]
+        ny = train_data.shape[1]
+        # print (type(train_data))
+        # train_data = cv2.copyMakeBorder(train_data, top=self.border_size, bottom=self.border_size, left=self.border_size, right=self.border_size,
+        #                    borderType=cv2.BORDER_CONSTANT, value=[0, 0, 0])
+        # train_data = cv2.copyMakeBorder(train_data, top=self.border_size, bottom=self.border_size,
+        #                                 left=self.border_size, right=self.border_size,
+        #                                 borderType=cv2.BORDER_CONSTANT, value=[0]*self.channels)
+        # labels = cv2.copyMakeBorder(labels, top=self.border_size, bottom=self.border_size, left=self.border_size,
+        #                             right=self.border_size,
+        #                             borderType=cv2.BORDER_CONSTANT, value=[0]*self.n_class)
 
-
-        return train_data.reshape(1, ny, nx, self.channels), labels.reshape(1, ny, nx, self.n_class),
+        return train_data.reshape(1, nx, ny, self.channels), \
+               labels.reshape(1, label.shape[0], label.shape[1], self.n_class)
     
     def _process_labels(self, label):
+        nx = label.shape[0]
+        ny = label.shape[1]
+        labels = np.zeros((nx, ny, self.n_class), dtype=np.float32)
+        print(self.n_class)
         if self.n_class == 2:
-            nx = label.shape[1]
-            ny = label.shape[0]
-            labels = np.zeros((ny, nx, self.n_class), dtype=np.float32)
+            label = label/255
             labels[..., 1] = label
-            labels[..., 0] = ~label
-            labels=labels/255
+            labels[..., 0] = 1.0 - label
+            # print("conversion done")
             # print(np.amax(labels))
             # print(np.amin(labels))
-            return labels
-        
-        return label
+        else:
+            for x in range(nx):
+                for y in range(ny):
+                    pixel = list(label[x,y,:])
+                    labels[x,y,inv_mapping[str(pixel)]]=1.0
+        return labels
     
     def _process_data(self, data):
         # normalization
@@ -98,8 +119,8 @@ class BaseDataProvider(object):
         nx = train_data.shape[1]
         ny = labels.shape[2]
 
-        X = np.zeros((n, nx, ny, self.channels))
-        Y = np.zeros((n, nx, ny, self.n_class))
+        X = np.zeros((n, train_data.shape[1], train_data.shape[2], self.channels))
+        Y = np.zeros((n, labels.shape[1], labels.shape[2], self.n_class))
 
         X[0] = train_data
         Y[0] = labels
@@ -162,43 +183,92 @@ class ImageDataProvider(BaseDataProvider):
     
     """
     
-    def __init__(self, search_path, border_size=0, a_min=None, a_max=None, data_suffix=".tif", mask_suffix='_mask.tif', shuffle_data=True, n_class = 2):
-        super(ImageDataProvider, self).__init__(border_size, a_min, a_max)
+    def __init__(self, image_path, label_path=None, patch_size=1000, border_size=0,
+                 a_min=None, a_max=None, data_suffix=".tif", mask_suffix='_mask.tif',
+                 shuffle_data=True, channels=1, n_class = 2, load_saved=False):
+        super(ImageDataProvider, self).__init__(channels, n_class, border_size, a_min, a_max)
         self.data_suffix = data_suffix
         self.mask_suffix = mask_suffix
         self.file_idx = -1
+        self.patch_size=patch_size
+        self.load_saved = load_saved
+
         self.shuffle_data = shuffle_data
-        self.n_class = n_class
         
-        self.data_files = self._find_data_files(search_path)
+        self.data_files = self._find_data_files(image_path)
+        self.label_path = label_path
         
         if self.shuffle_data:
             np.random.shuffle(self.data_files)
         
-        assert len(self.data_files) > 0, "No training files"
-        print("Number of files used: %s" % len(self.data_files))
-        img = self._load_file(self.data_files[0], 1, dtype=np.float32)
-        # print(np.amax(img))
-        # print (np.amin(img))
-        self.channels = 1 if len(img.shape) == 2 else img.shape[-1]
-        
+        # assert len(self.data_files) > 0, "No training files"
+        # print("Number of files used: %s" % len(self.data_files))
+        # img = self._load_file(self.data_files[0], type=-1, add_borders=True, dtype=np.float32)
+        # # print(np.amax(img))
+        # # print (np.amin(img))
+        # self.channels = 1 if len(img.shape) == 2 else img.shape[-1]
+        self.size = 6000 +2*self.border_size
+
+    def get_patches(self, get_coordinates=False):
+        self._cylce_file()
+        image_name = self.data_files[self.file_idx]
+        if self.load_saved:
+            patches = pickle.load(open(image_name,'rb'))
+        else:
+            label_name = os.path.join(self.label_path, os.path.basename(image_name)
+                    .replace(self.data_suffix, self.mask_suffix))
+            patches = self._get_patches(
+                self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32),
+                self._load_file(label_name, type=-1, add_borders=False, dtype=np.uint8), get_coordinates)
+        return patches
+
+    def save_patches(self, save_path):
+        if os.path.exists(save_path):
+            shutil.rmtree(save_path)
+        os.makedirs(os.path.dirname(save_path))
+        for image_name in self.data_files:
+            save_name = os.path.basename(image_name.replace(self.data_suffix, '.pkl'))
+            print (save_name)
+            label_name = os.path.join(self.label_path, os.path.basename(image_name)
+                    .replace(self.data_suffix, self.mask_suffix))
+            patches = self._get_patches(
+                self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32),
+                self._load_file(label_name, type=-1, add_borders=False, dtype=np.uint8), get_coordinates=True)
+            pickle.dump(patches, open(os.path.join(save_path, save_name), 'wb'))
+        print ('all patches saved')
+
+    def get_border_size(self):
+        return  self.border_size
+
+    def get_patch_size(self):
+        return  self.patch_size
+
+    def get_input_size(self):
+        return self.size - 2 * self.border_size
+
     def _find_data_files(self, search_path):
-        all_files = glob.glob(search_path)
-        return [name for name in all_files if self.data_suffix in name and not self.mask_suffix in name]
+        if self.load_saved:
+            return glob.glob(search_path+'*.pkl')
+        else:
+            all_files = glob.glob(search_path)
+            return [name for name in all_files if self.data_suffix in name and not self.mask_suffix in name]
     
     
-    def _load_file(self, path, type, dtype=np.float32):
-        # if dtype==3:
-        #     img = cv2.imread(path, type)
-        #     # print (path)
-        #     # print(img.shape)
-        #     img.astype(dtype=dtype)
-        # else:
-        img=Image.open(path)
-        # print (type(img))
-        img = np.array(img, dtype=dtype)
+    def _load_file(self, path, type=-1, add_borders=False, dtype=np.float32):
+        print (path)
+        img = cv2.imread(path, type)
+        if type == -1:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        if add_borders:
+            shape=list(img.shape)
+            shape[0] += 2*self.border_size
+            shape[1] += 2*self.border_size
+            border_img = np.zeros(shape)
+            border_img[self.border_size:-self.border_size, self.border_size:-self.border_size, ...] = img
+            img=border_img
+
+        img.astype(dtype=dtype)
         return img
-        # return np.squeeze(cv2.imread(image_name, cv2.IMREAD_GRAYSCALE))
 
     def _cylce_file(self):
         self.file_idx += 1
@@ -206,13 +276,29 @@ class ImageDataProvider(BaseDataProvider):
             self.file_idx = 0 
             if self.shuffle_data:
                 np.random.shuffle(self.data_files)
-        
-    def _next_data(self):
-        self._cylce_file()
-        image_name = self.data_files[self.file_idx]
-        label_name = image_name.replace(self.data_suffix, self.mask_suffix)
-        
-        img = self._load_file(image_name, cv2.IMREAD_COLOR, dtype=np.float32)
-        label = self._load_file(label_name, 0, dtype=np.uint8)
-    
-        return img,label
+
+    def _get_patches(self, img, label, get_coordinates=False):
+        # print ("getting patch")
+        patches = []
+        for x in range(self.border_size, self.size-self.border_size, self.patch_size):
+            for y in range(self.border_size, self.size-self.border_size, self.patch_size):
+
+                patch_img=img[x-self.border_size:x + self.patch_size + self.border_size,
+                                y-self.border_size:y + self.patch_size + self.border_size, ...]
+                patch_label=label[x-self.border_size:x + self.patch_size - self.border_size,
+                                     y-self.border_size:y + self.patch_size -self.border_size, ...]
+
+                patch_img = self._process_data(patch_img)
+                patch_label = self._process_labels(patch_label)
+                patch_img = patch_img.reshape(1, patch_img.shape[0], patch_img.shape[1], self.channels)
+                patch_label = patch_label.reshape(1, patch_label.shape[0], patch_label.shape[1], self.n_class)
+                print (patch_img.shape)
+                print (patch_label.shape)
+
+                if get_coordinates:
+                    patches.append([patch_img, patch_label, [x-self.border_size, y-self.border_size]])
+                else:
+                    patches.append([patch_img, patch_label])
+        print ("patch list len " + str(len(patches)))
+        return patches
+
