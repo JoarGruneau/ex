@@ -359,7 +359,7 @@ class Trainer(object):
         return optimizer
         
     def _initialize(self, training_iters, output_path, restore, prediction_path):
-        global_step = tf.Variable(0)
+        self.global_step = tf.Variable(0, name='global_step', trainable=False)
         
         self.norm_gradients_node = tf.Variable(tf.constant(0.0, shape=[len(self.net.gradients_node)]))
         
@@ -370,7 +370,7 @@ class Trainer(object):
         tf.summary.scalar('cross_entropy', self.net.cross_entropy)
         tf.summary.scalar('accuracy', self.net.accuracy)
 
-        self.optimizer = self._get_optimizer(training_iters, global_step)
+        self.optimizer = self._get_optimizer(training_iters, self.global_step)
         tf.summary.scalar('learning_rate', self.learning_rate_node)
 
         self.summary_op = tf.summary.merge_all()        
@@ -431,7 +431,7 @@ class Trainer(object):
             border_size = data_provider.get_border_size()
             patch_size = data_provider.get_patch_size()
             input_size = data_provider.get_input_size()
-            pred_shape = self.store_prediction(sess, test_patches, border_size, patch_size, input_size, "_init")
+            # pred_shape = self.store_prediction(sess, test_patches, border_size, patch_size, input_size, "_init")
 
             
             summary_writer = tf.summary.FileWriter(output_path, graph=sess.graph)
@@ -445,30 +445,20 @@ class Trainer(object):
                     img_loss = 0
                     for patch in patches:
 
-                        _, loss, pred, y, lr, gradients = sess.run((self.optimizer, self.net.cost, self.net.pred, self.net.y, self.learning_rate_node, self.net.gradients_node),
+                        _, loss, lr = sess.run((self.optimizer, self.net.cost, self.learning_rate_node),
                                                       feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: dropout})
-                        print (loss)
                         img_loss += loss
 
-                        if self.net.summaries and self.norm_grads:
-                            avg_gradients = _update_avg_gradients(avg_gradients, gradients, step)
-                            norm_gradients = [np.linalg.norm(gradient) for gradient in avg_gradients]
-                            self.norm_gradients_node.assign(norm_gradients).eval()
                     # if step % display_step == 0:
                     #     self.output_minibatch_stats(sess, summary_writer, step, batch_x, batch_y)
-                        
+                    print ("image loss" + str(img_loss/len(patches)))
                     total_loss += img_loss/len(patches)
 
                 self.output_epoch_stats(epoch, total_loss, training_iters, lr)
                 self.store_prediction(sess, test_patches, border_size, patch_size, input_size, "epoch_%s"%epoch)
 
-                save_path = self.net.save(sess, save_path)
-            logging.info("Optimization Finished!")
-            
-            return save_path
-        
     def store_prediction(self, sess, patches, border_size, patch_size, input_size, name):
         # image = np.zeros((self.verification_batch_size, 6000,6000,3))
         # label = np.zeros((self.verification_batch_size, 6000,6000,2))
@@ -479,14 +469,6 @@ class Trainer(object):
                                                              self.net.keep_prob: 1.})
             shape=pred.shape
             x, y = patch[2]
-            print (patch[2])
-            # removed_border = (patch[0].shape[1]-pred.shape[1])//2
-            # low_offset = border_size - removed_border
-            # high_offset = pred.shape[1] - low_offset
-            # image[:,x:x+patch_size,y:y+patch_size,...] = \
-            #     patch[0][:,border_size:-border_size,border_size:-border_size,...]
-            # label[:,x:x+patch_size,y:y+patch_size,...] \
-            #     = patch[1][:,border_size:-border_size,border_size:-border_size,...]
             prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
 
         pred_shape = prediction.shape
