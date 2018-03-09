@@ -1,0 +1,13 @@
+\contentsline {section}{\numberline {1}Abstract}{3}{section.1}
+\contentsline {section}{\numberline {2}Introduction}{3}{section.2}
+\contentsline {section}{\numberline {3}Relevant Theory}{5}{section.3}
+\contentsline {subsection}{\numberline {3.1}Generative adversarial networks}{5}{subsection.3.1}
+\contentsline {subsubsection}{\numberline {3.1.1}Unconditional generative adversarial networks}{5}{subsubsection.3.1.1}
+\contentsline {subsubsection}{\numberline {3.1.2}Conditional generative adversarial networks}{5}{subsubsection.3.1.2}
+\contentsline {subsection}{\numberline {3.2}Segmentor networks}{6}{subsection.3.2}
+\contentsline {subsection}{\numberline {3.3}Classification networks}{7}{subsection.3.3}
+\contentsline {subsection}{\numberline {3.4}Dealing with severely imbalanced datasets}{9}{subsection.3.4}
+\contentsline {subsection}{\numberline {3.5}The datasets}{9}{subsection.3.5}
+\contentsline {subsubsection}{\numberline {3.5.1}The VEDAI dataset}{9}{subsubsection.3.5.1}
+\contentsline {section}{\numberline {4}Related work}{10}{section.4}
+\contentsline {section}{\numberline {5}Network Architecture}{11}{section.5}

@@ -1,9 +1,17 @@
-\begin{thebibliography}{47}
+\begin{thebibliography}{57}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Ammour et~al.(2017)Ammour, Alhichri, Bazi, Benjdira, Alajlan, and
+  Zuair]{ammour_deep_2017}
+N.~Ammour, H.~Alhichri, Y.~Bazi, B.~Benjdira, N.~Alajlan, and M.~Zuair.
+\newblock Deep {Learning} {Approach} for {Car} {Detection} in {UAV} {Imagery}.
+\newblock \emph{Remote Sensing}, 9\penalty0 (4):\penalty0 312, Mar. 2017.
+\newblock \doi{10.3390/rs9040312}.
+\newblock URL \url{http://www.mdpi.com/2072-4292/9/4/312}.
 
 \bibitem[Arbelle and Raviv(2017)]{arbelle_microscopy_2017-1}
 A.~Arbelle and T.~R. Raviv.
@@ -22,6 +30,14 @@ A.~Arnab, S.~Jayasumana, S.~Zheng, and P.~Torr.
 \newblock URL \url{http://arxiv.org/abs/1511.08119}.
 \newblock arXiv: 1511.08119.
 
+\bibitem[Audebert et~al.(2016)Audebert, Saux, and
+  Lefèvre]{audebert_usability_2016}
+N.~Audebert, B.~L. Saux, and S.~Lefèvre.
+\newblock On the usability of deep networks for object-based image analysis.
+\newblock \emph{arXiv:1609.06845 [cs]}, Sept. 2016.
+\newblock URL \url{http://arxiv.org/abs/1609.06845}.
+\newblock arXiv: 1609.06845.
+
 \bibitem[Audebert et~al.(2017)Audebert, Le~Saux, and
   Lefèvre]{audebert_segment-before-detect:_2017}
 N.~Audebert, B.~Le~Saux, and S.~Lefèvre.
@@ -39,6 +55,16 @@ V.~Badrinarayanan, A.~Kendall, and R.~Cipolla.
 \newblock \emph{arXiv:1511.00561 [cs]}, Nov. 2015.
 \newblock URL \url{http://arxiv.org/abs/1511.00561}.
 \newblock arXiv: 1511.00561.
+
+\bibitem[Berni et~al.(2009)Berni, Zarco-Tejada, Suarez, and
+  Fereres]{berni_thermal_2009}
+J.~A.~J. Berni, P.~J. Zarco-Tejada, L.~Suarez, and E.~Fereres.
+\newblock Thermal and {Narrowband} {Multispectral} {Remote} {Sensing} for
+  {Vegetation} {Monitoring} {From} an {Unmanned} {Aerial} {Vehicle}.
+\newblock \emph{IEEE Transactions on Geoscience and Remote Sensing},
+  47\penalty0 (3):\penalty0 722--738, Mar. 2009.
+\newblock ISSN 0196-2892.
+\newblock \doi{10.1109/TGRS.2008.2010457}.
 
 \bibitem[Garcia-Garcia et~al.(2017)Garcia-Garcia, Orts-Escolano, Oprea,
   Villena-Martinez, and Garcia-Rodriguez]{garcia-garcia_review_2017}
@@ -86,6 +112,13 @@ K.~He, X.~Zhang, S.~Ren, and J.~Sun.
 \newblock \emph{arXiv:1603.05027 [cs]}, Mar. 2016.
 \newblock URL \url{http://arxiv.org/abs/1603.05027}.
 \newblock arXiv: 1603.05027.
+
+\bibitem[He et~al.(2017)He, Gkioxari, Dollár, and Girshick]{he_mask_2017}
+K.~He, G.~Gkioxari, P.~Dollár, and R.~Girshick.
+\newblock Mask {R}-{CNN}.
+\newblock \emph{arXiv:1703.06870 [cs]}, Mar. 2017.
+\newblock URL \url{http://arxiv.org/abs/1703.06870}.
+\newblock arXiv: 1703.06870.
 
 \bibitem[Holt et~al.(2009)Holt, Seto, Rivard, and Gong]{holt_object-based_2009}
 A.~C. Holt, E.~Y.~W. Seto, T.~Rivard, and P.~Gong.
@@ -165,6 +198,23 @@ M.~Mirza and S.~Osindero.
 \newblock URL \url{http://arxiv.org/abs/1411.1784}.
 \newblock arXiv: 1411.1784.
 
+\bibitem[Moranduzzo and Melgani(2014)]{moranduzzo_automatic_2014}
+T.~Moranduzzo and F.~Melgani.
+\newblock Automatic {Car} {Counting} {Method} for {Unmanned} {Aerial} {Vehicle}
+  {Images}.
+\newblock \emph{IEEE Transactions on Geoscience and Remote Sensing},
+  52\penalty0 (3):\penalty0 1635--1647, Mar. 2014.
+\newblock ISSN 0196-2892.
+\newblock \doi{10.1109/TGRS.2013.2253108}.
+
+\bibitem[Moranduzzo et~al.(2015)Moranduzzo, Mekhalfi, and
+  Melgani]{moranduzzo_lbp-based_2015}
+T.~Moranduzzo, M.~L. Mekhalfi, and F.~Melgani.
+\newblock {LBP}-based multiclass classification method for {UAV} imagery.
+\newblock In \emph{2015 {IEEE} {International} {Geoscience} and {Remote}
+  {Sensing} {Symposium} ({IGARSS})}, pages 2362--2365, July 2015.
+\newblock \doi{10.1109/IGARSS.2015.7326283}.
+
 \bibitem[Pathak et~al.(2016)Pathak, Krahenbuhl, Donahue, Darrell, and
   Efros]{pathak_context_2016}
 D.~Pathak, P.~Krahenbuhl, J.~Donahue, T.~Darrell, and A.~A. Efros.
@@ -180,6 +230,14 @@ P.~O. Pinheiro, T.-Y. Lin, R.~Collobert, and P.~Dollàr.
 \newblock \emph{arXiv:1603.08695 [cs]}, Mar. 2016.
 \newblock URL \url{http://arxiv.org/abs/1603.08695}.
 \newblock arXiv: 1603.08695.
+
+\bibitem[Polzounov et~al.(2016)Polzounov, Terpugova, Skiparis, and
+  Mihai]{polzounov_right_2016}
+A.~Polzounov, I.~Terpugova, D.~Skiparis, and A.~Mihai.
+\newblock Right whale recognition using convolutional neural networks.
+\newblock \emph{arXiv:1604.05605 [cs]}, Apr. 2016.
+\newblock URL \url{http://arxiv.org/abs/1604.05605}.
+\newblock arXiv: 1604.05605.
 
 \bibitem[Rahman and Wang(2016)]{rahman_optimizing_2016}
 M.~A. Rahman and Y.~Wang.
@@ -232,6 +290,22 @@ O.~Ronneberger, P.~Fischer, and T.~Brox.
 \newblock \emph{arXiv:1505.04597 [cs]}, May 2015.
 \newblock URL \url{http://arxiv.org/abs/1505.04597}.
 \newblock arXiv: 1505.04597.
+
+\bibitem[Ruhe et~al.(2003)Ruhe, Dalaff, and Kuhne]{ruhe_traffic_2003}
+M.~H.~O. Ruhe, C.~Dalaff, and R.~D. Kuhne.
+\newblock Traffic monitoring and traffic flow measurement by remote sensing
+  systems.
+\newblock In \emph{Proceedings of the 2003 {IEEE} {International} {Conference}
+  on {Intelligent} {Transportation} {Systems}}, volume~1, pages 760--764 vol.1,
+  Oct. 2003.
+\newblock \doi{10.1109/ITSC.2003.1252053}.
+
+\bibitem[Sakla et~al.(2017)Sakla, Konjevod, and Mundhenk]{sakla_deep_2017}
+W.~Sakla, G.~Konjevod, and T.~N. Mundhenk.
+\newblock Deep {Multi}-modal {Vehicle} {Detection} in {Aerial} {ISR} {Imagery}.
+\newblock In \emph{2017 {IEEE} {Winter} {Conference} on {Applications} of
+  {Computer} {Vision} ({WACV})}, pages 916--923, Mar. 2017.
+\newblock \doi{10.1109/WACV.2017.107}.
 
 \bibitem[Schwing and Urtasun(2015)]{schwing_fully_2015}
 A.~G. Schwing and R.~Urtasun.
@@ -307,6 +381,16 @@ C.~Szegedy, S.~Ioffe, V.~Vanhoucke, and A.~Alemi.
 \newblock \emph{arXiv:1602.07261 [cs]}, Feb. 2016.
 \newblock URL \url{http://arxiv.org/abs/1602.07261}.
 \newblock arXiv: 1602.07261.
+
+\bibitem[Uto et~al.(2013)Uto, Seki, Saito, and
+  Kosugi]{uto_characterization_2013}
+K.~Uto, H.~Seki, G.~Saito, and Y.~Kosugi.
+\newblock Characterization of {Rice} {Paddies} by a {UAV}-{Mounted} {Miniature}
+  {Hyperspectral} {Sensor} {System}.
+\newblock \emph{IEEE Journal of Selected Topics in Applied Earth Observations
+  and Remote Sensing}, 6\penalty0 (2):\penalty0 851--860, Apr. 2013.
+\newblock ISSN 1939-1404.
+\newblock \doi{10.1109/JSTARS.2013.2250921}.
 
 \bibitem[Wu et~al.(2016)Wu, Shen, and Hengel]{wu_wider_2016}
 Z.~Wu, C.~Shen, and A.~v.~d. Hengel.

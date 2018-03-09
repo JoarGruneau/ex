@@ -30,11 +30,13 @@
 \bibliographystyle{abbrvnat}
 
 
-\title{Aerila image analysis with generative adversarial networks}
+\title{Aerial image analysis with generative adversarial networks}
 \author{Joar Gruneau \\ joar@gruneau.se}
 \affil{}
 \begin{document}
 \maketitle
+\newpage
+\tableofcontents
 \newpage
 \section{Abstract}
 \section{Introduction}
@@ -44,16 +46,18 @@ A new popular network for image to image translations are generative adversarial
 \\
 GANs have also been applied to image segmentation and has shown to give an increased performance \cite{luc_semantic_2016, souly_semi_2017}. GANs have proven to be especially successful on small dataset such as medical segmentation where the human annotations usually are costly due to the required medical expertise needed to create correct annotations \cite{souly_semi_2017, xue_segan:_2017-1, yang_automatic_2017-1, rezaei_conditional_2017-1, arbelle_microscopy_2017-1}.\\
 \\
-Analysis of aerial images can be a useful tool to obtain real time data cost effectively [??].To mention a few applications it can be used to monitor traffic flow, construction progress, forest felling, water reserve capacity and to obtain accurate data for new maps. It can also be used to predict market trends since if we continuously can count the number of vehicles outside a marketplace we can more accurately predict how many customers that are visiting the marketplace and therefore make more accurate predictions about the markets earnings.\\
+Analysis of aerial images can be a useful tool to obtain real time data cost effectively. To mention a few applications it can be used for traffic flow monitoring \cite{ruhe_traffic_2003, moranduzzo_automatic_2014} vegetation monitoring \cite{uto_characterization_2013, berni_thermal_2009}, urban area monitoring \cite{moranduzzo_lbp-based_2015}, water reserve capacity monitoring, generate new maps \cite{isola_image--image_2016} and even to detect endangered whales \cite{polzounov_right_2016}. It can also be used to predict market trends since if we continuously can count the number of vehicles outside a marketplace we can more accurately predict how many customers that are visiting the marketplace and therefore make more accurate predictions about the markets earnings.\\
 \\
-However detecting and counting objects in aerial images has proven to be a troublesome area [??]. The objects of interest are usually very small compared to the image and there can be many objects in the same image. This causes naive classification networks to achieve bad performance if the entire image is fed in at once. To combat this some form of segmentation is usually done and the image is fed into the network in patches. Earlier methods fed explicit image patches through the CNN \cite{holt_object-based_2009}. This achieved good performance but at a great computational cost since redundant computation of low-level filters for overlapping patches had to be performed \cite{luc_semantic_2016}. To combat this different forms of segmentation algorithms were used such as the mean-shift-algorithm which drastically decreased the number of patches which had to be fed through the network \cite{ammour_deep_2017}.
-The next stet is instant segmentation of images where every pixel i CNN aerial images \cite{audebert_segment-before-detect:_2017, holt_object-based_2009, zhong_robust_2017}
+Much research has been performed investigating object detection an more specifically vehicle detection in aerial imagery \citep{ammour_deep_2017, holt_object-based_2009, audebert_segment-before-detect:_2017, razakarivony_vehicle_2015, zhong_robust_2017, audebert_usability_2016, sakla_deep_2017}. However object detection in aerial images has proven to be a troublesome area. The objects of interest are usually very small compared to the image and there can be multiple objects within image. This causes naive classification networks to achieve bad performance if the entire image is fed in at once \cite{ammour_deep_2017}. To combat this some form of segmentation is usually done and the image is fed into the network in patches. Earlier methods fed explicit image patches through the CNN using sliding window techniques\cite{holt_object-based_2009}. This achieved good performance but at a great computational cost since redundant computation of low-level filters for overlapping patches had to be performed \cite{luc_semantic_2016}. To combat this different forms of segmentation algorithms were used such as the mean-shift-algorithm which drastically decreased the number of patches which had to be fed through the network \cite{ammour_deep_2017}. There have been work of two stage pipelines where a CNN segmentor first segments the image and the segmentation patchet are then fed into a object classification network which classifies the patches and predict bounding boxes \cite{audebert_segment-before-detect:_2017}. \\
+\\
+A more advanced approach of such networks is the two stage fast region-based convolutional network (fast R-CNN) \cite{ren_faster_2015, girshick_fast_2015} or mask region-based convolutional network (mask R-NN) \cite{he_mask_2017} which computes the bounding boxes predictions using a second stage region proposal network (RPN) on internal convolutional feature maps. These networks decreases the computational cost compared to previous networks.  However these networks can only predict some predefined ratio of bounding boxes and the two stage network adds complexity both at training and test time.\\
+\\
+In this work we propose a generative adversarial segmentation network. The aim is to learn a better loss function for the segmentor so that vehicles can be detected by only performing connected component extraction on the segmentation maps. Since the adversarial part of the network only is used while training and connected component extraction is very computational efficient this guarantees computational efficient pipeline to detect and segment vehicles in aerial images compared to fast R-NN and mask R-NN which uses a two stage approach.
 \section{Relevant Theory}
 \subsection{Generative adversarial networks}
 Goodfellow \textit{et al} \cite{goodfellow_nips_2016} first proposed the generative adversarial network (GAN). The network consists of two parts, a generator and a discriminator. The generators task is to generate samples from some data distribution. The discriminators task is to differentiate these generated samples from the true samples. This results in a counter fitting game where the generator continuously tries to produce better generated data to fool the discriminator and the discriminator is forced to become better at differentiating these generated samples from the true samples.\\
 \\
 A common solution to try to force the generator to generate samples from the entire distribution is to input a noise vector into the generator \cite{reed_generative_2016}. Since we in this work are only interested in segmentation where a deterministic mapping from the image to the segmentation map is desired we will not input any  noise vector into the generator.
-
 \subsubsection{Unconditional generative adversarial networks}
 Unconditional GANs are the simplest form of GANs. Here the discriminator does not observe the input to the generator. This means that the discriminator will learn a loss function which does not depend on the generators input \cite{isola_image--image_2016}. We first define the binary cross entropy loss.
 \begin{equation}\label{eq:bce}
@@ -127,31 +131,8 @@ Here $y$ is the true probability for the foreground class  $\hat{y}$ the predict
 \begin{equation}
 \Lagr_{IoU}= 1 - \frac{ \Sigma y \otimes \hat{y} }{ \Sigma y + \Sigma \hat{y} - \Sigma y \otimes \hat{y}}
 \end{equation}
-\section{Related work}
-In most cases the segmentation networks needs some post processing to improve the accuracy of the segmentation maps. Conditional random markov fields CRF have been very successfully to enforce spatial contiguity in the output maps \cite{arnab_higher_2015, luc_semantic_2016}. There have been wor that used mean field inference expressed as a recurrent convolutional networks to do CRF like post processing \cite{schwing_fully_2015, zheng_conditional_2015}. Luc \textit{et al} \cite{luc_semantic_2016} proposed a adveserial segmentation network to enforce higher order potentials without being limited to a single class. Instead on directly enforcing these higher order potentials in a CRF model as post processing the goal was to enforce them in the generator directly with adversarial training. This technique also has the benefit of lower complexity since at test time only the generator will be used.\\
-\\
-The generators task was to produce segmentation maps for the C classes. One initial concern was that the discriminator would trivially be able to differentiate the generated segmentation maps from the ground truth by only examining if they were continuous or discrete. To combat this a scaling method was proposed where the ground truth segmentation maps were processed so that a mass of $\tau$ where placed on the correct label but were otherwise made as similar as possible to the generated maps (in regard to KL divergence). The scaling method showed no improvement over the basic method with no pre processing.\\
-\\
-Son and Jung \textit{et al} \cite{son_retinal_2017} showed that a U-NET combined with an adversarial loss could achieve state of the art performance for retinal vessel segmentation in fundoscopic images. The team investigated several types on adversarial networks proposed in \cite{isola_image--image_2016} such as image-GAN, patch-GAN and pixel-GAN. For Image-GAN the discriminator make a decision on a image level if the image is generated or not. For patch-GAN the images are split into patches and the discriminator analyses each individually. The result is the aggregated result from all patches. For pixel-GAN the discriminator makes it decision on pixel per pixel level. The team found that a image-GAN togheter with a cross entropy term preformed the best and outperformed the non adversarial segmentor trained only with the cross entropy loss by a significant margin.\\
-\\
-\section{Network Architecture}
-For the generator network a U-NET will be used. The objective function for the GAN will be.  Using the definition of the binary cross entropy loss \eqref{eq:bce} and the multi class cross entropy loss \eqref{eq:mce} we can now define our loss function as.
-\begin{equation}
-\Lagr(G, D) = \ell_{mce}(G(x),y)-\lambda(\ell_{bce}(D(x,y), 1)+\ell_{bce}(D(x,G(x)), 0))
-\end{equation}
-The generator will try to minimize this loss while the descriminator will try to maximize it. Following the example of \cite{goodfellow_generative_2014, luc_semantic_2016} and replace the term $-\lambda\ell_{bce}(D(G(x),y), 0)$ with  $+\lambda\ell_{bce}(D(G(x),y), 1)$. Hence instead of minimizing the probability of the descriminative network to predict the generated map to be synthetic we maximize the probability of predicting the generated map as ground truth. The reason for this is that it leads a stronger gradient for the discriminator when making predictions on ground truth and generated maps. The binary cross entropy loss then becomes,
-\begin{equation}
-\Lagr_{bce}(G, D) =\lambda(\ell_{bce}(D(x,G(x)), 1)-\ell_{bce}(D(x,y), 1))
-\end{equation}
-The objective for the network hence becomes.
-\begin{equation}
-G^{*}=argmin_{G}[max_{D}[\Lagr_{bce}(G, D)] + \ell_{mce}(G(x),y)]
-\end{equation}
-\\
-\\
-The generated segmentation maps will be concatinated with the image the basic manner since \cite{luc_semantic_2016} did not gain any improvements with a product or scaling approach above the basic. Pinheiro \textit{et al} \cite{pinheiro_learning_2016} showed that it is preferable to have the same number of channels for each input to avoid that one input becomes dominating. Therefore the individual kernels will be applied to the image before concatenating them with the semantic maps. This also allows for a different low level representation of the image.
-\section{The dataset}
-\subsection{The VEDAI dataset}
+\subsection{The datasets}
+\subsubsection{The VEDAI dataset}
 The VEDAI dataset \cite{razakarivony_vehicle_2015} consists of 9 different classes, these classes and the number of objects are given in the table below.\begin{center}
 \begin{tabular}{|c|c|}
 \hline
@@ -179,7 +160,30 @@ Recall=\frac{True\textit{ }positive}{True\textit{ }Positive+False\textit{ }negat
 \begin{equation}\label{eq:f1}
 F1\textit{ }score=\frac{2*Recall*Precision}{Recall+Precision}
 \end{equation}
-\section{Related Work}
+
+\section{Related work}
+In most cases the segmentation networks needs some post processing to improve the accuracy of the segmentation maps. Conditional random markov fields CRF have been very successfully to enforce spatial contiguity in the output maps \cite{arnab_higher_2015, luc_semantic_2016}. There have been work that used mean field inference expressed as a recurrent convolutional networks to do CRF like post processing \cite{schwing_fully_2015, zheng_conditional_2015}. Luc \textit{et al} \cite{luc_semantic_2016} proposed a adveserial segmentation network to enforce higher order potentials without being limited to a single class. Instead on directly enforcing these higher order potentials in a CRF model as post processing the goal was to enforce them in the generator directly with adversarial training. This technique also has the benefit of lower complexity since at test time only the generator will be used.\\
+\\
+The generators task was to produce segmentation maps for the C classes. One initial concern was that the discriminator would trivially be able to differentiate the generated segmentation maps from the ground truth by only examining if they were continuous or discrete. To combat this a scaling method was proposed where the ground truth segmentation maps were processed so that a mass of $\tau$ where placed on the correct label but were otherwise made as similar as possible to the generated maps (in regard to KL divergence). The scaling method showed no improvement over the basic method with no pre processing.\\
+\\
+Son and Jung \textit{et al} \cite{son_retinal_2017} showed that a U-NET combined with an adversarial loss could achieve state of the art performance for retinal vessel segmentation in fundoscopic images. The team investigated several types on adversarial networks proposed in \cite{isola_image--image_2016} such as image-GAN, patch-GAN and pixel-GAN. For Image-GAN the discriminator make a decision on a image level if the image is generated or not. For patch-GAN the images are split into patches and the discriminator analyses each individually. The result is the aggregated result from all patches. For pixel-GAN the discriminator makes it decision on pixel per pixel level. The team found that a image-GAN togheter with a cross entropy term preformed the best and outperformed the non adversarial segmentor trained only with the cross entropy loss by a significant margin.\\
+\\
+\section{Network Architecture}
+For the generator network a U-NET will be used. The objective function for the GAN will be.  Using the definition of the binary cross entropy loss \eqref{eq:bce} and the multi class cross entropy loss \eqref{eq:mce} we can now define our loss function as.
+\begin{equation}
+\Lagr(G, D) = \ell_{mce}(G(x),y)-\lambda(\ell_{bce}(D(x,y), 1)+\ell_{bce}(D(x,G(x)), 0))
+\end{equation}
+The generator will try to minimize this loss while the descriminator will try to maximize it. Following the example of \cite{goodfellow_generative_2014, luc_semantic_2016} and replace the term $-\lambda\ell_{bce}(D(G(x),y), 0)$ with  $+\lambda\ell_{bce}(D(G(x),y), 1)$. Hence instead of minimizing the probability of the descriminative network to predict the generated map to be synthetic we maximize the probability of predicting the generated map as ground truth. The reason for this is that it leads a stronger gradient for the discriminator when making predictions on ground truth and generated maps. The binary cross entropy loss then becomes,
+\begin{equation}
+\Lagr_{bce}(G, D) =\lambda(\ell_{bce}(D(x,G(x)), 1)-\ell_{bce}(D(x,y), 1))
+\end{equation}
+The objective for the network hence becomes.
+\begin{equation}
+G^{*}=argmin_{G}[max_{D}[\Lagr_{bce}(G, D)] + \ell_{mce}(G(x),y)]
+\end{equation}
+\\
+\\
+The generated segmentation maps will be concatinated with the image the basic manner since \cite{luc_semantic_2016} did not gain any improvements with a product or scaling approach above the basic. Pinheiro \textit{et al} \cite{pinheiro_learning_2016} showed that it is preferable to have the same number of channels for each input to avoid that one input becomes dominating. Therefore the individual kernels will be applied to the image before concatenating them with the semantic maps. This also allows for a different low level representation of the image.
 
 \bibliographystyle{ieeetr}
 \bibliography{ex}

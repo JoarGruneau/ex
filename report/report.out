@@ -7,8 +7,7 @@
 \BOOKMARK [2][-]{subsection.3.2}{Segmentor\040networks}{section.3}% 7
 \BOOKMARK [2][-]{subsection.3.3}{Classification\040networks}{section.3}% 8
 \BOOKMARK [2][-]{subsection.3.4}{Dealing\040with\040severely\040imbalanced\040datasets}{section.3}% 9
-\BOOKMARK [1][-]{section.4}{Related\040work}{}% 10
-\BOOKMARK [1][-]{section.5}{Network\040Architecture}{}% 11
-\BOOKMARK [1][-]{section.6}{The\040dataset}{}% 12
-\BOOKMARK [2][-]{subsection.6.1}{The\040VEDAI\040dataset}{section.6}% 13
-\BOOKMARK [1][-]{section.7}{Related\040Work}{}% 14
+\BOOKMARK [2][-]{subsection.3.5}{The\040datasets}{section.3}% 10
+\BOOKMARK [3][-]{subsubsection.3.5.1}{The\040VEDAI\040dataset}{subsection.3.5}% 11
+\BOOKMARK [1][-]{section.4}{Related\040work}{}% 12
+\BOOKMARK [1][-]{section.5}{Network\040Architecture}{}% 13
