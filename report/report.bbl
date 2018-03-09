@@ -1,9 +1,17 @@
-\begin{thebibliography}{18}
+\begin{thebibliography}{47}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Arbelle and Raviv(2017)]{arbelle_microscopy_2017-1}
+A.~Arbelle and T.~R. Raviv.
+\newblock Microscopy {Cell} {Segmentation} via {Adversarial} {Neural}
+  {Networks}.
+\newblock \emph{arXiv:1709.05860 [cs]}, Sept. 2017.
+\newblock URL \url{http://arxiv.org/abs/1709.05860}.
+\newblock arXiv: 1709.05860.
 
 \bibitem[Arnab et~al.(2015)Arnab, Jayasumana, Zheng, and
   Torr]{arnab_higher_2015}
@@ -13,6 +21,41 @@ A.~Arnab, S.~Jayasumana, S.~Zheng, and P.~Torr.
 \newblock \emph{arXiv:1511.08119 [cs]}, Nov. 2015.
 \newblock URL \url{http://arxiv.org/abs/1511.08119}.
 \newblock arXiv: 1511.08119.
+
+\bibitem[Audebert et~al.(2017)Audebert, Le~Saux, and
+  Lefèvre]{audebert_segment-before-detect:_2017}
+N.~Audebert, B.~Le~Saux, and S.~Lefèvre.
+\newblock Segment-before-{Detect}: {Vehicle} {Detection} and {Classification}
+  through {Semantic} {Segmentation} of {Aerial} {Images}.
+\newblock \emph{Remote Sensing}, 9\penalty0 (4):\penalty0 368, Apr. 2017.
+\newblock \doi{10.3390/rs9040368}.
+\newblock URL \url{http://www.mdpi.com/2072-4292/9/4/368}.
+
+\bibitem[Badrinarayanan et~al.(2015)Badrinarayanan, Kendall, and
+  Cipolla]{badrinarayanan_segnet:_2015}
+V.~Badrinarayanan, A.~Kendall, and R.~Cipolla.
+\newblock {SegNet}: {A} {Deep} {Convolutional} {Encoder}-{Decoder}
+  {Architecture} for {Image} {Segmentation}.
+\newblock \emph{arXiv:1511.00561 [cs]}, Nov. 2015.
+\newblock URL \url{http://arxiv.org/abs/1511.00561}.
+\newblock arXiv: 1511.00561.
+
+\bibitem[Garcia-Garcia et~al.(2017)Garcia-Garcia, Orts-Escolano, Oprea,
+  Villena-Martinez, and Garcia-Rodriguez]{garcia-garcia_review_2017}
+A.~Garcia-Garcia, S.~Orts-Escolano, S.~Oprea, V.~Villena-Martinez, and
+  J.~Garcia-Rodriguez.
+\newblock A {Review} on {Deep} {Learning} {Techniques} {Applied} to {Semantic}
+  {Segmentation}.
+\newblock \emph{arXiv:1704.06857 [cs]}, Apr. 2017.
+\newblock URL \url{http://arxiv.org/abs/1704.06857}.
+\newblock arXiv: 1704.06857.
+
+\bibitem[Girshick(2015)]{girshick_fast_2015}
+R.~Girshick.
+\newblock Fast {R}-{CNN}.
+\newblock \emph{arXiv:1504.08083 [cs]}, Apr. 2015.
+\newblock URL \url{http://arxiv.org/abs/1504.08083}.
+\newblock arXiv: 1504.08083.
 
 \bibitem[Goodfellow(2016)]{goodfellow_nips_2016}
 I.~Goodfellow.
@@ -30,6 +73,30 @@ I.~J. Goodfellow, J.~Pouget-Abadie, M.~Mirza, B.~Xu, D.~Warde-Farley, S.~Ozair,
 \newblock URL \url{http://arxiv.org/abs/1406.2661}.
 \newblock arXiv: 1406.2661.
 
+\bibitem[He et~al.(2015)He, Zhang, Ren, and Sun]{he_deep_2015}
+K.~He, X.~Zhang, S.~Ren, and J.~Sun.
+\newblock Deep {Residual} {Learning} for {Image} {Recognition}.
+\newblock \emph{arXiv:1512.03385 [cs]}, Dec. 2015.
+\newblock URL \url{http://arxiv.org/abs/1512.03385}.
+\newblock arXiv: 1512.03385.
+
+\bibitem[He et~al.(2016)He, Zhang, Ren, and Sun]{he_identity_2016}
+K.~He, X.~Zhang, S.~Ren, and J.~Sun.
+\newblock Identity {Mappings} in {Deep} {Residual} {Networks}.
+\newblock \emph{arXiv:1603.05027 [cs]}, Mar. 2016.
+\newblock URL \url{http://arxiv.org/abs/1603.05027}.
+\newblock arXiv: 1603.05027.
+
+\bibitem[Holt et~al.(2009)Holt, Seto, Rivard, and Gong]{holt_object-based_2009}
+A.~C. Holt, E.~Y.~W. Seto, T.~Rivard, and P.~Gong.
+\newblock Object-based detection and classification of {Vehicles} from
+  high-resolution aerial photography.
+\newblock \emph{Photogrammetric Engineering and Remote Sensing}, 75\penalty0
+  (7):\penalty0 871--880, July 2009.
+\newblock ISSN 0099-1112.
+\newblock URL
+  \url{https://iths.pure.elsevier.com/en/publications/object-based-detection-and-classification-of-vehicles-from-high-r}.
+
 \bibitem[Isola et~al.(2016)Isola, Zhu, Zhou, and
   Efros]{isola_image--image_2016}
 P.~Isola, J.-Y. Zhu, T.~Zhou, and A.~A. Efros.
@@ -38,6 +105,50 @@ P.~Isola, J.-Y. Zhu, T.~Zhou, and A.~A. Efros.
 \newblock \emph{arXiv:1611.07004 [cs]}, Nov. 2016.
 \newblock URL \url{http://arxiv.org/abs/1611.07004}.
 \newblock arXiv: 1611.07004.
+
+\bibitem[Krizhevsky(2009)]{krizhevsky_learning_2009}
+A.~Krizhevsky.
+\newblock Learning multiple layers of features from tiny images.
+\newblock Technical report, 2009.
+
+\bibitem[Krizhevsky et~al.(2012)Krizhevsky, Sutskever, and
+  Hinton]{krizhevsky_imagenet_2012}
+A.~Krizhevsky, I.~Sutskever, and G.~E. Hinton.
+\newblock {ImageNet} {Classification} with {Deep} {Convolutional} {Neural}
+  {Networks}.
+\newblock In F.~Pereira, C.~J.~C. Burges, L.~Bottou, and K.~Q. Weinberger,
+  editors, \emph{Advances in {Neural} {Information} {Processing} {Systems} 25},
+  pages 1097--1105. Curran Associates, Inc., 2012.
+\newblock URL
+  \url{http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf}.
+
+\bibitem[Ledig et~al.(2016)Ledig, Theis, Huszar, Caballero, Cunningham, Acosta,
+  Aitken, Tejani, Totz, Wang, and Shi]{ledig_photo-realistic_2016}
+C.~Ledig, L.~Theis, F.~Huszar, J.~Caballero, A.~Cunningham, A.~Acosta,
+  A.~Aitken, A.~Tejani, J.~Totz, Z.~Wang, and W.~Shi.
+\newblock Photo-{Realistic} {Single} {Image} {Super}-{Resolution} {Using} a
+  {Generative} {Adversarial} {Network}.
+\newblock \emph{arXiv:1609.04802 [cs, stat]}, Sept. 2016.
+\newblock URL \url{http://arxiv.org/abs/1609.04802}.
+\newblock arXiv: 1609.04802.
+
+\bibitem[Li et~al.(2017)Li, Liu, Yang, Sun, Hu, Zhang, and
+  Li]{li_deepunet:_2017}
+R.~Li, W.~Liu, L.~Yang, S.~Sun, W.~Hu, F.~Zhang, and W.~Li.
+\newblock {DeepUNet}: {A} {Deep} {Fully} {Convolutional} {Network} for
+  {Pixel}-level {Sea}-{Land} {Segmentation}.
+\newblock \emph{arXiv:1709.00201 [cs]}, Sept. 2017.
+\newblock URL \url{http://arxiv.org/abs/1709.00201}.
+\newblock arXiv: 1709.00201.
+
+\bibitem[Lin et~al.(2014)Lin, Maire, Belongie, Bourdev, Girshick, Hays, Perona,
+  Ramanan, Zitnick, and Dollár]{lin_microsoft_2014}
+T.-Y. Lin, M.~Maire, S.~Belongie, L.~Bourdev, R.~Girshick, J.~Hays, P.~Perona,
+  D.~Ramanan, C.~L. Zitnick, and P.~Dollár.
+\newblock Microsoft {COCO}: {Common} {Objects} in {Context}.
+\newblock \emph{arXiv:1405.0312 [cs]}, May 2014.
+\newblock URL \url{http://arxiv.org/abs/1405.0312}.
+\newblock arXiv: 1405.0312.
 
 \bibitem[Luc et~al.(2016)Luc, Couprie, Chintala, and
   Verbeek]{luc_semantic_2016}
@@ -70,6 +181,16 @@ P.~O. Pinheiro, T.-Y. Lin, R.~Collobert, and P.~Dollàr.
 \newblock URL \url{http://arxiv.org/abs/1603.08695}.
 \newblock arXiv: 1603.08695.
 
+\bibitem[Rahman and Wang(2016)]{rahman_optimizing_2016}
+M.~A. Rahman and Y.~Wang.
+\newblock Optimizing {Intersection}-{Over}-{Union} in {Deep} {Neural}
+  {Networks} for {Image} {Segmentation}.
+\newblock In G.~Bebis, R.~Boyle, B.~Parvin, D.~Koracin, F.~Porikli, S.~Skaff,
+  A.~Entezari, J.~Min, D.~Iwai, A.~Sadagic, C.~Scheidegger, and T.~Isenberg,
+  editors, \emph{Advances in {Visual} {Computing}}, pages 234--244, Cham, 2016.
+  Springer International Publishing.
+\newblock ISBN 978-3-319-50835-1.
+
 \bibitem[Razakarivony and Jurie(2015)]{razakarivony_vehicle_2015}
 S.~Razakarivony and F.~Jurie.
 \newblock Vehicle {Detection} in {Aerial} {Imagery} : {A} small target
@@ -84,6 +205,24 @@ S.~Reed, Z.~Akata, X.~Yan, L.~Logeswaran, B.~Schiele, and H.~Lee.
 \newblock Generative {Adversarial} {Text} to {Image} {Synthesis}.
 \newblock May 2016.
 \newblock URL \url{https://arxiv.org/abs/1605.05396}.
+
+\bibitem[Ren et~al.(2015)Ren, He, Girshick, and Sun]{ren_faster_2015}
+S.~Ren, K.~He, R.~Girshick, and J.~Sun.
+\newblock Faster {R}-{CNN}: {Towards} {Real}-{Time} {Object} {Detection} with
+  {Region} {Proposal} {Networks}.
+\newblock \emph{arXiv:1506.01497 [cs]}, June 2015.
+\newblock URL \url{http://arxiv.org/abs/1506.01497}.
+\newblock arXiv: 1506.01497.
+
+\bibitem[Rezaei et~al.(2017)Rezaei, Harmuth, Gierke, Kellermeier, Fischer,
+  Yang, and Meinel]{rezaei_conditional_2017-1}
+M.~Rezaei, K.~Harmuth, W.~Gierke, T.~Kellermeier, M.~Fischer, H.~Yang, and
+  C.~Meinel.
+\newblock Conditional {Adversarial} {Network} for {Semantic} {Segmentation} of
+  {Brain} {Tumor}.
+\newblock \emph{arXiv:1708.05227 [cs]}, Aug. 2017.
+\newblock URL \url{http://arxiv.org/abs/1708.05227}.
+\newblock arXiv: 1708.05227.
 
 \bibitem[Ronneberger et~al.(2015)Ronneberger, Fischer, and
   Brox]{ronneberger_u-net:_2015}
@@ -101,6 +240,15 @@ A.~G. Schwing and R.~Urtasun.
 \newblock URL \url{http://arxiv.org/abs/1503.02351}.
 \newblock arXiv: 1503.02351.
 
+\bibitem[Sermanet et~al.(2013)Sermanet, Eigen, Zhang, Mathieu, Fergus, and
+  LeCun]{sermanet_overfeat:_2013}
+P.~Sermanet, D.~Eigen, X.~Zhang, M.~Mathieu, R.~Fergus, and Y.~LeCun.
+\newblock {OverFeat}: {Integrated} {Recognition}, {Localization} and
+  {Detection} using {Convolutional} {Networks}.
+\newblock \emph{arXiv:1312.6229 [cs]}, Dec. 2013.
+\newblock URL \url{http://arxiv.org/abs/1312.6229}.
+\newblock arXiv: 1312.6229.
+
 \bibitem[Shelhamer et~al.(2016)Shelhamer, Long, and
   Darrell]{shelhamer_fully_2016}
 E.~Shelhamer, J.~Long, and T.~Darrell.
@@ -108,6 +256,22 @@ E.~Shelhamer, J.~Long, and T.~Darrell.
 \newblock \emph{arXiv:1605.06211 [cs]}, May 2016.
 \newblock URL \url{http://arxiv.org/abs/1605.06211}.
 \newblock arXiv: 1605.06211.
+
+\bibitem[Simonyan and Zisserman(2014{\natexlab{a}})]{simonyan_two-stream_2014}
+K.~Simonyan and A.~Zisserman.
+\newblock Two-{Stream} {Convolutional} {Networks} for {Action} {Recognition} in
+  {Videos}.
+\newblock \emph{arXiv:1406.2199 [cs]}, June 2014{\natexlab{a}}.
+\newblock URL \url{http://arxiv.org/abs/1406.2199}.
+\newblock arXiv: 1406.2199.
+
+\bibitem[Simonyan and Zisserman(2014{\natexlab{b}})]{simonyan_very_2014}
+K.~Simonyan and A.~Zisserman.
+\newblock Very {Deep} {Convolutional} {Networks} for {Large}-{Scale} {Image}
+  {Recognition}.
+\newblock \emph{arXiv:1409.1556 [cs]}, Sept. 2014{\natexlab{b}}.
+\newblock URL \url{http://arxiv.org/abs/1409.1556}.
+\newblock arXiv: 1409.1556.
 
 \bibitem[Son et~al.(2017)Son, Park, and Jung]{son_retinal_2017}
 J.~Son, S.~J. Park, and K.-H. Jung.
@@ -117,23 +281,109 @@ J.~Son, S.~J. Park, and K.-H. Jung.
 \newblock URL \url{http://arxiv.org/abs/1706.09318}.
 \newblock arXiv: 1706.09318.
 
-\bibitem[Xue et~al.(2017)Xue, Xu, Zhang, Long, and Huang]{xue_segan:_2017}
+\bibitem[Souly et~al.(2017)Souly, Spampinato, and Shah]{souly_semi_2017}
+N.~Souly, C.~Spampinato, and M.~Shah.
+\newblock Semi and {Weakly} {Supervised} {Semantic} {Segmentation} {Using}
+  {Generative} {Adversarial} {Network}.
+\newblock \emph{arXiv:1703.09695 [cs]}, Mar. 2017.
+\newblock URL \url{http://arxiv.org/abs/1703.09695}.
+\newblock arXiv: 1703.09695.
+
+\bibitem[Sudre et~al.(2017)Sudre, Li, Vercauteren, Ourselin, and
+  Cardoso]{sudre_generalised_2017}
+C.~H. Sudre, W.~Li, T.~Vercauteren, S.~Ourselin, and M.~J. Cardoso.
+\newblock Generalised {Dice} overlap as a deep learning loss function for
+  highly unbalanced segmentations.
+\newblock \emph{arXiv:1707.03237 [cs]}, 10553:\penalty0 240--248, 2017.
+\newblock \doi{10.1007/978-3-319-67558-9_28}.
+\newblock URL \url{http://arxiv.org/abs/1707.03237}.
+\newblock arXiv: 1707.03237.
+
+\bibitem[Szegedy et~al.(2016)Szegedy, Ioffe, Vanhoucke, and
+  Alemi]{szegedy_inception-v4_2016}
+C.~Szegedy, S.~Ioffe, V.~Vanhoucke, and A.~Alemi.
+\newblock Inception-v4, {Inception}-{ResNet} and the {Impact} of {Residual}
+  {Connections} on {Learning}.
+\newblock \emph{arXiv:1602.07261 [cs]}, Feb. 2016.
+\newblock URL \url{http://arxiv.org/abs/1602.07261}.
+\newblock arXiv: 1602.07261.
+
+\bibitem[Wu et~al.(2016)Wu, Shen, and Hengel]{wu_wider_2016}
+Z.~Wu, C.~Shen, and A.~v.~d. Hengel.
+\newblock Wider or {Deeper}: {Revisiting} the {ResNet} {Model} for {Visual}
+  {Recognition}.
+\newblock \emph{arXiv:1611.10080 [cs]}, Nov. 2016.
+\newblock URL \url{http://arxiv.org/abs/1611.10080}.
+\newblock arXiv: 1611.10080.
+
+\bibitem[Xue et~al.(2017{\natexlab{a}})Xue, Xu, Zhang, Long, and
+  Huang]{xue_segan:_2017}
 Y.~Xue, T.~Xu, H.~Zhang, R.~Long, and X.~Huang.
 \newblock {SegAN}: {Adversarial} {Network} with {Multi}-scale \${L}\_1\$ {Loss}
   for {Medical} {Image} {Segmentation}.
-\newblock \emph{arXiv:1706.01805 [cs]}, June 2017.
+\newblock \emph{arXiv:1706.01805 [cs]}, June 2017{\natexlab{a}}.
 \newblock URL \url{http://arxiv.org/abs/1706.01805}.
 \newblock arXiv: 1706.01805.
 
-\bibitem[Yang et~al.(2017)Yang, Xu, Zhou, Georgescu, Chen, Grbic, Metaxas, and
-  Comaniciu]{yang_automatic_2017}
+\bibitem[Xue et~al.(2017{\natexlab{b}})Xue, Xu, Zhang, Long, and
+  Huang]{xue_segan:_2017-1}
+Y.~Xue, T.~Xu, H.~Zhang, R.~Long, and X.~Huang.
+\newblock {SegAN}: {Adversarial} {Network} with {Multi}-scale \${L}\_1\$ {Loss}
+  for {Medical} {Image} {Segmentation}.
+\newblock \emph{arXiv:1706.01805 [cs]}, June 2017{\natexlab{b}}.
+\newblock URL \url{http://arxiv.org/abs/1706.01805}.
+\newblock arXiv: 1706.01805.
+
+\bibitem[Yang et~al.(2017{\natexlab{a}})Yang, Xu, Zhou, Georgescu, Chen, Grbic,
+  Metaxas, and Comaniciu]{yang_automatic_2017}
 D.~Yang, D.~Xu, S.~K. Zhou, B.~Georgescu, M.~Chen, S.~Grbic, D.~Metaxas, and
   D.~Comaniciu.
 \newblock Automatic {Liver} {Segmentation} {Using} an {Adversarial}
   {Image}-to-{Image} {Network}.
-\newblock \emph{arXiv:1707.08037 [cs]}, July 2017.
+\newblock \emph{arXiv:1707.08037 [cs]}, July 2017{\natexlab{a}}.
 \newblock URL \url{http://arxiv.org/abs/1707.08037}.
 \newblock arXiv: 1707.08037.
+
+\bibitem[Yang et~al.(2017{\natexlab{b}})Yang, Xu, Zhou, Georgescu, Chen, Grbic,
+  Metaxas, and Comaniciu]{yang_automatic_2017-1}
+D.~Yang, D.~Xu, S.~K. Zhou, B.~Georgescu, M.~Chen, S.~Grbic, D.~Metaxas, and
+  D.~Comaniciu.
+\newblock Automatic {Liver} {Segmentation} {Using} an {Adversarial}
+  {Image}-to-{Image} {Network}.
+\newblock \emph{arXiv:1707.08037 [cs]}, July 2017{\natexlab{b}}.
+\newblock URL \url{http://arxiv.org/abs/1707.08037}.
+\newblock arXiv: 1707.08037.
+
+\bibitem[Yu et~al.(2016)Yu, Jiang, Wang, Cao, and Huang]{yu_unitbox:_2016}
+J.~Yu, Y.~Jiang, Z.~Wang, Z.~Cao, and T.~Huang.
+\newblock {UnitBox}: {An} {Advanced} {Object} {Detection} {Network}.
+\newblock \emph{arXiv:1608.01471 [cs]}, pages 516--520, 2016.
+\newblock \doi{10.1145/2964284.2967274}.
+\newblock URL \url{http://arxiv.org/abs/1608.01471}.
+\newblock arXiv: 1608.01471.
+
+\bibitem[Zagoruyko and Komodakis(2016)]{zagoruyko_wide_2016}
+S.~Zagoruyko and N.~Komodakis.
+\newblock Wide {Residual} {Networks}.
+\newblock \emph{arXiv:1605.07146 [cs]}, May 2016.
+\newblock URL \url{http://arxiv.org/abs/1605.07146}.
+\newblock arXiv: 1605.07146.
+
+\bibitem[Zeiler and Fergus(2013)]{zeiler_visualizing_2013}
+M.~D. Zeiler and R.~Fergus.
+\newblock Visualizing and {Understanding} {Convolutional} {Networks}.
+\newblock \emph{arXiv:1311.2901 [cs]}, Nov. 2013.
+\newblock URL \url{http://arxiv.org/abs/1311.2901}.
+\newblock arXiv: 1311.2901.
+
+\bibitem[Zhao et~al.(2007)Zhao, Zhang, Li, and Huang]{zhao_classification_2007}
+Y.~Zhao, L.~Zhang, P.~Li, and B.~Huang.
+\newblock Classification of {High} {Spatial} {Resolution} {Imagery} {Using}
+  {Improved} {Gaussian} {Markov} {Random}-{Field}-{Based} {Texture} {Features}.
+\newblock \emph{IEEE Transactions on Geoscience and Remote Sensing},
+  45\penalty0 (5):\penalty0 1458--1468, May 2007.
+\newblock ISSN 0196-2892.
+\newblock \doi{10.1109/TGRS.2007.892602}.
 
 \bibitem[Zheng et~al.(2015)Zheng, Jayasumana, Romera-Paredes, Vineet, Su, Du,
   Huang, and Torr]{zheng_conditional_2015}

@@ -36,7 +36,18 @@
 \begin{document}
 \maketitle
 \newpage
+\section{Abstract}
 \section{Introduction}
+Convolutionla neural networks (CNN) have had great success for computer vision tasks \cite{sermanet_overfeat:_2013, zeiler_visualizing_2013, simonyan_two-stream_2014, krizhevsky_imagenet_2012}. The success is possible thanks to graphical processing units (GPUs) and large scale human annotated datasets which  the networks can learn from. CNN have progressed from single object detection in images \cite{krizhevsky_learning_2009} to multiple object detection and bounding box prediction \cite{lin_microsoft_2014}. CNN networks have also had great success in different segmentation task \cite{garcia-garcia_review_2017}. There is a similar trend in segmentation where we are moving from the easier task of semantic segmentation to the more complex task of instance segmentation. In semantic segmentation every pixel is mapped to a class and in instance segmentation the different instances of objects are separated detected for each class. Much work has gone into constructing well suited loss functions for segmentation \cite{ronneberger_u-net:_2015, yu_unitbox:_2016, rahman_optimizing_2016}. Often the loss function fails to enforce important properties such as spatial contiguity in the segmentation maps \cite{luc_semantic_2016} or proper spatial seperation \cite{audebert_segment-before-detect:_2017}. Conditional markov random fields (CRFs) have been a popular post processing step to ensure spatial contiguity in segmentation maps \cite{zhao_classification_2007}.\\
+\\
+A new popular network for image to image translations are generative adversarial networks. The network consists of a generator network which performs the image translation and a discriminative network which aims to learn the loss function to differentiate the generated samples from the ground truth ones \cite{goodfellow_nips_2016}. These type of networks have had great success on image to image translation tasks and are able to produce much more artistically pleasing mappings then networks without the adversarial loss \cite{ledig_photo-realistic_2016, isola_image--image_2016}. The success comes from the general approach where the network can learn it's own loss function which has proven beneficial for many tasks where a effective loss function is hard to express simply.\\
+\\
+GANs have also been applied to image segmentation and has shown to give an increased performance \cite{luc_semantic_2016, souly_semi_2017}. GANs have proven to be especially successful on small dataset such as medical segmentation where the human annotations usually are costly due to the required medical expertise needed to create correct annotations \cite{souly_semi_2017, xue_segan:_2017-1, yang_automatic_2017-1, rezaei_conditional_2017-1, arbelle_microscopy_2017-1}.\\
+\\
+Analysis of aerial images can be a useful tool to obtain real time data cost effectively [??].To mention a few applications it can be used to monitor traffic flow, construction progress, forest felling, water reserve capacity and to obtain accurate data for new maps. It can also be used to predict market trends since if we continuously can count the number of vehicles outside a marketplace we can more accurately predict how many customers that are visiting the marketplace and therefore make more accurate predictions about the markets earnings.\\
+\\
+However detecting and counting objects in aerial images has proven to be a troublesome area [??]. The objects of interest are usually very small compared to the image and there can be many objects in the same image. This causes naive classification networks to achieve bad performance if the entire image is fed in at once. To combat this some form of segmentation is usually done and the image is fed into the network in patches. Earlier methods fed explicit image patches through the CNN \cite{holt_object-based_2009}. This achieved good performance but at a great computational cost since redundant computation of low-level filters for overlapping patches had to be performed \cite{luc_semantic_2016}. To combat this different forms of segmentation algorithms were used such as the mean-shift-algorithm which drastically decreased the number of patches which had to be fed through the network \cite{ammour_deep_2017}.
+The next stet is instant segmentation of images where every pixel i CNN aerial images \cite{audebert_segment-before-detect:_2017, holt_object-based_2009, zhong_robust_2017}
 \section{Relevant Theory}
 \subsection{Generative adversarial networks}
 Goodfellow \textit{et al} \cite{goodfellow_nips_2016} first proposed the generative adversarial network (GAN). The network consists of two parts, a generator and a discriminator. The generators task is to generate samples from some data distribution. The discriminators task is to differentiate these generated samples from the true samples. This results in a counter fitting game where the generator continuously tries to produce better generated data to fool the discriminator and the discriminator is forced to become better at differentiating these generated samples from the true samples.\\
@@ -72,11 +83,50 @@ Here $y$ is the ground truth segmentation maps while $\hat{y}$ is the predicted 
 G^{*}=argmin_{G}[max_{D}[\Lagr(G, D)] + \lambda \ell_{mce}(G)]
 \end{equation}
 Here $\lambda$ is just a constant which controls the importance of the second  loss term.
-\subsection{Fully convolutional networks and U-NET}
+\subsection{Segmentor networks}
+For the generative part of a gan a segmentor network is needed. This network takes a image as an input and produces segmentation maps.
 A fully convolotional network (FCN) was first proposed Shelhamer and Long \textit{et al} \citep{shelhamer_fully_2016}. A FCN is a CNN without any fully connected layers. A network with fully connected layers must have a specific input size on the image while a FCN network can take inputs of any size. The key insight is that by the authors were that fully connected layers can be viewed as convolutions with kernels that cover their entire input region. Hencea CNN with fully conected layers can be viewed as a FCN since it takes patches from a image of any size and outputs a spatial output map when the patches are aggregated. While the resulting maps are equivalent the computational cost for the FCN is greatly reduced. This is because no overlapping regions between patches has to be computed. This makes these networks ideal for generating dense output maps such as for image segmentation\\
 \\
 Ronneberger \textit{et al} \cite{ronneberger_u-net:_2015} builds on the advancements of the FCN to propose a new type of segmentation network. The U-NET uses a encoder decoder structure with skip connections from bottleneck layers to upsampled layers. Thess skip connections are crucial to segmentation tasks as the initial feature
 maps maintain low-level features such that can be properly exploited for accurate segmentation.The network has been shown to produce high accuracy results even on small sized datasets \cite{son_retinal_2017, ronneberger_u-net:_2015, isola_image--image_2016, xue_segan:_2017, yang_automatic_2017}. Ronneberger \textit{et al} \cite{ronneberger_u-net:_2015} attributes this to the networks structure which creates internal data augmentation.
+
+\begin{figure}[h!]
+  \centering
+      \includegraphics[scale=0.2]{u-net}
+  \caption{The initial u-net architecture proposed by Ronneberger \textit{et al} \cite{ronneberger_u-net:_2015} \label{fig:unet}}
+\end{figure}
+Note that the size of the input image and the output prediction in \ref{fig:unet} is different. This is because the u-net uses unpadded convolutions so at every convolutional layer one pixel is lost at every side. To obtain predictions in the borders of an image the the context is extrapolated by mirroring the image \cite{li_deepunet:_2017}. It is also important that we choose an initial image size so the activation maps length is even through all layers of the network. \cite{ronneberger_u-net:_2015}. In theory the u-net can handle images of any size but in practice we have memory limitations for the GPU. Segmentation it therefore done on patches and the output prediction can be directly stitched together without any overlapping.
+\subsection{Classification networks}
+For the discriminative part of the GAN a classification network is needed. This takes a input image and a set of segmentation maps and decides if the segmentation maps are artificial or ground truth. There are several high preforming classification networks such as the VGG networks \cite{simonyan_very_2014} and the ResNet networks \cite{he_deep_2015}.\\
+\\
+The VGG networks in form of the sixteen layer VGG16 or the 19 layer VGG19 have have performed very well on a wide variety of tasks such as classification \cite{simonyan_very_2014}. They have been used inside Fast Region-based Convolutional Networks (fast R-CNN) \cite{ren_faster_2015, girshick_fast_2015} to generate object activation maps for the reginal proposal network (RPN). Fast R-CNN have been able to do object detection and bounding box prediction at a fraction of the time of earlier networks. They have also been used as a encoder in the SegNet architecture which has been a very popular segmentation network \cite{badrinarayanan_segnet:_2015}.
+\begin{figure}[h!]
+  \centering
+      \includegraphics[scale=0.5]{vgg}
+  \caption{The VGG16 architecture proposed by \cite{simonyan_very_2014}} \label{fig:vgg}
+\end{figure}
+The VGG16 network takes inputs of images with size 224*224 and produces a class wise prediction. The network is very simple yet powerful and uses only 3*3 convolutions and 2*2 max pooling layers with stride 2.\\
+\\
+ResNet is another widely popular classification network. It has performed very well on classification tasks \cite{he_identity_2016, szegedy_inception-v4_2016} It has also been shown that wider residual networks are more memory efficient while still obtaining comparable performance \cite{wu_wider_2016, zagoruyko_wide_2016}.
+\begin{figure}[h!]
+  \centering
+      \includegraphics[scale=0.25]{resnet}
+  \caption{The 34 layer deep ResNet architecture \cite{simonyan_very_2014}} \label{fig:vgg}
+\end{figure}
+The success behind the ResNet lies in the residual blocks A residual block is a two or more convolutional layers with a identity short-cut connection in between. The residual block can be defined as.
+\begin{equation}
+y=F(x, W) + x
+\end{equation}
+The benefit of this is that this guarantees that the gradients will flow through the entire network. Therefore it is possible to build and train very deep residual networks by stacking hundreds of residual block. This also allows the network to itself decide the required depth since it can learn to set the weight of the final residual blocks to zero if they are not needed \cite{he_deep_2015}. Hence we get e very flexible network where we easily can adapt the depth to the task at hand.
+\subsection{Dealing with severely imbalanced datasets}
+Due to the nature of aerial images the objects of interest are usually small compared to the entire image. This causes the dataset to be imbalanced since most pixels will belong to the background class. A naive segmentor could then obtain good accuracy by only predicting everything to the background class. To combat this there are several techniques. The most straight forward is to use a weighted cross entropy loss where every term is weighted depending on the class frequency \cite{sudre_generalised_2017}. Below is the weighted cross entropy loss for a two class segmentation problem.
+\begin{equation}
+\Lagr_{wce}=-\omega*y*log(\hat{y}) + (1-y)log(1-\hat{y})
+\end{equation}
+Here $y$ is the true probability for the foreground class  $\hat{y}$ the predicted probability for the foreground class and $\omega_c$ the class weights for the foreground class depending on the frequency. Another popular approach is to minimize the intersect over union loss \cite{yu_unitbox:_2016, rahman_optimizing_2016}
+\begin{equation}
+\Lagr_{IoU}= 1 - \frac{ \Sigma y \otimes \hat{y} }{ \Sigma y + \Sigma \hat{y} - \Sigma y \otimes \hat{y}}
+\end{equation}
 \section{Related work}
 In most cases the segmentation networks needs some post processing to improve the accuracy of the segmentation maps. Conditional random markov fields CRF have been very successfully to enforce spatial contiguity in the output maps \cite{arnab_higher_2015, luc_semantic_2016}. There have been wor that used mean field inference expressed as a recurrent convolutional networks to do CRF like post processing \cite{schwing_fully_2015, zheng_conditional_2015}. Luc \textit{et al} \cite{luc_semantic_2016} proposed a adveserial segmentation network to enforce higher order potentials without being limited to a single class. Instead on directly enforcing these higher order potentials in a CRF model as post processing the goal was to enforce them in the generator directly with adversarial training. This technique also has the benefit of lower complexity since at test time only the generator will be used.\\
 \\

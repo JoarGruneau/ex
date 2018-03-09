@@ -8,11 +8,11 @@ import numpy as np
 
 # noinspection PyPackageRequirements
 if __name__ == '__main__':
-    net = unet.Unet(layers=5, features_root=64, cost="cross_entropy", channels=3, n_class=6, border_addition=6, summaries=False)
+    net = unet.Unet(layers=3, features_root=4, cost="cross_entropy", channels=3, n_class=6, border_addition=0, summaries=False)
     # data_provider = image_util.ImageDataProvider("Potsdam/RGB/*.tif", "Potsdam/Labels", patch_size=1000, border_size=20,
     #                                              data_suffix="_RGB.tif", mask_suffix='_label.tif',
     #                                              channels=3, n_class=6, load_saved=False)
-    data_provider = image_util.ImageDataProvider('Potsdam/train_RGB/', patch_size=1000, border_size=92+6,
+    data_provider = image_util.ImageDataProvider('Potsdam/train_RGB/', patch_size=1000, border_size=20,
                                                  data_suffix="_RGB.tif", mask_suffix='_label.tif',
                                                  channels=3, n_class=6, load_saved=True)
     # data_provider.save_patches('Potsdam/train_RGB/')
