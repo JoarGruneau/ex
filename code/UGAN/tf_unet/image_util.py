@@ -83,7 +83,6 @@ class BaseDataProvider(object):
         nx = label.shape[0]
         ny = label.shape[1]
         labels = np.zeros((nx, ny, self.n_class), dtype=np.float32)
-        print(self.n_class)
         if self.n_class == 2:
             label = label/255
             labels[..., 1] = label
@@ -203,13 +202,13 @@ class ImageDataProvider(BaseDataProvider):
         
         # assert len(self.data_files) > 0, "No training files"
         # print("Number of files used: %s" % len(self.data_files))
-        # img = self._load_file(self.data_files[0], type=-1, add_borders=True, dtype=np.float32)
+        img = self._load_file(self.data_files[0], type=-1, add_borders=True, dtype=np.float32)
         # # print(np.amax(img))
         # # print (np.amin(img))
         # self.channels = 1 if len(img.shape) == 2 else img.shape[-1]
-        self.size = 6000 +2*self.border_size
+        self.size = img.shape[0]
 
-    def get_patches(self, get_coordinates=False):
+    def get_patches(self, batch_size=1, get_coordinates=False):
         self._cylce_file()
         image_name = self.data_files[self.file_idx]
         if self.load_saved:
@@ -219,7 +218,7 @@ class ImageDataProvider(BaseDataProvider):
                     .replace(self.data_suffix, self.mask_suffix))
             patches = self._get_patches(
                 self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32),
-                self._load_file(label_name, type=-1, add_borders=False, dtype=np.uint8), get_coordinates)
+                self._load_file(label_name, type=0, add_borders=False, dtype=np.uint8), get_coordinates)
         return patches
 
     def save_patches(self, save_path):
@@ -233,7 +232,7 @@ class ImageDataProvider(BaseDataProvider):
                     .replace(self.data_suffix, self.mask_suffix))
             patches = self._get_patches(
                 self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32),
-                self._load_file(label_name, type=-1, add_borders=False, dtype=np.uint8), get_coordinates=True)
+                self._load_file(label_name, type=0, add_borders=False, dtype=np.uint8), get_coordinates=True)
             pickle.dump(patches, open(os.path.join(save_path, save_name), 'wb'))
         print ('all patches saved')
 
@@ -255,7 +254,6 @@ class ImageDataProvider(BaseDataProvider):
     
     
     def _load_file(self, path, type=-1, add_borders=False, dtype=np.float32):
-        print (path)
         img = cv2.imread(path, type)
         if type == -1:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -278,7 +276,6 @@ class ImageDataProvider(BaseDataProvider):
                 np.random.shuffle(self.data_files)
 
     def _get_patches(self, img, label, get_coordinates=False):
-        # print ("getting patch")
         patches = []
         for x in range(self.border_size, self.size-self.border_size, self.patch_size):
             for y in range(self.border_size, self.size-self.border_size, self.patch_size):
@@ -292,13 +289,10 @@ class ImageDataProvider(BaseDataProvider):
                 patch_label = self._process_labels(patch_label)
                 patch_img = patch_img.reshape(1, patch_img.shape[0], patch_img.shape[1], self.channels)
                 patch_label = patch_label.reshape(1, patch_label.shape[0], patch_label.shape[1], self.n_class)
-                print (patch_img.shape)
-                print (patch_label.shape)
 
                 if get_coordinates:
                     patches.append([patch_img, patch_label, [x-self.border_size, y-self.border_size]])
                 else:
                     patches.append([patch_img, patch_label])
-        print ("patch list len " + str(len(patches)))
         return patches
 

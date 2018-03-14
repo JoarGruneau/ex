@@ -1,4 +1,3 @@
-test.txt
 top_potsdam_2_13_RGB.tif
 top_potsdam_2_14_RGB.tif
 top_potsdam_3_13_RGB.tif

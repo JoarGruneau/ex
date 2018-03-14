@@ -166,7 +166,6 @@ def create_conv_net(x, keep_prob, channels, n_class,  layers=3, features_root=16
         variables.append(b1)
         variables.append(b2)
 
-    print(int(in_size - size))
     return output_map, variables, int(in_size - size)
 
 
@@ -192,6 +191,7 @@ class Unet(object):
         
         logits, self.variables, self.offset = create_conv_net(self.x, self.keep_prob, channels, n_class, **kwargs)
 
+        self.border_addition = border_addition
         if border_addition != 0:
             logits = logits[:, border_addition:-border_addition,border_addition:-border_addition, ...]
         
@@ -288,7 +288,7 @@ class Unet(object):
             
         return prediction
     
-    def save(self, sess, model_path):
+    def save(self, sess, model_path, global_step):
         """
         Saves the current session to a checkpoint
         
@@ -297,7 +297,7 @@ class Unet(object):
         """
         
         saver = tf.train.Saver()
-        save_path = saver.save(sess, model_path)
+        save_path = saver.save(sess, model_path, global_step=global_step)
         return save_path
     
     def restore(self, sess, model_path):
@@ -347,14 +347,14 @@ class Trainer(object):
             
             optimizer = tf.train.MomentumOptimizer(learning_rate=self.learning_rate_node, momentum=momentum,
                                                    **self.opt_kwargs).minimize(self.net.cost, 
-                                                                                global_step=global_step)
+                                                                                global_step=self.global_step)
         elif self.optimizer == "adam":
             learning_rate = self.opt_kwargs.pop("learning_rate", 0.001)
             self.learning_rate_node = tf.Variable(learning_rate)
             
             optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node, 
                                                **self.opt_kwargs).minimize(self.net.cost,
-                                                                     global_step=global_step, var_list=self.net.variables)
+                                                                     global_step=self.global_step, var_list=self.net.variables)
         
         return optimizer
         
@@ -396,7 +396,8 @@ class Trainer(object):
         # print ("global step =" +str(global_step))
         return init
 
-    def train(self, data_provider, output_path, training_iters=10, epochs=100, dropout=0.75, display_step=1, restore=False, write_graph=False, prediction_path = 'prediction'):
+    def train(self, data_provider, eval_data_provider, output_path, training_iters=10, eval_iters=4, epochs=100, dropout=0.75, display_step=1,
+              predict_step=5, restore=False, write_graph=False, prediction_path = 'prediction'):
         """
         Lauches the training process
         
@@ -410,7 +411,7 @@ class Trainer(object):
         :param write_graph: Flag if the computation graph should be written as protobuf file to the output path
         :param prediction_path: path where to save predictions on each epoch
         """
-        save_path = os.path.join(output_path, "model.cpkt")
+        save_path = os.path.join(os.path.join(output_path, 'train'), "model.cpkt")
         if epochs == 0:
             return save_path
         
@@ -423,91 +424,125 @@ class Trainer(object):
             sess.run(init)
             
             if restore:
-                ckpt = tf.train.get_checkpoint_state(output_path)
+                ckpt = tf.train.get_checkpoint_state(os.path.join(output_path, 'train'))
                 if ckpt and ckpt.model_checkpoint_path:
                     self.net.restore(sess, ckpt.model_checkpoint_path)
-            
-            test_patches = data_provider.get_patches(get_coordinates=True)
+                    print ("restored")
+
             border_size = data_provider.get_border_size()
             patch_size = data_provider.get_patch_size()
             input_size = data_provider.get_input_size()
-            # pred_shape = self.store_prediction(sess, test_patches, border_size, patch_size, input_size, "_init")
+            patch_len=input_size//patch_size
+            pred_shape = self.store_prediction(sess, eval_iters, eval_data_provider, border_size,
+                                               patch_size, input_size, "_init", combine=True)
 
             
-            summary_writer = tf.summary.FileWriter(output_path, graph=sess.graph)
+            summary_writer = tf.summary.FileWriter(os.path.join(output_path, 'train'), graph=sess.graph)
+            eval_summary_writer=tf.summary.FileWriter(os.path.join(output_path, 'eval'))
             logging.info("Start optimization")
-            
+            curr_step=tf.train.global_step(sess, self.global_step)
+            curr_epoch=curr_step//(training_iters*patch_len)
             avg_gradients = None
-            for epoch in range(epochs):
-                total_loss = 0
-                for step in range((epoch*training_iters), ((epoch+1)*training_iters)):
+            for epoch in range(curr_epoch,epochs):
+                loss = []
+                acc = []
+                for step in range(
+                        (epoch*training_iters + 1), ((epoch+1)*training_iters)):
                     patches = data_provider.get_patches()
-                    img_loss = 0
                     for patch in patches:
 
-                        _, loss, lr = sess.run((self.optimizer, self.net.cost, self.learning_rate_node),
+                        _, patch_loss, lr, patch_acc = sess.run((self.optimizer, self.net.cost, self.learning_rate_node,
+                                                self.net.accuracy),
                                                       feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: dropout})
-                        img_loss += loss
 
-                    # if step % display_step == 0:
-                    #     self.output_minibatch_stats(sess, summary_writer, step, batch_x, batch_y)
-                    print ("image loss" + str(img_loss/len(patches)))
-                    total_loss += img_loss/len(patches)
+                        loss.append(patch_loss)
+                        acc.append(patch_acc)
 
-                self.output_epoch_stats(epoch, total_loss, training_iters, lr)
-                self.store_prediction(sess, test_patches, border_size, patch_size, input_size, "epoch_%s"%epoch)
+                if epoch % display_step == 0:
+                    save_path = self.net.save(sess, save_path, self.global_step)
+                    self.write_summary(summary_writer, epoch, np.mean(loss), np.mean(acc), 'train')
+                    self.output_minibatch_stats(sess, eval_summary_writer, eval_iters, epoch, eval_data_provider, 'eval')
 
-    def store_prediction(self, sess, patches, border_size, patch_size, input_size, name):
-        # image = np.zeros((self.verification_batch_size, 6000,6000,3))
-        # label = np.zeros((self.verification_batch_size, 6000,6000,2))
-        prediction = np.zeros((self.verification_batch_size, input_size,input_size, self.net.n_class))
-        for patch in patches:
-            pred = sess.run(self.net.predicter, feed_dict={self.net.x: patch[0],
-                                                             self.net.y: patch[1],
-                                                             self.net.keep_prob: 1.})
-            shape=pred.shape
-            x, y = patch[2]
-            prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
+                self.output_epoch_stats(epoch, np.mean(loss), training_iters, lr)
+                if epoch%predict_step == 0:
+                    self.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size, input_size, "epoch_%s"%epoch, combine=True)
+            logging.info("Optimization Finished!")
 
-        pred_shape = prediction.shape
-        
-        # loss = sess.run(self.net.cost, feed_dict={self.net.x: image,
-        #                                                self.net.y: util.crop_to_shape(label, pred_shape),
-        #                                                self.net.keep_prob: 1.})
-        #
-        # logging.info("Verification error= {:.1f}%, loss= {:.4f}".format(error_rate(prediction,
-        #                                                                   util.crop_to_shape(label,
-        #                                                                                      prediction.shape)),
-        #                                                                   loss))
-        #
-        #img = util.combine_img_prediction(image , label, prediction)
-        #prediction=util.to_rgb(prediction[..., 1].reshape(-1, input_size, 1))
-        #prediction=util.rgb_multi_prediction(prediction.reshape((input_size, input_size, 3)))
-        prediction = util.rgb_multi_prediction(prediction)
-        util.save_image(prediction, "%s/%s.jpg"%(self.prediction_path, name))
+    def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name, combine=False):
+        for i in range(eval_iters):
+            patches = eval_data_provider.get_patches(get_coordinates=True)
+            if combine:
+                image = np.zeros((self.verification_batch_size, input_size, input_size, 3))
+                label = np.zeros((self.verification_batch_size, input_size, input_size,2))
+            prediction = np.zeros((self.verification_batch_size, input_size, input_size, self.net.n_class))
+            for patch in patches:
+                pred = sess.run(self.net.predicter, feed_dict={self.net.x: patch[0],
+                                                                 self.net.y: patch[1],
+                                                                 self.net.keep_prob: 1.})
+                x, y = patch[2]
+                prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
+
+                if combine:
+                    offset = border_size+self.net.border_addition
+                    image[:,x:x+patch_size,y:y+patch_size,...] = patch[0][:, offset:-offset, offset:-offset,...]
+                    label[:,x:x+patch_size,y:y+patch_size,...] = patch[1]
+
+            pred_shape = prediction.shape
+            
+            # loss = sess.run(self.net.cost, feed_dict={self.net.x: image,
+            #                                                self.net.y: util.crop_to_shape(label, pred_shape),
+            #                                                self.net.keep_prob: 1.})
+            #
+            # logging.info("Verification error= {:.1f}%, loss= {:.4f}".format(error_rate(prediction,
+            #                                                                   util.crop_to_shape(label,
+            #                                                                                      prediction.shape)),
+            #                                                                   loss))
+            #
+            if combine:
+                img = util.combine_img_prediction(image , label, prediction)
+            else:
+                img=util.to_rgb(prediction[..., 1].reshape(-1, input_size, 1))
+            #prediction=util.rgb_multi_prediction(prediction.reshape((input_size, input_size, 3)))
+            #prediction = util.rgb_multi_prediction(prediction)
+            util.save_image(img, "%s/%s_%s.jpg"%(self.prediction_path, name, i))
         
         return pred_shape
     
-    def output_epoch_stats(self, epoch, total_loss, training_iters, lr):
-        logging.info("Epoch {:}, Average loss: {:.4f}, learning rate: {:.4f}".format(epoch, (total_loss / training_iters), lr))
+    def output_epoch_stats(self, epoch, loss, training_iters, lr):
+        logging.info("Epoch {:}, Average loss: {:.4f}, learning rate: {:.4f}".format(epoch, loss, lr))
     
-    def output_minibatch_stats(self, sess, summary_writer, step, batch_x, batch_y):
+    def output_minibatch_stats(self, sess, summary_writer, eval_iters, step, data_provider, stats_type):
         # Calculate batch loss and accuracy
-        summary_str, loss, acc, predictions = sess.run([self.summary_op, 
-                                                            self.net.cost, 
-                                                            self.net.accuracy, 
-                                                            self.net.predicter], 
-                                                           feed_dict={self.net.x: batch_x,
-                                                                      self.net.y: batch_y,
-                                                                      self.net.keep_prob: 1.})
-        summary_writer.add_summary(summary_str, step)
+        loss=[]
+        acc=[]
+        for _ in range(eval_iters):
+            patches = data_provider.get_patches()
+            for patch in patches:
+                patch_loss, patch_acc = sess.run([self.net.cost, self.net.accuracy], 
+                                                                   feed_dict={self.net.x: patch[0],
+                                                                              self.net.y: patch[1],
+                                                                              self.net.keep_prob: 1.})
+                loss.append(patch_loss)
+                acc.append(patch_acc)
+        loss=np.mean(loss)
+        acc=np.mean(acc)
+        summary = tf.Summary()
+        summary.value.add(tag="Accuracy", simple_value=acc)
+        summary.value.add(tag="Loss", simple_value=loss)
+        summary_writer.add_summary(summary, step)
         summary_writer.flush()
-        logging.info("Iter {:}, Minibatch Loss= {:.4f}, Training Accuracy= {:.4f}, Minibatch error= {:.1f}%".format(step,
-                                                                                                            loss,
-                                                                                                            acc,
-                                                                                                            error_rate(predictions, batch_y)))
+        logging.info("Type {:}, Epoch {:}, Loss= {:.4f}, Accuracy= {:.4f}".format(stats_type, step, loss, acc))
+
+    def write_summary(self, summary_writer, step, loss, acc, stats_type):
+        summary = tf.Summary()
+        summary.value.add(tag="Accuracy", simple_value=acc)
+        summary.value.add(tag="Loss", simple_value=loss)
+        summary_writer.add_summary(summary, step)
+        summary_writer.flush()
+        logging.info("Type {:}, Epoch {:}, Loss= {:.4f}, Accuracy= {:.4f}".format(stats_type, step, loss, acc))
+
 
 def _update_avg_gradients(avg_gradients, gradients, step):
     if avg_gradients is None:
