@@ -192,6 +192,7 @@ class Unet(object):
         logits, self.variables, self.offset = create_conv_net(self.x, self.keep_prob, channels, n_class, **kwargs)
 
         self.border_addition = border_addition
+        print(self.border_addition)
         if border_addition != 0:
             logits = logits[:, border_addition:-border_addition,border_addition:-border_addition, ...]
         
@@ -485,7 +486,7 @@ class Trainer(object):
                 prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
 
                 if combine:
-                    offset = border_size+self.net.border_addition
+                    offset = border_size
                     image[:,x:x+patch_size,y:y+patch_size,...] = patch[0][:, offset:-offset, offset:-offset,...]
                     label[:,x:x+patch_size,y:y+patch_size,...] = patch[1]
 

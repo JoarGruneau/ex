@@ -1,5 +1,1 @@
-click
-numpy
-Pillow
-tensorflow>=1.0.0
-matplotlib
+opencv-python
