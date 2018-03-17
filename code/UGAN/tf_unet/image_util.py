@@ -15,7 +15,7 @@
 author: jakeret
 '''
 from __future__ import print_function, division, absolute_import, unicode_literals
-
+from tf_unet import util
 import cv2
 import glob
 import numpy as np
@@ -262,8 +262,23 @@ class ImageDataProvider(BaseDataProvider):
             shape[0] += 2*self.border_size
             shape[1] += 2*self.border_size
             border_img = np.zeros(shape)
-            border_img[self.border_size:-self.border_size, self.border_size:-self.border_size, ...] = img
+            border_img[self.border_size:-self.border_size, self.border_size:-self.border_size, ...] = img.copy()
+
+            left = np.fliplr(img[:, 0:self.border_size].copy())
+            right = np.fliplr(img[:, -self.border_size:].copy())
+            border_img[self.border_size:-self.border_size, :self.border_size]=left
+            border_img[self.border_size:-self.border_size, -self.border_size:]=right
+
+            up = np.flipud(border_img[self.border_size:2*self.border_size, :].copy())
+            down = np.flipud(border_img[-2*self.border_size:-self.border_size, :].copy())
+
+            border_img[0:self.border_size, :] = up
+            border_img[-self.border_size:, :] = down
             img=border_img
+            # img.astype(dtype=np.uint8)
+            # img_p = Image.fromarray(img, 'RGB')
+            # img_p.save('my.png')
+            # util.save_image(img, 'test')
 
         img.astype(dtype=dtype)
         return img
