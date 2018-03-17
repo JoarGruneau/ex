@@ -192,7 +192,6 @@ class Unet(object):
         logits, self.variables, self.offset = create_conv_net(self.x, self.keep_prob, channels, n_class, **kwargs)
 
         self.border_addition = border_addition
-        print(self.border_addition)
         if border_addition != 0:
             logits = logits[:, border_addition:-border_addition,border_addition:-border_addition, ...]
         
@@ -206,6 +205,15 @@ class Unet(object):
         self.predicter = pixel_wise_softmax_2(logits)
         self.correct_pred = tf.equal(tf.argmax(self.predicter, 3), tf.argmax(self.y, 3))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32))
+
+        tp = tf.reduce_sum(tf.cast(tf.argmax(self.predicter, 3), tf.float32) * self.y[..., 1])
+        fp = tf.reduce_sum(tf.cast(tf.argmax(self.predicter, 3), tf.float32)) - tp
+        fn = tf.reduce_sum(self.y[..., 1]) - tp
+
+        self.precision = tp/(tp+fp)
+        self.recall = tp/(tp+fn)
+        self.f1 = 2*self.recall*self.precision/(self.recall + self.precision)
+
         
     def _get_cost(self, logits, cost_name, cost_kwargs):
         """
@@ -521,12 +529,14 @@ class Trainer(object):
         for _ in range(eval_iters):
             patches = data_provider.get_patches()
             for patch in patches:
-                patch_loss, patch_acc = sess.run([self.net.cost, self.net.accuracy], 
+                patch_loss, patch_acc = sess.run([self.net.cost, self.net.f1], 
                                                                    feed_dict={self.net.x: patch[0],
                                                                               self.net.y: patch[1],
                                                                               self.net.keep_prob: 1.})
                 loss.append(patch_loss)
+                print(patch_loss)
                 acc.append(patch_acc)
+                print(patch_acc)
         loss=np.mean(loss)
         acc=np.mean(acc)
         summary = tf.Summary()
