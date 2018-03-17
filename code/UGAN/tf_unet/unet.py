@@ -406,7 +406,7 @@ class Trainer(object):
         return init
 
     def train(self, data_provider, eval_data_provider, output_path, training_iters=10, eval_iters=4, epochs=100, dropout=0.75, display_step=1,
-              predict_step=5, restore=False, write_graph=False, prediction_path = 'prediction'):
+              predict_step=50, restore=False, write_graph=False, prediction_path = 'prediction'):
         """
         Lauches the training process
         
@@ -453,31 +453,39 @@ class Trainer(object):
             curr_epoch=curr_step//(training_iters*patch_len)
             avg_gradients = None
             for epoch in range(curr_epoch,epochs):
-                loss = []
+                loss =[]
                 acc = []
+                precision = []
+                recall  = []
+                f1_score = []
                 for step in range(
                         (epoch*training_iters + 1), ((epoch+1)*training_iters)):
                     patches = data_provider.get_patches()
                     for patch in patches:
 
-                        _, patch_loss, lr, patch_acc = sess.run((self.optimizer, self.net.cost, self.learning_rate_node,
-                                                self.net.accuracy),
+                        _, lr, patch_acc, patch_loss, patch_precision, patch_recall, patch_f1_score = sess.run((
+                            self.optimizer, self.learning_rate_node, self.net.accuracy, self.net.cost, self.net.precision, self.net.recall, self.net.f1),
                                                       feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: dropout})
 
-                        loss.append(patch_loss)
+
                         acc.append(patch_acc)
+                        loss.append(patch_loss)
+                        precision.append(patch_precision)
+                        recall.append(patch_recall)
+                        f1_score.append(patch_f1_score)
 
                 if epoch % display_step == 0:
                     save_path = self.net.save(sess, save_path, self.global_step)
-                    self.write_summary(summary_writer, epoch, np.mean(loss), np.mean(acc), 'train')
+                    self.write_summary(summary_writer, epoch, np.mean(loss), np.mean(acc), np.mean(precision), np.mean(recall), np.mean(f1_score), 'train')
                     self.output_minibatch_stats(sess, eval_summary_writer, eval_iters, epoch, eval_data_provider, 'eval')
 
                 self.output_epoch_stats(epoch, np.mean(loss), training_iters, lr)
                 if epoch%predict_step == 0:
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size, input_size, "epoch_%s"%epoch, combine=True)
             logging.info("Optimization Finished!")
+            self.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size, input_size, "epoch_%s"%100000, combine=True)
 
     def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name, combine=False):
         for i in range(eval_iters):
@@ -524,35 +532,48 @@ class Trainer(object):
     
     def output_minibatch_stats(self, sess, summary_writer, eval_iters, step, data_provider, stats_type):
         # Calculate batch loss and accuracy
-        loss=[]
-        acc=[]
+        loss =[]
+        acc = []
+        precision = []
+        recall  = []
+        f1_score = []
         for _ in range(eval_iters):
             patches = data_provider.get_patches()
             for patch in patches:
-                patch_loss, patch_acc = sess.run([self.net.cost, self.net.f1], 
-                                                                   feed_dict={self.net.x: patch[0],
-                                                                              self.net.y: patch[1],
-                                                                              self.net.keep_prob: 1.})
+                patch_loss, patch_acc, patch_precision, patch_recall, patch_f1_score = sess.run((
+                            self.net.cost, self.net.accuracy, self.net.precision, self.net.recall, self.net.f1),
+                                                      feed_dict={self.net.x: patch[0],
+                                                                 self.net.y: patch[1],
+                                                                 self.net.keep_prob: 1})
+                
                 loss.append(patch_loss)
-                print(patch_loss)
                 acc.append(patch_acc)
-                print(patch_acc)
+                precision.append(patch_precision)
+                recall.append(patch_recall)
+                f1_score.append(patch_f1_score)
         loss=np.mean(loss)
-        acc=np.mean(acc)
-        summary = tf.Summary()
-        summary.value.add(tag="Accuracy", simple_value=acc)
-        summary.value.add(tag="Loss", simple_value=loss)
-        summary_writer.add_summary(summary, step)
-        summary_writer.flush()
-        logging.info("Type {:}, Epoch {:}, Loss= {:.4f}, Accuracy= {:.4f}".format(stats_type, step, loss, acc))
+        acc=np.reduce_mean(acc)
+        precision=np.mean(precision)
+        recall=np.mean(recall)
+        f1_score=np.mean(f1_score)
+        self.write_summary(summary_writer, step, loss, acc, precision, recall, f1_score, stats_type)
+        # summary = tf.Summary()
+        # summary.value.add(tag="Accuracy", simple_value=acc)
+        # summary.value.add(tag="Loss", simple_value=loss)
+        # summary_writer.add_summary(summary, step)
+        # summary_writer.flush()
+        # logging.info("Type {:}, Epoch {:}, Loss= {:.4f}, Accuracy= {:.4f}".format(stats_type, step, loss, acc))
 
-    def write_summary(self, summary_writer, step, loss, acc, stats_type):
+    def write_summary(self, summary_writer, step, loss, acc, precision, recall, f1_score, stats_type):
         summary = tf.Summary()
-        summary.value.add(tag="Accuracy", simple_value=acc)
         summary.value.add(tag="Loss", simple_value=loss)
+        summary.value.add(tag="Accuracy", simple_value=acc)
+        summary.value.add(tag="Precision", simple_value=precision)
+        summary.value.add(tag="Recall", simple_value=recall)
+        summary.value.add(tag="f1_score", simple_value=f1_score)
         summary_writer.add_summary(summary, step)
         summary_writer.flush()
-        logging.info("Type {:}, Epoch {:}, Loss= {:.4f}, Accuracy= {:.4f}".format(stats_type, step, loss, acc))
+        logging.info("Type {:}, Epoch {:}, Loss= {:.4f}, Loss= {:.4f}, Precision= {:.4f}, Recall= {:.4f}, f1_score= {:.4f}, ".format(stats_type, step, loss, acc, precision, recall, f1_score))
 
 
 def _update_avg_gradients(avg_gradients, gradients, step):
