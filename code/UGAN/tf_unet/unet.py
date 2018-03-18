@@ -573,7 +573,7 @@ class Trainer(object):
         summary.value.add(tag="f1_score", simple_value=f1_score)
         summary_writer.add_summary(summary, step)
         summary_writer.flush()
-        logging.info("Type {:}, Epoch {:}, Loss= {:.4f}, Loss= {:.4f}, Precision= {:.4f}, Recall= {:.4f}, f1_score= {:.4f}, ".format(stats_type, step, loss, acc, precision, recall, f1_score))
+        logging.info("Type {:}, Epoch {:}, Loss= {:.4f}, Accuracy= {:.4f}, Precision= {:.4f}, Recall= {:.4f}, f1_score= {:.4f}, ".format(stats_type, step, loss, acc, precision, recall, f1_score))
 
 
 def _update_avg_gradients(avg_gradients, gradients, step):
