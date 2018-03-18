@@ -552,7 +552,7 @@ class Trainer(object):
                 recall.append(patch_recall)
                 f1_score.append(patch_f1_score)
         loss=np.mean(loss)
-        acc=np.reduce_mean(acc)
+        acc=np.mean(acc)
         precision=np.mean(precision)
         recall=np.mean(recall)
         f1_score=np.mean(f1_score)

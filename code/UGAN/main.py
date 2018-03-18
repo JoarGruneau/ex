@@ -33,7 +33,7 @@ if __name__ == '__main__':
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam')
     # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
     path = trainer.train(data_provider, eval_data_provider, "summaries/", dropout=0.75,
-                            training_iters=20, eval_iters=4, epochs=400, display_step=20,  restore=False)
+                            training_iters=20, eval_iters=4, epochs=400, display_step=1,  restore=False)
     # x_test = a._load_file("images/00000000.png")
     # x_test = a._process_data([x_test])
     # prediction = net.predict(path, x_test)
