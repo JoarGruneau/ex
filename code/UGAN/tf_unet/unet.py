@@ -499,7 +499,7 @@ class Trainer(object):
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: 1.})
                 test=np.argmax(pred, axis=3)
-                print(np.sum(test))
+                print(np.sum(test.reshape(-1, input_size, 1)))
                 print(test.shape)
                 print(tp)
                 x, y = patch[2]
