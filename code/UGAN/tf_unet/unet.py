@@ -241,8 +241,13 @@ class Unet(object):
                 loss = tf.reduce_mean(weighted_loss)
                 
             else:
-                loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits, 
-                                                                              labels=flat_labels))
+                # loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits, 
+                #                                                               labels=flat_labels))
+                loss_map = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits, 
+                                                                              labels=flat_labels)
+                weight = (tf.cast(tf.size(loss_map[..., 1]), tf.float32)-tf.reduce_sum(loss_map[..., 1]))/tf.reduce_sum(loss_map[..., 1])
+                loss=tf.reduce_sum(loss_map[..., 0])+tf.reduce_sum(loss_map[..., 0])*weight
+
         elif cost_name == "dice_coefficient":
             eps = 1e-5
             prediction = pixel_wise_softmax_2(logits)
@@ -498,17 +503,17 @@ class Trainer(object):
                 pred, tp= sess.run((self.net.predicter, self.net.tp), feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: 1.})
-                test=np.argmax(pred, axis=3)
-                print("sum test")
-                print(np.sum(test))
-                print(test.shape)
-                print("sum ground")
-                print(np.sum(pred[..., 0]))
-                print("sum cars")
-                print(np.sum(pred[..., 1]))
-                print("test size")
-                print(np.sum(pred[..., 0] >= pred[..., 1]))
-                print(tp)
+                # test=np.argmax(pred, axis=3)
+                # print("sum test")
+                # print(np.sum(test))
+                # print(test.shape)
+                # print("sum ground")
+                # print(np.sum(pred[..., 0]))
+                # print("sum cars")
+                # print(np.sum(pred[..., 1]))
+                # print("test size")
+                # print(np.sum(pred[..., 0] >= pred[..., 1]))
+                # print(tp)
                 x, y = patch[2]
                 prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
 
