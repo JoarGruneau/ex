@@ -499,8 +499,13 @@ class Trainer(object):
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: 1.})
                 test=np.argmax(pred, axis=0)
+                print("sum test")
                 print(np.sum(test))
                 print(test.shape)
+                print("sum ground")
+                print(np.sum(pred[..., 0]))
+                print("sum cars")
+                print(np.sum(pred[..., 1]))
                 print(tp)
                 x, y = patch[2]
                 prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
