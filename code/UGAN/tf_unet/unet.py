@@ -498,7 +498,8 @@ class Trainer(object):
                 pred, tp= sess.run((self.net.predicter, self.net.tp), feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: 1.})
-                print(np.sum(np.argmax(pred, axis=3)))
+                test=np.argmax(pred, axis=3)
+                print(np.sum(test))
                 print(tp)
                 x, y = patch[2]
                 prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
