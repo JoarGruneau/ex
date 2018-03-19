@@ -119,7 +119,6 @@ def save_binary_masks():
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
     os.makedirs(save_path)
-    print sorted(glob.glob(image_path + '/*.png'))
     for image_name in sorted(glob.glob(image_path + '/*.png')):
         id = os.path.basename(image_name).split('.')[0]
         print(id)
@@ -150,6 +149,29 @@ def postdam_mapping():
 
         mask.save(os.path.join(save_path, id + '_mask.tif'))
 
+def down_sample(factor):
+    data_root=os.path.join(os.getcwd(), 'Potsdam')
+    data_path = os.path.join(data_root, 'bin_lables')
+    save_path=os.path.join(data_root, 'bin_lables_resized')
+    if os.path.exists(save_path):
+        shutil.rmtree(save_path)
+    os.makedirs(save_path)
+    size = 6000
+    for image_name in sorted(glob.glob(data_path + '/*.tif')):
+        id = os.path.basename(image_name).split('.')[0]
+        print(id)
+        img =Image.open(image_name, 'r')
+        img = np.asarray(img)
+        print(img.shape)
+        mask = Image.new('L', (size//factor, size//factor))
+        mask_pixels=mask.load()
+        for x in range(0, size, factor):
+            for y in range(0, size, factor):
+                # print("min")
+                # print(np.amin(img))
+                if np.median(img[x:x+factor, y:y+factor]) >= 255:
+                    mask_pixels[y//factor, x//factor, ] = 255
+        mask.save(os.path.join(save_path, id + '_mask.tif'))
 
 
 
@@ -173,7 +195,8 @@ def postdam_mapping():
 
 
 if __name__ == "__main__":
-    postdam_mapping()
+    #postdam_mapping()
+    down_sample(6)
     #create_ground_truth()
     # save_masks()
 

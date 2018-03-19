@@ -206,12 +206,12 @@ class Unet(object):
         self.correct_pred = tf.equal(tf.argmax(self.predicter, 3), tf.argmax(self.y, 3))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32))
 
-        tp = tf.reduce_sum(tf.cast(tf.argmax(self.predicter, 3), tf.float32) * self.y[..., 1])
-        fp = tf.reduce_sum(tf.cast(tf.argmax(self.predicter, 3), tf.float32)) - tp
-        fn = tf.reduce_sum(self.y[..., 1]) - tp
+        self.tp = tf.reduce_sum(tf.cast(tf.argmax(self.predicter, 3), tf.float32) * self.y[..., 1])
+        self.fp = tf.reduce_sum(tf.cast(tf.argmax(self.predicter, 3), tf.float32)) - self.tp
+        self.fn = tf.reduce_sum(self.y[..., 1]) - self.tp
 
-        self.precision = tp/(tp+fp)
-        self.recall = tp/(tp+fn)
+        self.precision = self.tp/(self.tp+self.fp)
+        self.recall = self.tp/(self.tp+self.fn)
         self.f1 = 2*self.recall*self.precision/(self.recall + self.precision)
 
         
@@ -463,13 +463,13 @@ class Trainer(object):
                     patches = data_provider.get_patches()
                     for patch in patches:
 
-                        _, lr, patch_acc, patch_loss, patch_precision, patch_recall, patch_f1_score = sess.run((
-                            self.optimizer, self.learning_rate_node, self.net.accuracy, self.net.cost, self.net.precision, self.net.recall, self.net.f1),
+                        _, lr, patch_acc, patch_loss, patch_precision, patch_recall, patch_f1_score, tp, fp, fn = sess.run((
+                            self.optimizer, self.learning_rate_node, self.net.accuracy, self.net.cost, self.net.precision, self.net.recall, self.net.f1, self.net.tp, self.net.fp, self.net.fn),
                                                       feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: dropout})
 
-
+                        print("tp: " + str(tp) +" fp: " +str(fp) + " fn: " +str(fn) + ' train')
                         acc.append(patch_acc)
                         loss.append(patch_loss)
                         precision.append(patch_precision)
@@ -540,12 +540,13 @@ class Trainer(object):
         for _ in range(eval_iters):
             patches = data_provider.get_patches()
             for patch in patches:
-                patch_loss, patch_acc, patch_precision, patch_recall, patch_f1_score = sess.run((
-                            self.net.cost, self.net.accuracy, self.net.precision, self.net.recall, self.net.f1),
+                patch_loss, patch_acc, patch_precision, patch_recall, patch_f1_score, tp, fp, fn = sess.run((
+                            self.net.cost, self.net.accuracy, self.net.precision, self.net.recall, self.net.f1, self.net.tp, self.net.fp, self.net.fn),
                                                       feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: 1})
                 
+                print("tp: " + str(tp) +" fp: " +str(fp) + " fn: " +str(fn) + ' eval')
                 loss.append(patch_loss)
                 acc.append(patch_acc)
                 precision.append(patch_precision)
