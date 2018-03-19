@@ -500,6 +500,7 @@ class Trainer(object):
                                                                  self.net.keep_prob: 1.})
                 test=np.argmax(pred, axis=3)
                 print(np.sum(test))
+                print(test.shape)
                 print(tp)
                 x, y = patch[2]
                 prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
