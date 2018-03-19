@@ -506,6 +506,8 @@ class Trainer(object):
                 print(np.sum(pred[..., 0]))
                 print("sum cars")
                 print(np.sum(pred[..., 1]))
+                print("test size")
+                print(np.sum(pred[..., 0] >= pred[..., 1]))
                 print(tp)
                 x, y = patch[2]
                 prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
