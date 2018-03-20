@@ -245,8 +245,9 @@ class Unet(object):
                 #                                                               labels=flat_labels))
                 loss_map = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits, 
                                                                                labels=flat_labels)
-                weight = (tf.cast(tf.size(loss_map[..., 1]), tf.float32)-tf.reduce_sum(loss_map[..., 1]))/tf.reduce_sum(loss_map[..., 1])
-                loss=tf.reduce_mean(loss_map[..., 0])+tf.reduce_mean(loss_map[..., 1])*50.0
+                weight = (1000000.0-tf.reduce_sum(loss_map[..., 1]))/tf.reduce_sum(loss_map[..., 1])
+                loss = (tf.reduce_sum(loss_map[..., 0])+tf.reduce_sum(loss_map[..., 1]*weight))/1000000.0
+        # elif cost_name == "sigmoid_cross_entropy"
 
         elif cost_name == "dice_coefficient":
             eps = 1e-5

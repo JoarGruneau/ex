@@ -83,7 +83,10 @@ class BaseDataProvider(object):
         nx = label.shape[0]
         ny = label.shape[1]
         labels = np.zeros((nx, ny, self.n_class), dtype=np.float32)
-        if self.n_class == 2:
+        if self.n_class == 1:
+            label = label/255
+            labels[..., 0] = label
+        elif self.n_class == 2:
             label = label/255
             labels[..., 1] = label
             labels[..., 0] = 1.0 - label
