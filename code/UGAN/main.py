@@ -10,7 +10,7 @@ import numpy as np
 
 # noinspection PyPackageRequirements
 if __name__ == '__main__':
-    net = unet.Unet(layers=5, features_root=64, cost="cross_entropy", channels=3, n_class=2, border_addition=6, summaries=False)
+    net = unet.Unet(layers=5, features_root=64, cost="cross_entropy", channels=3, n_class=2, border_addition=6, summaries=True)
     # data_provider = image_util.ImageDataProvider("Potsdam/RGB/*.tif", "Potsdam/Labels", patch_size=1000, border_size=20,
     #                                              data_suffix="_RGB.tif", mask_suffix='_label.tif',
     #                                              channels=3, n_class=6, load_saved=False)
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam')
     # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
     path = trainer.train(data_provider, eval_data_provider, "summaries/", dropout=0.75,
-                            training_iters=20, eval_iters=4, epochs=800, display_step=20, predict_step=50,  restore=False)
+                            training_iters=20, eval_iters=4, epochs=1000, display_step=50, predict_step=50,  restore=False)
     # x_test = a._load_file("images/00000000.png")
     # x_test = a._process_data([x_test])
     # prediction = net.predict(path, x_test)
