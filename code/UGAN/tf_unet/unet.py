@@ -1,22 +1,3 @@
-# tf_unet is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-# 
-# tf_unet is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with tf_unet.  If not, see <http://www.gnu.org/licenses/>.
-
-
-'''
-Created on Jul 28, 2016
-
-author: jakeret
-'''
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import os
@@ -30,11 +11,11 @@ import tensorflow as tf
 from tf_unet import util
 from tf_unet.layers import (weight_variable, weight_variable_devonc, bias_variable, 
                             conv2d, deconv2d, max_pool, crop_and_concat, pixel_wise_softmax_2,
-                            cross_entropy)
+                            cross_entropy, batch_norm, conv2d_fixed_padding, block_layer)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 
-def create_conv_net(x, keep_prob, channels, n_class,  layers=3, features_root=16, filter_size=3, pool_size=2, summaries=True):
+def create_conv_net(x, keep_prob, channels, n_class, unet_kwargs):
     """
     Creates a new convolutional unet for the given parametrization.
     
@@ -46,8 +27,11 @@ def create_conv_net(x, keep_prob, channels, n_class,  layers=3, features_root=16
     :param features_root: number of features in the first layer
     :param filter_size: size of the convolution filter
     :param pool_size: size of the max pooling operation
-    :param summaries: Flag if summaries should be created
     """
+    layers = unet_kwargs.pop('layers', 3)
+    features_root = unet_kwargs.pop('features_root', 16)
+    filter_size = unet_kwargs.pop('filter_size', 3)
+    pool_size = unet_kwargs.pop('pool_size', 2)
     
     logging.info("Layers {layers}, features {features}, filter size {filter_size}x{filter_size}, pool size: {pool_size}x{pool_size}".format(layers=layers,
                                                                                                            features=features_root,
@@ -60,116 +44,116 @@ def create_conv_net(x, keep_prob, channels, n_class,  layers=3, features_root=16
     in_node = x_image
     batch_size = tf.shape(x_image)[0]
 
-    weights = []
-    biases = []
-    convs = []
-    pools = OrderedDict()
-    deconv = OrderedDict()
-    dw_h_convs = OrderedDict()
-    up_h_convs = OrderedDict()
-    
-    in_size = 1000
-    size = in_size
-    # down layers
-    for layer in range(0, layers):
-        features = 2**layer*features_root
-        stddev = np.sqrt(2 / (filter_size**2 * features))
-        if layer == 0:
-            w1 = weight_variable([filter_size, filter_size, channels, features], stddev)
-        else:
-            w1 = weight_variable([filter_size, filter_size, features//2, features], stddev)
+    with tf.variable_scope('generator'):
+        pools = OrderedDict()
+        deconv = OrderedDict()
+        dw_h_convs = OrderedDict()
+        up_h_convs = OrderedDict()
+        
+        in_size = 1000
+        size = in_size
+        # down layers
+        for layer in range(0, layers):
+            features = 2**layer*features_root
+            stddev = np.sqrt(2 / (filter_size**2 * features))
+            if layer == 0:
+                w1 = weight_variable([filter_size, filter_size, channels, features], stddev)
+            else:
+                w1 = weight_variable([filter_size, filter_size, features//2, features], stddev)
+                
+            w2 = weight_variable([filter_size, filter_size, features, features], stddev)
+            b1 = bias_variable([features])
+            b2 = bias_variable([features])
             
-        w2 = weight_variable([filter_size, filter_size, features, features], stddev)
-        b1 = bias_variable([features])
-        b2 = bias_variable([features])
-        
-        conv1 = conv2d(in_node, w1, keep_prob)
-        tmp_h_conv = tf.nn.relu(conv1 + b1)
-        conv2 = conv2d(tmp_h_conv, w2, keep_prob)
-        dw_h_convs[layer] = tf.nn.relu(conv2 + b2)
-        
-        weights.append((w1, w2))
-        biases.append((b1, b2))
-        convs.append((conv1, conv2))
-        
-        size -= 4
-        if layer < layers-1:
-            pools[layer] = max_pool(dw_h_convs[layer], pool_size)
-            in_node = pools[layer]
-            size /= 2
-        
-    in_node = dw_h_convs[layers-1]
-        
-    # up layers
-    for layer in range(layers-2, -1, -1):
-        features = 2**(layer+1)*features_root
-        stddev = np.sqrt(2 / (filter_size**2 * features))
-        
-        wd = weight_variable_devonc([pool_size, pool_size, features//2, features], stddev)
-        bd = bias_variable([features//2])
-        h_deconv = tf.nn.relu(deconv2d(in_node, wd, pool_size) + bd)
-        h_deconv_concat = crop_and_concat(dw_h_convs[layer], h_deconv)
-        deconv[layer] = h_deconv_concat
-        
-        w1 = weight_variable([filter_size, filter_size, features, features//2], stddev)
-        w2 = weight_variable([filter_size, filter_size, features//2, features//2], stddev)
-        b1 = bias_variable([features//2])
-        b2 = bias_variable([features//2])
-        
-        conv1 = conv2d(h_deconv_concat, w1, keep_prob)
-        h_conv = tf.nn.relu(conv1 + b1)
-        conv2 = conv2d(h_conv, w2, keep_prob)
-        in_node = tf.nn.relu(conv2 + b2)
-        up_h_convs[layer] = in_node
-
-        weights.append((w1, w2))
-        biases.append((b1, b2))
-        convs.append((conv1, conv2))
-        
-        size *= 2
-        size -= 4
-
-    # Output Map
-    weight = weight_variable([1, 1, features_root, n_class], stddev)
-    bias = bias_variable([n_class])
-    conv = conv2d(in_node, weight, tf.constant(1.0))
-    output_map = tf.nn.relu(conv + bias)
-    up_h_convs["out"] = output_map
-    
-    if summaries:
-        for i, (c1, c2) in enumerate(convs):
-            tf.summary.image('summary_conv_%02d_01'%i, get_image_summary(c1))
-            tf.summary.image('summary_conv_%02d_02'%i, get_image_summary(c2))
+            conv1 = conv2d(in_node, w1, keep_prob)
+            tmp_h_conv = tf.nn.relu(conv1 + b1)
+            conv2 = conv2d(tmp_h_conv, w2, keep_prob)
+            dw_h_convs[layer] = tf.nn.relu(conv2 + b2)         
             
-        for k in pools.keys():
-            tf.summary.image('summary_pool_%02d'%k, get_image_summary(pools[k]))
-        
-        for k in deconv.keys():
-            tf.summary.image('summary_deconv_concat_%02d'%k, get_image_summary(deconv[k]))
+            size -= 4
+            if layer < layers-1:
+                pools[layer] = max_pool(dw_h_convs[layer], pool_size)
+                in_node = pools[layer]
+                size /= 2
             
-        for k in dw_h_convs.keys():
-            tf.summary.histogram("dw_convolution_%02d"%k + '/activations', dw_h_convs[k])
+        in_node = dw_h_convs[layers-1]
+            
+        # up layers
+        for layer in range(layers-2, -1, -1):
+            features = 2**(layer+1)*features_root
+            stddev = np.sqrt(2 / (filter_size**2 * features))
+            
+            wd = weight_variable_devonc([pool_size, pool_size, features//2, features], stddev)
+            bd = bias_variable([features//2])
+            h_deconv = tf.nn.relu(deconv2d(in_node, wd, pool_size) + bd)
+            h_deconv_concat = crop_and_concat(dw_h_convs[layer], h_deconv)
+            deconv[layer] = h_deconv_concat
+            
+            w1 = weight_variable([filter_size, filter_size, features, features//2], stddev)
+            w2 = weight_variable([filter_size, filter_size, features//2, features//2], stddev)
+            b1 = bias_variable([features//2])
+            b2 = bias_variable([features//2])
+            
+            conv1 = conv2d(h_deconv_concat, w1, keep_prob)
+            h_conv = tf.nn.relu(conv1 + b1)
+            conv2 = conv2d(h_conv, w2, keep_prob)
+            in_node = tf.nn.relu(conv2 + b2)
+            up_h_convs[layer] = in_node
+            
+            size *= 2
+            size -= 4
 
-        for k in up_h_convs.keys():
-            tf.summary.histogram("up_convolution_%s"%k + '/activations', up_h_convs[k])
-
-        # tf.summary.image("train", x_image)
-        # tf.summary.image("pred", )
-        # test_x, test_y
-        #
-    variables = []
-    for w1,w2 in weights:
-        variables.append(w1)
-        variables.append(w2)
+        # Output Map
+        weight = weight_variable([1, 1, features_root, n_class], stddev)
+        bias = bias_variable([n_class])
+        conv = conv2d(in_node, weight, tf.constant(1.0))
+        output_map = tf.nn.relu(conv + bias)
+        up_h_convs["out"] = output_map
         
-    for b1,b2 in biases:
-        variables.append(b1)
-        variables.append(b2)
+    return output_map, tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,'generator'), int(in_size - size)
 
-    return output_map, variables, int(in_size - size)
+def create_resnet(x, training, resnet_kwargs, reuse=False):
+    init_num_filters =resnet_kwargs.get('init_num_filters', None)
+    block_sizes =resnet_kwargs.get('block_sizes', None)
+    block_strides =resnet_kwargs.get('block_strides', None)
+    kernel_size =resnet_kwargs.get('kernel_size', 7)
+    conv_stride =resnet_kwargs.get('conv_stride', 2)
+    first_pool_size =resnet_kwargs.get('first_pool_size', 3)
+    first_pool_stride =resnet_kwargs.get('first_pool_stride', 2)
+    second_pool_size =resnet_kwargs.get('second_pool_size', 7)
+    second_pool_stride =resnet_kwargs.get('second_pool_stride', 1)
+
+    with tf.variable_scope('adversarial', reuse=reuse):
+        x = conv2d_fixed_padding(
+            inputs=x, filters=init_num_filters, kernel_size=kernel_size,
+            strides=conv_stride)
+
+        x = tf.layers.max_pooling2d(
+              inputs=x, pool_size=first_pool_size,
+              strides=first_pool_stride, padding='SAME')
+
+        for i, num_blocks in enumerate(block_sizes):
+          num_filters = init_num_filters * (2**i)
+          x = block_layer(
+              inputs=x, filters=num_filters,  blocks=num_blocks,
+              strides=block_strides[i], training=training)
+
+        x = batch_norm(x, training)
+        x = tf.nn.relu(x)
+        x = tf.layers.average_pooling2d(
+            inputs=x, pool_size=second_pool_size,
+            strides=second_pool_stride, padding='VALID')
+
+        x = tf.reshape(x, [-1, 26*26*num_filters])
+        x = tf.layers.dense(inputs=x, units=1)
+    if reuse:
+        return x
+    else:
+        return x, tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'adversarial')
 
 
-class Unet(object):
+
+class Ugan(object):
     """
     A unet implementation
     
@@ -179,30 +163,34 @@ class Unet(object):
     :param cost_kwargs: (optional) kwargs passed to the cost function. See Unet._get_cost for more options
     """
     
-    def __init__(self, channels=3, n_class=1, cost="cross_entropy", border_addition=0, cost_kwargs={}, **kwargs):
+    def __init__(self, channels=3, n_class=2, cost="cross_entropy", adversarial=True,
+                 border_addition=0, summaries=True, cost_kwargs={}, unet_kwargs={}, resnet_kwargs={}):
         tf.reset_default_graph()
         
         self.n_class = n_class
-        self.summaries = kwargs.get("summaries", True)
+        self.summaries = summaries
         
         self.x = tf.placeholder("float", shape=[None, None, None, channels])
         self.y = tf.placeholder("float", shape=[None, None, None, n_class])
         self.keep_prob = tf.placeholder(tf.float32) #dropout (keep probability)
-        
-        logits, self.variables, self.offset = create_conv_net(self.x, self.keep_prob, channels, n_class, **kwargs)
+        self.is_training = tf.placeholder(tf.bool)
+
+        generator_logits, self.generator_variables, self.offset = create_conv_net(
+            self.x, self.keep_prob, channels, n_class, unet_kwargs)
 
         self.border_addition = border_addition
         if border_addition != 0:
-            logits = logits[:, border_addition:-border_addition,border_addition:-border_addition, ...]
-        
-        self.cost, self.pred = self._get_cost(logits, cost, cost_kwargs)
-        
-        self.gradients_node = tf.gradients(self.cost, self.variables)
-         
-        self.cross_entropy = tf.reduce_mean(cross_entropy(tf.reshape(self.y, [-1, n_class]),
-                                                          tf.reshape(pixel_wise_softmax_2(logits), [-1, n_class])))
+            generator_logits = generator_logits[:, border_addition:-border_addition,border_addition:-border_addition, ...]
 
-        self.predicter = pixel_wise_softmax_2(logits)
+        self.predicter = pixel_wise_softmax_2(generator_logits)
+        self.generator_cost, self.pred = self._get_cost(generator_logits, cost, cost_kwargs)
+
+        self.gradients_node = tf.gradients(self.generator_cost, self.generator_variables)
+
+        self.cross_entropy = tf.reduce_mean(cross_entropy(tf.reshape(self.y, [-1, n_class]),
+                                                          tf.reshape(pixel_wise_softmax_2(generator_logits),
+                                                                     [-1, n_class])))
+
         self.correct_pred = tf.equal(tf.argmax(self.predicter, 3), tf.argmax(self.y, 3))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32))
 
@@ -210,9 +198,25 @@ class Unet(object):
         self.fp = tf.reduce_sum(tf.cast(tf.argmax(self.predicter, 3), tf.float32)) - self.tp
         self.fn = tf.reduce_sum(self.y[..., 1]) - self.tp
 
-        self.precision = self.tp/(self.tp+self.fp)
-        self.recall = self.tp/(self.tp+self.fn)
-        self.f1 = 2*self.recall*self.precision/(self.recall + self.precision)
+        self.precision = self.tp / (self.tp + self.fp)
+        self.recall = self.tp / (self.tp + self.fn)
+        self.f1 = 2 * self.recall * self.precision / (self.recall + self.precision)
+
+        border = self.offset//2 + border_addition
+        input_img = self.x[:, border:-border, border:-border, ...]
+        real_logits, self.discriminator_variables = create_resnet(
+            tf.concat([input_img, self.y], axis=3), self.is_training, resnet_kwargs)
+        fake_logits = create_resnet(tf.concat(
+            [input_img, self.predicter], axis=3), self.is_training, resnet_kwargs, reuse=True)
+        real_cost = tf.reduce_mean(
+            tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.ones_like(real_logits)))
+        fake_cost = tf.reduce_mean(
+            tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.zeros_like(fake_logits)))
+        self.discriminator_cost = real_cost + fake_cost
+        self.generator_cost=self.generator_cost+tf.reduce_mean(
+            tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.ones_like(fake_logits)))
+        self.fake_cost=tf.reduce_mean(
+            tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.ones_like(fake_logits)))
 
         
     def _get_cost(self, logits, cost_name, cost_kwargs):
@@ -276,7 +280,7 @@ class Unet(object):
 
         regularizer = cost_kwargs.pop("regularizer", None)
         if regularizer is not None:
-            regularizers = sum([tf.nn.l2_loss(variable) for variable in self.variables])
+            regularizers = sum([tf.nn.l2_loss(variable) for variable in self.generator_variables])
             loss += (regularizer * regularizers)
             
         return loss, logits
@@ -367,28 +371,21 @@ class Trainer(object):
             learning_rate = self.opt_kwargs.pop("learning_rate", 0.001)
             self.learning_rate_node = tf.Variable(learning_rate)
             
-            optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node, 
-                                               **self.opt_kwargs).minimize(self.net.cost,
-                                                                     global_step=self.global_step, var_list=self.net.variables)
+            g_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node,
+                                               **self.opt_kwargs).minimize(self.net.generator_cost,
+                                                                           var_list=self.net.generator_variables)
+            d_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node,
+                                               **self.opt_kwargs).minimize(self.net.discriminator_cost,
+                                                                     global_step=self.global_step,
+                                                                           var_list=self.net.discriminator_variables)
         
-        return optimizer
+        return g_optimizer, d_optimizer
         
     def _initialize(self, training_iters, output_path, restore, prediction_path):
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
-        
-        self.norm_gradients_node = tf.Variable(tf.constant(0.0, shape=[len(self.net.gradients_node)]))
-        
-        if self.net.summaries and self.norm_grads:
-            tf.summary.histogram('norm_grads', self.norm_gradients_node)
 
-        tf.summary.scalar('loss', self.net.cost)
-        tf.summary.scalar('cross_entropy', self.net.cross_entropy)
-        tf.summary.scalar('accuracy', self.net.accuracy)
+        self.g_optimizer, self.d_optimizer = self._get_optimizer(training_iters, self.global_step)
 
-        self.optimizer = self._get_optimizer(training_iters, self.global_step)
-        tf.summary.scalar('learning_rate', self.learning_rate_node)
-
-        self.summary_op = tf.summary.merge_all()        
         init = tf.global_variables_initializer()
         
         self.prediction_path = prediction_path
@@ -410,6 +407,15 @@ class Trainer(object):
             os.makedirs(output_path)
         # print ("global step =" +str(global_step))
         return init
+
+    def get_eval_variables(self, tags):
+        return [self.net.__getattribute__(tag) for tag in tags]
+
+
+    def eval_net(self, sess, feed_dict, optimizers=[], eval_metrics=[], eval_results=[]):
+        results = sess.run(optimizers + eval_metrics, feed_dict=feed_dict)
+        for i in range(len(optimizers),len(results)):
+            eval_results[i-len(optimizers)].append(results[i])
 
     def train(self, data_provider, eval_data_provider, output_path, training_iters=10, eval_iters=4, epochs=100, dropout=0.75, display_step=1,
               predict_step=50, restore=False, write_graph=False, prediction_path = 'prediction'):
@@ -457,41 +463,43 @@ class Trainer(object):
             logging.info("Start optimization")
             curr_step=tf.train.global_step(sess, self.global_step)
             curr_epoch=curr_step//(training_iters*patch_len)
-            avg_gradients = None
+
+            epoch_tags = ['discriminator_cost', 'generator_cost']
+            eval_tags = ['accuracy', 'precision', 'recall', 'f1', 'tp', 'fp', 'fn']
+            display_tags = epoch_tags + eval_tags
+            epoch_metrics = self.get_eval_variables(epoch_tags)
+            eval_metrics = self.get_eval_variables(eval_tags)
+            display_metrics = self.get_eval_variables(display_tags)
+            optimizers = [self.g_optimizer, self.d_optimizer]
+
             for epoch in range(curr_epoch,epochs):
-                loss =[]
-                acc = []
-                precision = []
-                recall  = []
-                f1_score = []
-                for step in range(
-                        (epoch*training_iters + 1), ((epoch+1)*training_iters)):
+                results = [[] for _ in range(len(epoch_tags if epoch % display_step != 0 else display_tags))]
+                for step in range((epoch*training_iters), ((epoch+1)*training_iters)):
                     patches = data_provider.get_patches()
                     for patch in patches:
+                        feed_dict = {self.net.x: patch[0], self.net.y: patch[1],
+                                   self.net.keep_prob: dropout, self.net.is_training: True}
+                        self.eval_net(sess, feed_dict, optimizers=optimizers,
+                                      eval_metrics=epoch_metrics if epoch % display_step != 0 else display_metrics,
+                                      eval_results=results)
 
-                        _, lr, patch_acc, patch_loss, patch_precision, patch_recall, patch_f1_score, tp, fp, fn = sess.run((
-                            self.optimizer, self.learning_rate_node, self.net.accuracy, self.net.cost, self.net.precision, self.net.recall, self.net.f1, self.net.tp, self.net.fp, self.net.fn),
-                                                      feed_dict={self.net.x: patch[0],
-                                                                 self.net.y: patch[1],
-                                                                 self.net.keep_prob: dropout})
-
-                        print("tp: " + str(tp) +" fp: " +str(fp) + " fn: " +str(fn) + ' train')
-                        acc.append(patch_acc)
-                        loss.append(patch_loss)
-                        precision.append(patch_precision)
-                        recall.append(patch_recall)
-                        f1_score.append(patch_f1_score)
-
+                results = [np.mean(result) for result in results]
                 if epoch % display_step == 0:
                     save_path = self.net.save(sess, save_path, self.global_step)
-                    self.write_summary(summary_writer, epoch, np.mean(loss), np.mean(acc), np.mean(precision), np.mean(recall), np.mean(f1_score), 'train')
-                    self.output_minibatch_stats(sess, eval_summary_writer, eval_iters, epoch, eval_data_provider, 'eval')
+                    self.write_summary(summary_writer, epoch, display_tags, results)
+                    self.write_logg(['epoch', 'type']+display_tags, [epoch, 'train']+results)
+                    self.output_minibatch_stats(sess, eval_summary_writer, eval_iters, epoch,
+                                                eval_data_provider, eval_tags, eval_metrics, 'eval')
+                else:
+                    self.write_logg(['epoch']+epoch_tags, [epoch]+results)
 
-                self.output_epoch_stats(epoch, np.mean(loss), training_iters, lr)
                 if epoch%predict_step == 0:
-                    self.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size, input_size, "epoch_%s"%epoch, combine=True)
+                    self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
+                                          patch_size, input_size, "epoch_%s"%epoch, combine=True)
+
             logging.info("Optimization Finished!")
-            self.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size, input_size, "epoch_%s"%100000, combine=True)
+            self.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size,
+                                  input_size, "epoch_%s"%100000, combine=True)
 
     def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name, combine=False):
         for i in range(eval_iters):
@@ -501,20 +509,10 @@ class Trainer(object):
                 label = np.zeros((self.verification_batch_size, input_size, input_size,2))
             prediction = np.zeros((self.verification_batch_size, input_size, input_size, self.net.n_class))
             for patch in patches:
-                pred, tp= sess.run((self.net.predicter, self.net.tp), feed_dict={self.net.x: patch[0],
+                pred= sess.run((self.net.predicter), feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
-                                                                 self.net.keep_prob: 1.})
-                # test=np.argmax(pred, axis=3)
-                # print("sum test")
-                # print(np.sum(test))
-                # print(test.shape)
-                # print("sum ground")
-                # print(np.sum(pred[..., 0]))
-                # print("sum cars")
-                # print(np.sum(pred[..., 1]))
-                # print("test size")
-                # print(np.sum(pred[..., 0] >= pred[..., 1]))
-                # print(tp)
+                                                                 self.net.keep_prob: 1.0,
+                                                                 self.net.is_training: False})
                 x, y = patch[2]
                 prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
 
@@ -524,16 +522,6 @@ class Trainer(object):
                     label[:,x:x+patch_size,y:y+patch_size,...] = patch[1]
 
             pred_shape = prediction.shape
-            
-            # loss = sess.run(self.net.cost, feed_dict={self.net.x: image,
-            #                                                self.net.y: util.crop_to_shape(label, pred_shape),
-            #                                                self.net.keep_prob: 1.})
-            #
-            # logging.info("Verification error= {:.1f}%, loss= {:.4f}".format(error_rate(prediction,
-            #                                                                   util.crop_to_shape(label,
-            #                                                                                      prediction.shape)),
-            #                                                                   loss))
-            #
             if combine:
                 img = util.combine_img_prediction(image , label, prediction)
             else:
@@ -544,55 +532,35 @@ class Trainer(object):
         
         return pred_shape
     
-    def output_epoch_stats(self, epoch, loss, training_iters, lr):
-        logging.info("Epoch {:}, Average loss: {:.4f}, learning rate: {:.4f}".format(epoch, loss, lr))
+    def write_logg(self, tags, results):
+        logg_string = ''
+        for i in range(len(tags)):
+            if type(results[i]) == np.float32:
+                logg_string += ', {:}= {:.4f}'.format(tags[i], results[i])
+            else:
+                logg_string += ', {:}= {:}'.format(tags[i], results[i])
+        logging.info(logg_string)
     
-    def output_minibatch_stats(self, sess, summary_writer, eval_iters, step, data_provider, stats_type):
-        # Calculate batch loss and accuracy
-        loss =[]
-        acc = []
-        precision = []
-        recall  = []
-        f1_score = []
+    def output_minibatch_stats(self, sess, summary_writer, eval_iters, step,
+                               data_provider, tags, eval_metrics, stats_type):
+        results = [[] for _ in range(len(tags))]
         for _ in range(eval_iters):
             patches = data_provider.get_patches()
             for patch in patches:
-                patch_loss, patch_acc, patch_precision, patch_recall, patch_f1_score, tp, fp, fn = sess.run((
-                            self.net.cost, self.net.accuracy, self.net.precision, self.net.recall, self.net.f1, self.net.tp, self.net.fp, self.net.fn),
-                                                      feed_dict={self.net.x: patch[0],
-                                                                 self.net.y: patch[1],
-                                                                 self.net.keep_prob: 1})
-                
-                print("tp: " + str(tp) +" fp: " +str(fp) + " fn: " +str(fn) + ' eval')
-                loss.append(patch_loss)
-                acc.append(patch_acc)
-                precision.append(patch_precision)
-                recall.append(patch_recall)
-                f1_score.append(patch_f1_score)
-        loss=np.mean(loss)
-        acc=np.mean(acc)
-        precision=np.mean(precision)
-        recall=np.mean(recall)
-        f1_score=np.mean(f1_score)
-        self.write_summary(summary_writer, step, loss, acc, precision, recall, f1_score, stats_type)
-        # summary = tf.Summary()
-        # summary.value.add(tag="Accuracy", simple_value=acc)
-        # summary.value.add(tag="Loss", simple_value=loss)
-        # summary_writer.add_summary(summary, step)
-        # summary_writer.flush()
-        # logging.info("Type {:}, Epoch {:}, Loss= {:.4f}, Accuracy= {:.4f}".format(stats_type, step, loss, acc))
+                feed_dict = {self.net.x: patch[0], self.net.y: patch[1],
+                             self.net.keep_prob: 1.0, self.net.is_training: False}
+                self.eval_net(sess, feed_dict, eval_metrics=eval_metrics, eval_results=results)
 
-    def write_summary(self, summary_writer, step, loss, acc, precision, recall, f1_score, stats_type):
+        results = [np.mean(result) for result in results]
+        self.write_summary(summary_writer, step, tags, results)
+        self.write_logg(['epoch', 'type']+tags, [step, stats_type] + results)
+
+    def write_summary(self, summary_writer, step, tags, results):
         summary = tf.Summary()
-        summary.value.add(tag="Loss", simple_value=loss)
-        summary.value.add(tag="Accuracy", simple_value=acc)
-        summary.value.add(tag="Precision", simple_value=precision)
-        summary.value.add(tag="Recall", simple_value=recall)
-        summary.value.add(tag="f1_score", simple_value=f1_score)
+        for i in range(len(tags)):
+            summary.value.add(tag=tags[i], simple_value=results[i])
         summary_writer.add_summary(summary, step)
         summary_writer.flush()
-        logging.info("Type {:}, Epoch {:}, Loss= {:.4f}, Accuracy= {:.4f}, Precision= {:.4f}, Recall= {:.4f}, f1_score= {:.4f}, ".format(stats_type, step, loss, acc, precision, recall, f1_score))
-
 
 def _update_avg_gradients(avg_gradients, gradients, step):
     if avg_gradients is None:

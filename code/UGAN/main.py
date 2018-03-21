@@ -8,9 +8,14 @@ import numpy as np
 #five layers 1132 borders(92+2)
 
 
+
 # noinspection PyPackageRequirements
 if __name__ == '__main__':
-    net = unet.Unet(layers=5, features_root=64, cost="cross_entropy", channels=3, n_class=2, border_addition=6, summaries=True)
+    unet_kwargs = {'layers':5, 'features_root':64}
+    resnet_kwargs={'init_num_filters':64, 'block_sizes': [2, 2, 2, 2], 'block_strides': [1, 2, 2, 2],}
+
+
+    net = unet.Ugan(cost="cross_entropy", channels=3, n_class=2, border_addition=6, summaries=True, unet_kwargs=unet_kwargs, resnet_kwargs=resnet_kwargs)
     # data_provider = image_util.ImageDataProvider("Potsdam/RGB/*.tif", "Potsdam/Labels", patch_size=1000, border_size=20,
     #                                              data_suffix="_RGB.tif", mask_suffix='_label.tif',
     #                                              channels=3, n_class=6, load_saved=False)
@@ -18,7 +23,6 @@ if __name__ == '__main__':
     #                                              data_suffix="_RGB.tif", mask_suffix='_label.tif',
     #                                              channels=3, n_class=6, load_saved=True)
     # data_provider.save_patches('Potsdam/train_RGB/')
-    print(net.offset)
     data_provider = \
         image_util.ImageDataProvider("Potsdam/resized2/train/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
                                                  channels=3, n_class=2, border_size=net.offset//2 + 6, data_suffix="_RGB.tif",
@@ -33,7 +37,7 @@ if __name__ == '__main__':
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam')
     # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
     path = trainer.train(data_provider, eval_data_provider, "summaries/", dropout=0.75,
-                            training_iters=20, eval_iters=4, epochs=1000, display_step=50, predict_step=50,  restore=True)
+                            training_iters=20, eval_iters=4, epochs=800, display_step=20, predict_step=50,  restore=False)
     # x_test = a._load_file("images/00000000.png")
     # x_test = a._process_data([x_test])
     # prediction = net.predict(path, x_test)

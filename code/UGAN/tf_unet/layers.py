@@ -69,3 +69,79 @@ def pixel_wise_softmax_2(output_map):
 def cross_entropy(y_,output_map):
     return -tf.reduce_mean(y_*tf.log(tf.clip_by_value(output_map,1e-10,1.0)), name="cross_entropy")
 #     return tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(output_map), reduction_indices=[1]))
+
+def batch_norm(x, training):
+    return tf.layers.batch_normalization(
+      inputs=x, axis=3,
+      momentum=0.997, epsilon=1e-5, center=True,
+      scale=True, training=training, fused=True)
+
+def fixed_padding(inputs, kernel_size):
+    pad_total = kernel_size - 1
+    pad_beg = pad_total // 2
+    pad_end = pad_total - pad_beg
+    padded_inputs = tf.pad(inputs, [[0, 0], [pad_beg, pad_end],
+                                    [pad_beg, pad_end], [0, 0]])
+    return padded_inputs
+
+
+def conv2d_fixed_padding(inputs, filters, kernel_size, strides):
+    """Strided 2-D convolution with explicit padding."""
+    # The padding is consistent and is based only on `kernel_size`, not on the
+    # dimensions of `inputs` (as opposed to using `tf.layers.conv2d` alone).
+    if strides > 1:
+        inputs = fixed_padding(inputs, kernel_size)
+    return tf.layers.conv2d(
+        inputs=inputs, filters=filters, kernel_size=kernel_size, strides=strides,
+        padding=('SAME' if strides == 1 else 'VALID'), use_bias=False,
+        kernel_initializer=tf.variance_scaling_initializer())
+
+def _building_block_v2(inputs, filters, training, projection_shortcut, strides):
+    shortcut = inputs
+    inputs = batch_norm(inputs, training)
+    inputs = tf.nn.relu(inputs)
+
+    # The projection shortcut should come after the first batch norm and ReLU
+    # since it performs a 1x1 convolution.
+    if projection_shortcut is not None:
+        shortcut = projection_shortcut(inputs)
+
+    inputs = conv2d_fixed_padding(inputs=inputs, filters=filters, kernel_size=3, strides=strides)
+    inputs = batch_norm(inputs, training)
+    inputs = tf.nn.relu(inputs)
+    inputs = conv2d_fixed_padding(inputs=inputs, filters=filters, kernel_size=3, strides=1)
+    return inputs + shortcut
+
+def block_layer(inputs, filters, blocks, strides, training):
+    """Creates one layer of blocks for the ResNet model.
+    Args:
+    inputs: A tensor of size [batch, channels, height_in, width_in] or
+    [batch, height_in, width_in, channels] depending on data_format.
+    filters: The number of filters for the first convolution of the layer.
+    bottleneck: Is the block created a bottleneck block.
+    block_fn: The block to use within the model, either `building_block` or
+    `bottleneck_block`.
+    blocks: The number of blocks contained in the layer.
+    strides: The stride to use for the first convolution of the layer. If
+    greater than 1, this layer will ultimately downsample the input.
+    training: Either True or False, whether we are currently training the
+    model. Needed for batch norm.
+    name: A string name for the tensor output of the block layer.
+    data_format: The input format ('channels_last' or 'channels_first').
+    Returns:
+    The output tensor of the block layer.
+    """
+
+    # Bottleneck blocks end with 4x the number of filters as they start with
+
+    def projection_shortcut(inputs):
+        return conv2d_fixed_padding(
+        inputs=inputs, filters=filters, kernel_size=1, strides=strides)
+
+    # Only the first block per block_layer uses projection_shortcut and strides
+    inputs = _building_block_v2(inputs, filters, training, projection_shortcut, strides)
+
+    for i in range(1, blocks):
+        inputs = _building_block_v2(inputs, filters, training, None, 1)
+
+    return inputs
