@@ -183,7 +183,7 @@ class Ugan(object):
             generator_logits = generator_logits[:, border_addition:-border_addition,border_addition:-border_addition, ...]
 
         self.predicter = pixel_wise_softmax_2(generator_logits)
-        self.generator_cost, self.pred = self._get_cost(generator_logits, cost, cost_kwargs)
+        self.bce_loss, self.pred = self._get_cost(generator_logits, cost, cost_kwargs)
 
         self.gradients_node = tf.gradients(self.generator_cost, self.generator_variables)
 
@@ -208,17 +208,14 @@ class Ugan(object):
             tf.concat([input_img, self.y], axis=3), self.is_training, resnet_kwargs)
         fake_logits = create_resnet(tf.concat(
             [input_img, self.predicter], axis=3), self.is_training, resnet_kwargs, reuse=True)
-        print(fake_logits.shape)
-        print(real_logits.shape)
-        print(tf.one_hot([0], depth=0))
         real_cost = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.ones_like(real_logits)))
         fake_cost = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.zeros_like(fake_logits)))
         self.discriminator_cost = real_cost + fake_cost
-        self.fake_prob = 1.0 - tf.reduce_mean(tf.sigmoid(fake_logits))
+        self.fake_prob = 1.0-tf.reduce_mean(tf.sigmoid(fake_logits))
         self.real_prob = tf.reduce_mean(tf.sigmoid(real_logits))
-        self.generator_cost=self.generator_cost+tf.reduce_mean(
+        self.generator_cost=self.bce_loss+tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.ones_like(fake_logits)))
 
         
@@ -467,7 +464,7 @@ class Trainer(object):
             curr_step=tf.train.global_step(sess, self.global_step)
             curr_epoch=curr_step//(training_iters*patch_len)
 
-            epoch_tags = ['discriminator_cost', 'generator_cost', 'fake_prob', 'real_prob']
+            epoch_tags = ['discriminator_cost', 'generator_cost', 'bce_loss' 'fake_prob', 'real_prob']
             eval_tags = ['accuracy', 'precision', 'recall', 'f1', 'tp', 'fp', 'fn']
             display_tags = epoch_tags + eval_tags
             epoch_metrics = self.get_eval_variables(epoch_tags)
