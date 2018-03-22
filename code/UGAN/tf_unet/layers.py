@@ -165,9 +165,9 @@ def block_layer(inputs, filters, blocks, strides, training):
         inputs=inputs, filters=filters, kernel_size=1, strides=strides)
 
     # Only the first block per block_layer uses projection_shortcut and strides
-    inputs = _building_block_v2(inputs, filters, training, projection_shortcut, strides)
+    inputs = _bottleneck_block_v2(inputs, filters*4, training, projection_shortcut, strides)
 
     for i in range(1, blocks):
-        inputs = _building_block_v2(inputs, filters, training, None, 1)
+        inputs = _bottleneck_block_v2(inputs, filters, training, None, 1)
 
     return inputs
