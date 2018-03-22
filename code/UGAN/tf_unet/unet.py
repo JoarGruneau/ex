@@ -213,7 +213,7 @@ class Ugan(object):
         self.discriminator_cost = real_cost + fake_cost
         self.fake_prob = 1.0-tf.reduce_mean(tf.sigmoid(fake_logits))
         self.real_prob = tf.reduce_mean(tf.sigmoid(real_logits))
-        self.generator_cost=self.bce_loss+tf.reduce_mean(
+        self.generator_cost=self.bce_loss+0.1*tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.ones_like(fake_logits)))
 
         
@@ -468,7 +468,7 @@ class Trainer(object):
             epoch_metrics = self.get_eval_variables(epoch_tags)
             eval_metrics = self.get_eval_variables(eval_tags)
             display_metrics = self.get_eval_variables(display_tags)
-            optimizers = [self.g_optimizer, self.d_optimizer]
+            optimizers = [self.d_optimizer, self.g_optimizer]
 
             for epoch in range(curr_epoch,epochs):
                 results = [[] for _ in range(len(epoch_tags if epoch % display_step != 0 else display_tags))]
@@ -477,7 +477,7 @@ class Trainer(object):
                     for patch in patches:
                         feed_dict = {self.net.x: patch[0], self.net.y: patch[1],
                                    self.net.keep_prob: dropout, self.net.is_training: True}
-                        self.eval_net(sess, feed_dict, optimizers=[self.d_optimizer, self.d_optimizer])
+                        # self.eval_net(sess, feed_dict, optimizers=[self.d_optimizer, self.d_optimizer])
                         self.eval_net(sess, feed_dict, optimizers=optimizers,
                                       eval_metrics=epoch_metrics if epoch % display_step != 0 else display_metrics,
                                       eval_results=results)
