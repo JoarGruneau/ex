@@ -144,7 +144,7 @@ def create_resnet(x, training, resnet_kwargs, reuse=False):
             inputs=x, pool_size=second_pool_size,
             strides=second_pool_stride, padding='VALID')
 
-        x = tf.reshape(x, [-1, 26*26*num_filters])
+        x = tf.reshape(x, [1, -1])
         x = tf.layers.dense(inputs=x, units=1)
     if reuse:
         return x
@@ -164,7 +164,7 @@ class Ugan(object):
     """
     
     def __init__(self, channels=3, n_class=2, cost="cross_entropy", adversarial=True,
-                 border_addition=0, summaries=True, cost_kwargs={}, unet_kwargs={}, resnet_kwargs={}):
+                 border_addition=0, patch_size=1000, summaries=True, cost_kwargs={}, unet_kwargs={}, resnet_kwargs={}):
         tf.reset_default_graph()
         
         self.n_class = n_class
@@ -202,6 +202,7 @@ class Ugan(object):
 
         border = self.offset//2 + border_addition
         input_img = self.x[:, border:-border, border:-border, ...]
+        input_img.set_shape((1, patch_size, patch_size, channels))
         real_logits, self.discriminator_variables = create_resnet(
             tf.concat([input_img, self.y], axis=3), self.is_training, resnet_kwargs)
         fake_logits = create_resnet(tf.concat(

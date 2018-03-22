@@ -15,7 +15,7 @@ if __name__ == '__main__':
     resnet_kwargs={'init_num_filters':4, 'block_sizes': [3, 4, 6, 3], 'block_strides': [1, 2, 2, 2],}
 
 
-    net = unet.Ugan(cost="cross_entropy", channels=3, n_class=2, border_addition=6, summaries=True, unet_kwargs=unet_kwargs, resnet_kwargs=resnet_kwargs)
+    net = unet.Ugan(cost="cross_entropy", channels=3, n_class=2, border_addition=6, patch_size=500, summaries=True, unet_kwargs=unet_kwargs, resnet_kwargs=resnet_kwargs)
     # data_provider = image_util.ImageDataProvider("Potsdam/RGB/*.tif", "Potsdam/Labels", patch_size=1000, border_size=20,
     #                                              data_suffix="_RGB.tif", mask_suffix='_label.tif',
     #                                              channels=3, n_class=6, load_saved=False)
@@ -24,11 +24,11 @@ if __name__ == '__main__':
     #                                              channels=3, n_class=6, load_saved=True)
     # data_provider.save_patches('Potsdam/train_RGB/')
     data_provider = \
-        image_util.ImageDataProvider("Potsdam/resized2/train/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
+        image_util.ImageDataProvider("Potsdam/resized2/train/*.tif", "Potsdam/bin_labels_resized/", patch_size=500,
                                                  channels=3, n_class=2, border_size=net.offset//2 + 6, data_suffix="_RGB.tif",
                                                  mask_suffix='_label_mask_mask.tif')
     eval_data_provider = \
-        image_util.ImageDataProvider("Potsdam/resized2/eval/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
+        image_util.ImageDataProvider("Potsdam/resized2/eval/*.tif", "Potsdam/bin_labels_resized/", patch_size=500,
                                                  channels=3, n_class=2, border_size=net.offset//2 + 6, data_suffix="_RGB.tif",
                                                  mask_suffix='_label_mask_mask.tif', shuffle_data=False)
     # data_provider = image_util.ImageDataProvider("images/*.png", border_size=0, data_suffix=".png",
