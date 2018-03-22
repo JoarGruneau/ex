@@ -162,10 +162,10 @@ def block_layer(inputs, filters, blocks, strides, training):
 
     def projection_shortcut(inputs):
         return conv2d_fixed_padding(
-        inputs=inputs, filters=filters, kernel_size=1, strides=strides)
+        inputs=inputs, filters=filters*4, kernel_size=1, strides=strides)
 
     # Only the first block per block_layer uses projection_shortcut and strides
-    inputs = _bottleneck_block_v2(inputs, filters*4, training, projection_shortcut, strides)
+    inputs = _bottleneck_block_v2(inputs, filters, training, projection_shortcut, strides)
 
     for i in range(1, blocks):
         inputs = _bottleneck_block_v2(inputs, filters, training, None, 1)
