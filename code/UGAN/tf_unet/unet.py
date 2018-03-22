@@ -185,8 +185,6 @@ class Ugan(object):
         self.predicter = pixel_wise_softmax_2(generator_logits)
         self.bce_loss, self.pred = self._get_cost(generator_logits, cost, cost_kwargs)
 
-        self.gradients_node = tf.gradients(self.generator_cost, self.generator_variables)
-
         self.cross_entropy = tf.reduce_mean(cross_entropy(tf.reshape(self.y, [-1, n_class]),
                                                           tf.reshape(pixel_wise_softmax_2(generator_logits),
                                                                      [-1, n_class])))
