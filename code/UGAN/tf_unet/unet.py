@@ -482,7 +482,7 @@ class Trainer(object):
                     for patch in patches:
                         feed_dict = {self.net.x: patch[0], self.net.y: patch[1],
                                    self.net.keep_prob: dropout, self.net.is_training: True}
-                        # self.eval_net(sess, feed_dict, optimizers=[self.d_optimizer, self.d_optimizer])
+                        self.eval_net(sess, feed_dict, optimizers=[self.d_optimizer, self.d_optimizer])
                         self.eval_net(sess, feed_dict, optimizers=optimizers,
                                       eval_metrics=epoch_metrics if epoch % display_step != 0 else display_metrics,
                                       eval_results=results)
