@@ -213,9 +213,9 @@ class Ugan(object):
         fake_cost = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.zeros_like(fake_logits)))
         self.discriminator_cost = real_cost + fake_cost
+        self.fake_prob = tf.nn.sigmoid(fake_logits)
+        self.real_prob = tf.nn.sigmoid(real_logits)
         self.generator_cost=self.generator_cost+tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.ones_like(fake_logits)))
-        self.fake_cost=tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.ones_like(fake_logits)))
 
         
@@ -373,10 +373,10 @@ class Trainer(object):
             
             g_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node,
                                                **self.opt_kwargs).minimize(self.net.generator_cost,
+                                                                           global_step=self.global_step,
                                                                            var_list=self.net.generator_variables)
             d_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node,
                                                **self.opt_kwargs).minimize(self.net.discriminator_cost,
-                                                                     global_step=self.global_step,
                                                                            var_list=self.net.discriminator_variables)
         
         return g_optimizer, d_optimizer
@@ -432,7 +432,7 @@ class Trainer(object):
         :param write_graph: Flag if the computation graph should be written as protobuf file to the output path
         :param prediction_path: path where to save predictions on each epoch
         """
-        save_path = os.path.join(os.path.join(output_path, 'train'), "model.cpkt")
+        save_path = os.path.join(os.path.join(output_path, 'model'), "model.cpkt")
         if epochs == 0:
             return save_path
         
@@ -445,7 +445,7 @@ class Trainer(object):
             sess.run(init)
             
             if restore:
-                ckpt = tf.train.get_checkpoint_state(os.path.join(output_path, 'train'))
+                ckpt = tf.train.get_checkpoint_state(os.path.join(output_path, 'model'))
                 if ckpt and ckpt.model_checkpoint_path:
                     self.net.restore(sess, ckpt.model_checkpoint_path)
                     print ("restored")
@@ -464,7 +464,7 @@ class Trainer(object):
             curr_step=tf.train.global_step(sess, self.global_step)
             curr_epoch=curr_step//(training_iters*patch_len)
 
-            epoch_tags = ['discriminator_cost', 'generator_cost']
+            epoch_tags = ['discriminator_cost', 'generator_cost', 'fake_prob', 'real_prob']
             eval_tags = ['accuracy', 'precision', 'recall', 'f1', 'tp', 'fp', 'fn']
             display_tags = epoch_tags + eval_tags
             epoch_metrics = self.get_eval_variables(epoch_tags)
@@ -479,6 +479,7 @@ class Trainer(object):
                     for patch in patches:
                         feed_dict = {self.net.x: patch[0], self.net.y: patch[1],
                                    self.net.keep_prob: dropout, self.net.is_training: True}
+                        self.eval_net(sess, feed_dict, optimizers=[self.d_optimizer])
                         self.eval_net(sess, feed_dict, optimizers=optimizers,
                                       eval_metrics=epoch_metrics if epoch % display_step != 0 else display_metrics,
                                       eval_results=results)

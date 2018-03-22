@@ -12,7 +12,7 @@ import numpy as np
 # noinspection PyPackageRequirements
 if __name__ == '__main__':
     unet_kwargs = {'layers':5, 'features_root':64}
-    resnet_kwargs={'init_num_filters':64, 'block_sizes': [2, 2, 2, 2], 'block_strides': [1, 2, 2, 2],}
+    resnet_kwargs={'init_num_filters':64, 'block_sizes': [3, 4, 6, 3], 'block_strides': [1, 2, 2, 2],}
 
 
     net = unet.Ugan(cost="cross_entropy", channels=3, n_class=2, border_addition=6, summaries=True, unet_kwargs=unet_kwargs, resnet_kwargs=resnet_kwargs)
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam')
     # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
     path = trainer.train(data_provider, eval_data_provider, "summaries/", dropout=0.75,
-                            training_iters=20, eval_iters=4, epochs=800, display_step=20, predict_step=50,  restore=False)
+                            training_iters=20, eval_iters=4, epochs=800, display_step=20, predict_step=20,  restore=False)
     # x_test = a._load_file("images/00000000.png")
     # x_test = a._process_data([x_test])
     # prediction = net.predict(path, x_test)

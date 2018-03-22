@@ -112,6 +112,32 @@ def _building_block_v2(inputs, filters, training, projection_shortcut, strides):
     inputs = conv2d_fixed_padding(inputs=inputs, filters=filters, kernel_size=3, strides=1)
     return inputs + shortcut
 
+def _bottleneck_block_v2(inputs, filters, training, projection_shortcut,
+                         strides):
+  shortcut = inputs
+  inputs = batch_norm(inputs, training)
+  inputs = tf.nn.relu(inputs)
+
+  # The projection shortcut should come after the first batch norm and ReLU
+  # since it performs a 1x1 convolution.
+  if projection_shortcut is not None:
+    shortcut = projection_shortcut(inputs)
+
+  inputs = conv2d_fixed_padding(
+      inputs=inputs, filters=filters, kernel_size=1, strides=1)
+
+  inputs = batch_norm(inputs, training)
+  inputs = tf.nn.relu(inputs)
+  inputs = conv2d_fixed_padding(
+      inputs=inputs, filters=filters, kernel_size=3, strides=strides)
+
+  inputs = batch_norm(inputs, training)
+  inputs = tf.nn.relu(inputs)
+  inputs = conv2d_fixed_padding(
+      inputs=inputs, filters=4 * filters, kernel_size=1, strides=1)
+
+  return inputs + shortcut
+
 def block_layer(inputs, filters, blocks, strides, training):
     """Creates one layer of blocks for the ResNet model.
     Args:
