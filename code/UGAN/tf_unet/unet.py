@@ -462,7 +462,7 @@ class Trainer(object):
             curr_step=tf.train.global_step(sess, self.global_step)
             curr_epoch=curr_step//(training_iters*patch_len)
 
-            epoch_tags = ['discriminator_cost', 'generator_cost', 'bce_loss' 'fake_prob', 'real_prob']
+            epoch_tags = ['discriminator_cost', 'generator_cost', 'bce_loss', 'fake_prob', 'real_prob']
             eval_tags = ['accuracy', 'precision', 'recall', 'f1', 'tp', 'fp', 'fn']
             display_tags = epoch_tags + eval_tags
             epoch_metrics = self.get_eval_variables(epoch_tags)
