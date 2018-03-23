@@ -503,8 +503,8 @@ class Trainer(object):
                     while d_cost > cut_off:
                         d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
                                                   discriminator_tags, feed_dict)
-                    d_cost=d_results[0]
-                    self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+                        d_cost=d_results[0]
+                        self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
 
 
             logging.info("Optimization Finished!")
