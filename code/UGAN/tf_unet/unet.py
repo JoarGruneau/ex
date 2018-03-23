@@ -498,13 +498,12 @@ class Trainer(object):
                 if epoch%predict_step == 0:
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                                           patch_size, input_size, "epoch_%s"%epoch, combine=True)
-                if epoch % check_discriminator == 0:
-                    d_results=self.eval_epoch(sess, data_provider, training_iters, [self.d_optimizer],
+                d_cost =10:
+                while d_cost > cut_off:
+                    d_results=self.eval_epoch(sess, data_provider, 5, [self.d_optimizer],
                                               discriminator_tags, feed_dict)
+                    d_cost=d_results[0]
                     self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
-                    while d_results[0] > cut_off:
-                        d_results = self.eval_epoch(sess, data_provider, 2, [self.d_optimizer], discriminator_tags, feed_dict)
-                        self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
 
 
             logging.info("Optimization Finished!")
