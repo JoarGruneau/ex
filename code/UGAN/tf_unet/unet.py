@@ -556,7 +556,7 @@ class Trainer(object):
                                data_provider, tags, stats_type):
         feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: 1.0, self.net.is_training: False}
         results = self.eval_epoch(sess, data_provider, eval_iters, optimizers=[],
-                                  eval_metrics=tags, feed_dict=feed_dict)
+                                  tags=tags, feed_dict=feed_dict)
         self.write_summary(summary_writer, step, tags, results)
         self.write_logg(['epoch', 'type']+tags, [step, stats_type] + results)
 
