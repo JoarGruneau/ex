@@ -503,8 +503,7 @@ class Trainer(object):
                                               discriminator_tags, feed_dict)
                     self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
                     while d_results[0] > cut_off:
-                        d_results = self.eval_epoch(sess, data_provider, training_iters, [self.d_optimizer],
-                                                    discriminator_tags, feed_dict)
+                        d_results = self.eval_epoch(sess, data_provider, 2, [self.d_optimizer], discriminator_tags, feed_dict)
                         self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
 
 
