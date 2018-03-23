@@ -498,7 +498,7 @@ class Trainer(object):
                 if epoch%predict_step == 0:
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                                           patch_size, input_size, "epoch_%s"%epoch, combine=True)
-                d_cost =10:
+                d_cost =10
                 while d_cost > cut_off:
                     d_results=self.eval_epoch(sess, data_provider, 5, [self.d_optimizer],
                                               discriminator_tags, feed_dict)
