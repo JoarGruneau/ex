@@ -214,7 +214,7 @@ class Ugan(object):
         self.discriminator_cost = real_cost + fake_cost
         self.fake_prob = 1.0-tf.reduce_mean(tf.sigmoid(fake_logits))
         self.real_prob = tf.reduce_mean(tf.sigmoid(real_logits))
-        self.generator_cost=10*self.bce_loss + tf.reduce_mean(
+        self.generator_cost=self.bce_loss + 0.1*tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.ones_like(fake_logits)))
 
         
