@@ -372,10 +372,10 @@ class Trainer(object):
             
             g_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node,
                                                **self.opt_kwargs).minimize(self.net.generator_cost,
+                                                                           global_step=self.global_step,
                                                                            var_list=self.net.generator_variables)
             d_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node,
                                                **self.opt_kwargs).minimize(self.net.discriminator_cost,
-                                                                           global_step=self.global_step,
                                                                            var_list=self.net.discriminator_variables)
         
         return g_optimizer, d_optimizer
@@ -416,7 +416,20 @@ class Trainer(object):
         for i in range(len(optimizers),len(results)):
             eval_results[i-len(optimizers)].append(results[i])
 
-    def train(self, data_provider, eval_data_provider, output_path, training_iters=10, eval_iters=4, epochs=100, dropout=0.75, display_step=1,
+    def eval_epoch(self, sess, data_provider, iters, optimizers, tags, feed_dict):
+        metrics = self.get_eval_variables(tags)
+        results = [[] for _ in range(len(metrics))]
+        for _ in range(iters):
+            patches = data_provider.get_patches()
+            for patch in patches:
+                feed_dict[self.net.x] = patch[0]
+                feed_dict[self.net.y] = patch[1]
+                self.eval_net(sess, feed_dict, optimizers=optimizers, eval_metrics=metrics, eval_results=results)
+        return [np.mean(result) for result in results]
+
+
+    def train(self, data_provider, eval_data_provider, output_path, cut_off = 0.7, check_discriminator=10,
+              training_iters=10, eval_iters=4, epochs=100, dropout=0.75, display_step=1,
               predict_step=50, restore=False, write_graph=False, prediction_path = 'prediction'):
         """
         Lauches the training process
@@ -463,36 +476,29 @@ class Trainer(object):
             curr_step=tf.train.global_step(sess, self.global_step)
             curr_epoch=curr_step//(training_iters*patch_len)
 
-            epoch_tags = ['discriminator_cost', 'generator_cost', 'bce_loss', 'fake_prob', 'real_prob']
+            epoch_tags = ['generator_cost', 'bce_loss']
+            discriminator_tags = ['discriminator_cost', 'fake_prob', 'real_prob']
             eval_tags = ['accuracy', 'precision', 'recall', 'f1', 'tp', 'fp', 'fn']
             display_tags = epoch_tags + eval_tags
-            epoch_metrics = self.get_eval_variables(epoch_tags)
-            eval_metrics = self.get_eval_variables(eval_tags)
-            display_metrics = self.get_eval_variables(display_tags)
-            optimizers = [self.d_optimizer, self.g_optimizer]
-            train_unet=True
+            feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: dropout, self.net.is_training: True}
 
             for epoch in range(curr_epoch,epochs):
-                results = [[] for _ in range(len(epoch_tags if epoch % display_step != 0 else display_tags))]
-                for step in range((epoch*training_iters), ((epoch+1)*training_iters)):
-                    patches = data_provider.get_patches()
-                    for patch in patches:
-                        feed_dict = {self.net.x: patch[0], self.net.y: patch[1],
-                                   self.net.keep_prob: dropout, self.net.is_training: True}
-                        # self.eval_net(sess, feed_dict, optimizers=[self.d_optimizer, self.d_optimizer])
-                        if train_unet:
-                            self.eval_net(sess, feed_dict, [self.g_optimizer])
-                        self.eval_net(sess, feed_dict, optimizers=optimizers,
-                                      eval_metrics=epoch_metrics if epoch % display_step != 0 else display_metrics,
-                                      eval_results=results)
-                if train_unet:
-                    train_unet=False
-                    epoch=0
-                results = [np.mean(result) for result in results]
+                results = self.eval_epoch(sess, data_provider, training_iters, [self.g_optimizer],
+                                epoch_tags if epoch % display_step != 0 else display_tags, feed_dict)
+
+                if epoch % check_discriminator == 0:
+                    d_results=self.eval_epoch(sess, data_provider, training_iters, [self.d_optimizer],
+                                              discriminator_tags, feed_dict)
+                    self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+                    while d_results[0] > cut_off:
+                        d_results = self.eval_epoch(sess, data_provider, training_iters, [self.d_optimizer],
+                                                    discriminator_tags, feed_dict)
+                        self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+
                 if epoch % display_step == 0:
                     save_path = self.net.save(sess, save_path, self.global_step)
                     self.write_summary(summary_writer, epoch, display_tags, results)
-                    self.write_logg(['epoch', 'type']+display_tags, [epoch, 'train']+results)
+                    self.write_logg(['epoch', 'type']+display_tags, [epoch, 'train'] + results)
                     self.output_minibatch_stats(sess, eval_summary_writer, eval_iters, epoch,
                                                 eval_data_provider, eval_tags, eval_metrics, 'eval')
                 else:
@@ -548,15 +554,9 @@ class Trainer(object):
     
     def output_minibatch_stats(self, sess, summary_writer, eval_iters, step,
                                data_provider, tags, eval_metrics, stats_type):
-        results = [[] for _ in range(len(tags))]
-        for _ in range(eval_iters):
-            patches = data_provider.get_patches()
-            for patch in patches:
-                feed_dict = {self.net.x: patch[0], self.net.y: patch[1],
-                             self.net.keep_prob: 1.0, self.net.is_training: False}
-                self.eval_net(sess, feed_dict, eval_metrics=eval_metrics, eval_results=results)
-
-        results = [np.mean(result) for result in results]
+        feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: 1.0, self.net.is_training: False}
+        results = self.eval_epoch(sess, data_provider, eval_iters, optimizers=[],
+                                  eval_metrics=tags, feed_dict=feed_dict)
         self.write_summary(summary_writer, step, tags, results)
         self.write_logg(['epoch', 'type']+tags, [step, stats_type] + results)
 
@@ -566,39 +566,3 @@ class Trainer(object):
             summary.value.add(tag=tags[i], simple_value=results[i])
         summary_writer.add_summary(summary, step)
         summary_writer.flush()
-
-def _update_avg_gradients(avg_gradients, gradients, step):
-    if avg_gradients is None:
-        avg_gradients = [np.zeros_like(gradient) for gradient in gradients]
-    for i in range(len(gradients)):
-        avg_gradients[i] = (avg_gradients[i] * (1.0 - (1.0 / (step+1)))) + (gradients[i] / (step+1))
-        
-    return avg_gradients
-
-def error_rate(predictions, labels):
-    """
-    Return the error rate based on dense predictions and 1-hot labels.
-    """
-    
-    return 100.0 - (
-        100.0 *
-        np.sum(np.argmax(predictions, 3) == np.argmax(labels, 3)) /
-        (predictions.shape[0]*predictions.shape[1]*predictions.shape[2]))
-
-
-def get_image_summary(img, idx=0):
-    """
-    Make an image summary for 4d tensor image with index idx
-    """
-    
-    V = tf.slice(img, (0, 0, 0, idx), (1, -1, -1, 1))
-    V -= tf.reduce_min(V)
-    V /= tf.reduce_max(V)
-    V *= 255
-    
-    img_w = tf.shape(img)[1]
-    img_h = tf.shape(img)[2]
-    V = tf.reshape(V, tf.stack((img_w, img_h, 1)))
-    V = tf.transpose(V, (2, 0, 1))
-    V = tf.reshape(V, tf.stack((-1, img_w, img_h, 1)))
-    return V
