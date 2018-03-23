@@ -498,7 +498,7 @@ class Trainer(object):
                 if epoch%predict_step == 0:
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                                           patch_size, input_size, "epoch_%s"%epoch, combine=True)
-                if epoch % check_discriminator == 0:
+                if epoch != 0 and epoch % check_discriminator == 0:
                     d_cost = float('inf')
                     while d_cost > cut_off:
                         d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
