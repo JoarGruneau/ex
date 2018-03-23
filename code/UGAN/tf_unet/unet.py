@@ -486,6 +486,18 @@ class Trainer(object):
                 results = self.eval_epoch(sess, data_provider, training_iters, [self.g_optimizer],
                                 epoch_tags if epoch % display_step != 0 else display_tags, feed_dict)
 
+                if epoch % display_step == 0:
+                    save_path = self.net.save(sess, save_path, self.global_step)
+                    self.write_summary(summary_writer, epoch, display_tags, results)
+                    self.write_logg(['epoch', 'type']+display_tags, [epoch, 'train'] + results)
+                    self.output_minibatch_stats(sess, eval_summary_writer, eval_iters, epoch,
+                                                eval_data_provider, eval_tags, 'eval')
+                else:
+                    self.write_logg(['epoch']+epoch_tags, [epoch]+results)
+
+                if epoch%predict_step == 0:
+                    self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
+                                          patch_size, input_size, "epoch_%s"%epoch, combine=True)
                 if epoch % check_discriminator == 0:
                     d_results=self.eval_epoch(sess, data_provider, training_iters, [self.d_optimizer],
                                               discriminator_tags, feed_dict)
@@ -495,18 +507,6 @@ class Trainer(object):
                                                     discriminator_tags, feed_dict)
                         self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
 
-                if epoch % display_step == 0:
-                    save_path = self.net.save(sess, save_path, self.global_step)
-                    self.write_summary(summary_writer, epoch, display_tags, results)
-                    self.write_logg(['epoch', 'type']+display_tags, [epoch, 'train'] + results)
-                    self.output_minibatch_stats(sess, eval_summary_writer, eval_iters, epoch,
-                                                eval_data_provider, eval_tags, eval_metrics, 'eval')
-                else:
-                    self.write_logg(['epoch']+epoch_tags, [epoch]+results)
-
-                if epoch%predict_step == 0:
-                    self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
-                                          patch_size, input_size, "epoch_%s"%epoch, combine=True)
 
             logging.info("Optimization Finished!")
             self.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size,
@@ -553,7 +553,7 @@ class Trainer(object):
         logging.info(logg_string)
     
     def output_minibatch_stats(self, sess, summary_writer, eval_iters, step,
-                               data_provider, tags, eval_metrics, stats_type):
+                               data_provider, tags, stats_type):
         feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: 1.0, self.net.is_training: False}
         results = self.eval_epoch(sess, data_provider, eval_iters, optimizers=[],
                                   eval_metrics=tags, feed_dict=feed_dict)
