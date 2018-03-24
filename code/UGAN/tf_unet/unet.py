@@ -190,7 +190,8 @@ class Ugan(object):
                                                           tf.reshape(pixel_wise_softmax_2(generator_logits),
                                                                      [-1, n_class])))
 
-        self.correct_pred = tf.equal(tf.argmax(self.predicter, 3), tf.argmax(self.y, 3))
+        self.argmax = tf.argmax(self.predicter, 3)
+        self.correct_pred = tf.equal(self.argmax, tf.argmax(self.y, 3))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32))
 
         self.tp = tf.reduce_sum(tf.cast(tf.argmax(self.predicter, 3), tf.float32) * self.y[..., 1])
@@ -206,8 +207,10 @@ class Ugan(object):
         input_img.set_shape((1, patch_size, patch_size, channels))
         real_logits, self.discriminator_variables = create_resnet(
             tf.concat([input_img, self.y], axis=3), self.is_training, resnet_kwargs)
-        fake_logits = create_resnet(tf.concat(
-            [input_img, self.predicter], axis=3), self.is_training, resnet_kwargs, reuse=True)
+
+
+        prediction = tf.cast(tf.stack([1 - self.argmax, self.argmax], axis=3), tf.float32)
+        fake_logits = create_resnet(tf.concat([input_img, prediction], axis=3), self.is_training, resnet_kwargs, reuse=True)
         real_cost = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.ones_like(real_logits)))
         fake_cost = tf.reduce_mean(
