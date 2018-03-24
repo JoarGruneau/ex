@@ -306,6 +306,7 @@ class ImageDataProvider(BaseDataProvider):
                 patch_img = self._process_data(patch_img)
                 patch_label = self._process_labels(patch_label)
                 patch_img = patch_img.reshape(1, patch_img.shape[0], patch_img.shape[1], self.channels)
+                print(patch_img.shape)
                 patch_label = patch_label.reshape(1, patch_label.shape[0], patch_label.shape[1], self.n_class)
 
                 if get_coordinates:

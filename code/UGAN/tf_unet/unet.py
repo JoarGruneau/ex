@@ -183,6 +183,7 @@ class Ugan(object):
             generator_logits = generator_logits[:, border_addition:-border_addition,border_addition:-border_addition, ...]
 
         self.predicter = pixel_wise_softmax_2(generator_logits)
+        print(self.predicter.shape)
         self.bce_loss, self.pred = self._get_cost(generator_logits, cost, cost_kwargs)
 
         self.cross_entropy = tf.reduce_mean(cross_entropy(tf.reshape(self.y, [-1, n_class]),
@@ -216,7 +217,7 @@ class Ugan(object):
         self.real_prob = tf.reduce_mean(tf.sigmoid(real_logits))
         self.generator_fake_cost = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.ones_like(fake_logits)))
-        self.generator_cost=self.bce_loss + 0.1*self.generator_fake_cost
+        self.generator_cost=10*self.bce_loss + 0.1*self.generator_fake_cost
 
 
     def _get_cost(self, logits, cost_name, cost_kwargs):
