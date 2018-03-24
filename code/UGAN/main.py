@@ -36,7 +36,7 @@ if __name__ == '__main__':
     # #data_provider = image_gen.RgbDataProvider(1024, 1024, cnt=20, rectangles=False)
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam', g_opt_kwargs={'learning_rate':2e-4, 'beta1':0.5})
     # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
-    path = trainer.train(data_provider, eval_data_provider, "summaries/", cut_off = 0.7, dropout=0.75,
+    path = trainer.train(data_provider, eval_data_provider, "summaries/", cut_off = 1.0, check_discriminator=20, dropout=0.75,
                             training_iters=20, eval_iters=4, epochs=800, display_step=25, predict_step=50,  restore=False)
     # x_test = a._load_file("images/00000000.png")
     # x_test = a._process_data([x_test])
