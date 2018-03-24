@@ -345,12 +345,13 @@ class Trainer(object):
 
     verification_batch_size = 1
 
-    def __init__(self, net, batch_size=1, norm_grads=False, optimizer="momentum", opt_kwargs={}):
+    def __init__(self, net, batch_size=1, norm_grads=False, optimizer="momentum", d_opt_kwargs={}, g_opt_kwargs={}):
         self.net = net
         self.batch_size = batch_size
         self.norm_grads = norm_grads
         self.optimizer = optimizer
-        self.opt_kwargs = opt_kwargs
+        self.d_opt_kwargs = d_opt_kwargs
+        self.g_opt_kwargs = g_opt_kwargs
 
     def _get_optimizer(self, training_iters, global_step):
         if self.optimizer == "momentum":
@@ -368,15 +369,13 @@ class Trainer(object):
                                                    **self.opt_kwargs).minimize(self.net.cost,
                                                                                 global_step=self.global_step)
         elif self.optimizer == "adam":
-            learning_rate = self.opt_kwargs.pop("learning_rate", 0.001)
-            self.learning_rate_node = tf.Variable(learning_rate)
+            # learning_rate = self.opt_kwargs.pop("learning_rate", 0.001)
+            # self.learning_rate_node = tf.Variable(learning_rate)
 
-            g_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node,
-                                               **self.opt_kwargs).minimize(self.net.generator_cost,
+            g_optimizer = tf.train.AdamOptimizer(**self.g_opt_kwargs).minimize(self.net.generator_cost,
                                                                            global_step=self.global_step,
                                                                            var_list=self.net.generator_variables)
-            d_optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node,
-                                               **self.opt_kwargs).minimize(self.net.discriminator_cost,
+            d_optimizer = tf.train.AdamOptimizer(**self.d_opt_kwargs).minimize(self.net.discriminator_cost,
                                                                            var_list=self.net.discriminator_variables)
 
         return g_optimizer, d_optimizer
