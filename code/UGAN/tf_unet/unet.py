@@ -482,7 +482,7 @@ class Trainer(object):
 
             epoch_tags = ['generator_cost', 'generator_fake_cost', 'bce_loss']
             discriminator_tags = ['discriminator_cost', 'fake_prob', 'real_prob']
-            eval_tags = ['accuracy', 'precision', 'recall', 'f1', 'tp', 'fp', 'fn']
+            eval_tags = ['accuracy', 'precision', 'recall', 'f1']
             display_tags = epoch_tags + eval_tags
             feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: dropout, self.net.is_training: True}
 
@@ -498,6 +498,7 @@ class Trainer(object):
                                                 eval_data_provider, eval_tags, 'eval')
                 else:
                     self.write_logg(['epoch']+epoch_tags, [epoch]+results)
+                    self.write_summary(summary_writer, epoch,epoch_tags, results)
 
                 if epoch%predict_step == 0:
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
@@ -505,11 +506,14 @@ class Trainer(object):
 
                 if epoch % check_discriminator == 0:
                     d_cost = float('inf')
+                    d_updates = 0
                     while d_cost > cut_off:
                         d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
                                                   discriminator_tags, feed_dict)
                         d_cost=d_results[0]
                         self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+                        d_updates += 1
+                    self.write_summary(summary_writer, epoch,['update_steps'], [d_updates])
 
 
             logging.info("Optimization Finished!")
