@@ -506,7 +506,7 @@ class Trainer(object):
                 if epoch % check_discriminator == 0:
                     d_cost = float('inf')
                     while d_cost > cut_off:
-                        d_results=self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
+                        d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
                                                   discriminator_tags, feed_dict)
                         d_cost=d_results[0]
                         self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
