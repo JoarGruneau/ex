@@ -207,7 +207,7 @@ class Ugan(object):
         input_img.set_shape((1, patch_size, patch_size, channels))
         prediction =self.predicter
         smooth_labels = self.y[...,1]*np.random.normal(0.85, 0.15)
-        smooth_labels = tf.concat([1.0 -smooth_labels, smooth_labels], axis=2)
+        smooth_labels = tf.concat([1.0 -smooth_labels, smooth_labels], axis=3)
         #prediction = tf.cast(tf.stack([1 - self.argmax, np.random.normal(0.85, self.argmax], axis=3), tf.float32)
         # image_patches = tf.extract_image_patches(
         #     image, PATCH_SIZE, PATCH_SIZE, [1, 1, 1, 1], 'VALID')
