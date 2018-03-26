@@ -11,7 +11,7 @@ import numpy as np
 
 # noinspection PyPackageRequirements
 if __name__ == '__main__':
-    unet_kwargs = {'layers':5, 'features_root':16}
+    unet_kwargs = {'layers':5, 'features_root':64}
     resnet_kwargs={'init_num_filters':64, 'block_sizes': [2, 2, 2, 2], 'block_strides': [1, 2, 2, 2],}
 
 

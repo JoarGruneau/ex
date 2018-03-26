@@ -144,7 +144,7 @@ def create_resnet(x, training, resnet_kwargs, reuse=False):
             inputs=x, pool_size=second_pool_size,
             strides=second_pool_stride, padding='VALID')
 
-        x = tf.reshape(x, [1, -1])
+        x = tf.reshape(x, [x.shape[0], -1])
         x = tf.layers.dense(inputs=x, units=1)
     if reuse:
         return x
@@ -205,12 +205,22 @@ class Ugan(object):
         border = self.offset//2 + border_addition
         input_img = self.x[:, border:-border, border:-border, ...]
         input_img.set_shape((1, patch_size, patch_size, channels))
-        real_logits, self.discriminator_variables = create_resnet(
-            tf.concat([input_img, self.y], axis=3), self.is_training, resnet_kwargs)
-
-
         prediction = tf.cast(tf.stack([1 - self.argmax, self.argmax], axis=3), tf.float32)
-        fake_logits = create_resnet(tf.concat([input_img, prediction], axis=3), self.is_training, resnet_kwargs, reuse=True)
+        # image_patches = tf.extract_image_patches(
+        #     image, PATCH_SIZE, PATCH_SIZE, [1, 1, 1, 1], 'VALID')
+
+        resnet_patch_size = [1,250,250,1]
+         # = tf.reshape(image_patches, [-1, 7, 7, 1])
+        fake_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, prediction], axis=3),
+                                              resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
+                                [-1, 250, 250, 5])
+        real_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, self.y], axis=3),
+                                              resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
+                                [-1, 250, 250, 5])
+        print(real_input.shape)
+
+        real_logits, self.discriminator_variables = create_resnet(real_input, self.is_training, resnet_kwargs)
+        fake_logits = create_resnet(fake_input, self.is_training, resnet_kwargs, reuse=True)
         real_cost = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.ones_like(real_logits)))
         fake_cost = tf.reduce_mean(
@@ -504,7 +514,7 @@ class Trainer(object):
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                                           patch_size, input_size, "epoch_%s"%epoch, combine=True)
 
-                for _ in range(2):
+                for _ in range(1):
                     d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
                                                 discriminator_tags, feed_dict)
                     self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
