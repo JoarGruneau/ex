@@ -205,7 +205,10 @@ class Ugan(object):
         border = self.offset//2 + border_addition
         input_img = self.x[:, border:-border, border:-border, ...]
         input_img.set_shape((1, patch_size, patch_size, channels))
-        prediction = tf.cast(tf.stack([1 - self.argmax, self.argmax], axis=3), tf.float32)
+        prediction =self.predicter
+        smooth_labels = self.y[1]*np.random.normal(0.85, 0.15)
+        smooth_labels = tf.stack(1.0 -smooth_labels, smooth_labels)
+        #prediction = tf.cast(tf.stack([1 - self.argmax, np.random.normal(0.85, self.argmax], axis=3), tf.float32)
         # image_patches = tf.extract_image_patches(
         #     image, PATCH_SIZE, PATCH_SIZE, [1, 1, 1, 1], 'VALID')
 
@@ -214,7 +217,7 @@ class Ugan(object):
         fake_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, prediction], axis=3),
                                               resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
                                 [-1, 100, 100, 5])
-        real_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, self.y], axis=3),
+        real_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, smooth_labels], axis=3),
                                               resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
                                 [-1, 100, 100, 5])
         print(real_input.shape)
@@ -518,16 +521,20 @@ class Trainer(object):
                     d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
                                                 discriminator_tags, feed_dict)
                     self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
-                # if epoch % check_discriminator == 0:
-                #     d_cost = float('inf')
-                #     d_updates = 0
-                #     while d_cost > cut_off:
-                #         d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
-                #                                   discriminator_tags, feed_dict)
-                #         d_cost=d_results[0]
-                #         self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
-                #         d_updates += 1
-                #     self.write_summary(summary_writer, epoch,['update_steps'], [d_updates])
+                if epoch % check_discriminator == 0:
+                    for _ in range(check_discriminator):
+                        d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
+                                                    discriminator_tags, feed_dict)
+                        self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+                    # d_cost = float('inf')
+                    # d_updates = 0
+                    # while d_cost > cut_off:
+                    #     d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
+                    #                               discriminator_tags, feed_dict)
+                    #     d_cost=d_results[0]
+                    #     self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+                    #     d_updates += 1
+                    # self.write_summary(summary_writer, epoch,['update_steps'], [d_updates])
 
 
             logging.info("Optimization Finished!")
