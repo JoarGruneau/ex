@@ -220,7 +220,7 @@ class Ugan(object):
         self.real_prob = tf.reduce_mean(tf.sigmoid(real_logits))
         self.generator_fake_cost = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.ones_like(fake_logits)))
-        self.generator_cost=self.bce_loss + 0.1*self.generator_fake_cost
+        self.generator_cost=10*self.bce_loss + 0.1*self.generator_fake_cost
 
 
     def _get_cost(self, logits, cost_name, cost_kwargs):
@@ -504,16 +504,20 @@ class Trainer(object):
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                                           patch_size, input_size, "epoch_%s"%epoch, combine=True)
 
-                if epoch % check_discriminator == 0:
-                    d_cost = float('inf')
-                    d_updates = 0
-                    while d_cost > cut_off:
-                        d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
-                                                  discriminator_tags, feed_dict)
-                        d_cost=d_results[0]
-                        self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
-                        d_updates += 1
-                    self.write_summary(summary_writer, epoch,['update_steps'], [d_updates])
+                for _ in range(2):
+                    d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
+                                                discriminator_tags, feed_dict)
+                    self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+                # if epoch % check_discriminator == 0:
+                #     d_cost = float('inf')
+                #     d_updates = 0
+                #     while d_cost > cut_off:
+                #         d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
+                #                                   discriminator_tags, feed_dict)
+                #         d_cost=d_results[0]
+                #         self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+                #         d_updates += 1
+                #     self.write_summary(summary_writer, epoch,['update_steps'], [d_updates])
 
 
             logging.info("Optimization Finished!")
