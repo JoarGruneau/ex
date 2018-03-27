@@ -391,13 +391,14 @@ class Trainer(object):
                                                    **self.opt_kwargs).minimize(self.net.cost,
                                                                                 global_step=self.global_step)
         elif self.optimizer == "adam":
+            self.g_beta1 = tf.placeholder(tf.float32)
             # learning_rate = self.opt_kwargs.pop("learning_rate", 0.001)
             # self.learning_rate_node = tf.Variable(learning_rate)
 
-            g_optimizer = tf.train.AdamOptimizer(**self.g_opt_kwargs).minimize(self.net.generator_cost,
+            g_optimizer = tf.train.AdamOptimizer(beta1=self.g_beta1).minimize(self.net.generator_cost,
                                                                            global_step=self.global_step,
                                                                            var_list=self.net.generator_variables)
-            d_optimizer = tf.train.AdamOptimizer(**self.d_opt_kwargs).minimize(self.net.discriminator_cost,
+            d_optimizer = tf.train.AdamOptimizer().minimize(self.net.discriminator_cost,
                                                                            var_list=self.net.discriminator_variables)
 
         return g_optimizer, d_optimizer
@@ -505,6 +506,7 @@ class Trainer(object):
             feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: dropout, self.net.is_training: True}
 
             for epoch in range(curr_epoch,epochs):
+                feed_dict[self.net.g_beta1]= 0 if epoch % check_discriminator == 1 else 0.9
                 results = self.eval_epoch(sess, data_provider, training_iters, [self.g_optimizer],
                                 epoch_tags if epoch % display_step != 0 else display_tags, feed_dict)
 
