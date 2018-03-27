@@ -391,7 +391,7 @@ class Trainer(object):
                                                    **self.opt_kwargs).minimize(self.net.cost,
                                                                                 global_step=self.global_step)
         elif self.optimizer == "adam":
-            self.g_beta1 = tf.placeholder(tf.float32)
+            self.g_beta1 = tf.placeholder(tf.float32, shape=[])
             # learning_rate = self.opt_kwargs.pop("learning_rate", 0.001)
             # self.learning_rate_node = tf.Variable(learning_rate)
 
