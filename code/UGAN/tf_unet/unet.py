@@ -552,7 +552,7 @@ class Trainer(object):
                 pred= sess.run((self.net.predicter), feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: 1.0,
-                                                                 self.net.is_training: False
+                                                                 self.net.is_training: False,
                                                                 self.net.g_beta1: 0.9})
                 x, y = patch[2]
                 prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
