@@ -20,6 +20,9 @@ author: jakeret
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import tensorflow as tf
+import numpy as np
+import scipy.stats as st
+
 
 def weight_variable(shape, stddev=0.1):
     initial = tf.truncated_normal(shape, stddev=stddev)
@@ -171,3 +174,23 @@ def block_layer(inputs, filters, blocks, strides, training):
         inputs = _building_block_v2(inputs, filters, training, None, 1)
 
     return inputs
+
+def gauss_kernel(kernlen=21, nsig=3, channels=1):
+    interval = (2*nsig+1.)/(kernlen)
+    x = np.linspace(-nsig-interval/2., nsig+interval/2., kernlen+1)
+    kern1d = np.diff(st.norm.cdf(x))
+    kernel_raw = np.sqrt(np.outer(kern1d, kern1d))
+    kernel = kernel_raw/kernel_raw.sum()
+    out_filter = np.array(kernel, dtype = np.float32)
+    out_filter = out_filter.reshape((kernlen, kernlen, 1, 1))
+    out_filter = np.repeat(out_filter, channels, axis = 2)
+    return out_filter
+
+def smooth(input, filter_size, sigma, padding='SAME'):
+    # Get the number of channels in the input
+    c_i = input.shape[3]
+    # Convolution for a given input and kernel
+    convolve = lambda i, k: tf.nn.depthwise_conv2d(i, k, [1, 1, 1, 1], padding=padding)
+    kernel = gauss_kernel(filter_size, sigma, c_i)
+    output = convolve(input, kernel)
+    return output

@@ -11,7 +11,7 @@ import tensorflow as tf
 from tf_unet import util
 from tf_unet.layers import (weight_variable, weight_variable_devonc, bias_variable, 
                             conv2d, deconv2d, max_pool, crop_and_concat, pixel_wise_softmax_2,
-                            cross_entropy, batch_norm, conv2d_fixed_padding, block_layer)
+                            cross_entropy, batch_norm, conv2d_fixed_padding, block_layer, smooth)
 from smoother import Smoother
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
@@ -206,8 +206,7 @@ class Ugan(object):
         input_img = self.x[:, border:-border, border:-border, ...]
         input_img.set_shape((1, patch_size, patch_size, channels))
         prediction =self.predicter
-        smoother = Smoother({'data': self.y}, 2, 0.1)
-        smooth_labels = smoother.get_output()*np.random.normal(0.95, 0.5)
+        smooth_labels = smooth(self.y, 2, 0.1)*np.random.normal(0.95, 0.5)
         print(smooth_labels.shape)
         # smooth_labels = tf.reshape(self.y[:,:,:,1]*np.random.normal(0.85, 0.15), (1, patch_size, patch_size, 1))
         # smooth_labels[...,0] = 1.0 - smooth_labels[...,1]
