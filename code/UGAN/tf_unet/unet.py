@@ -12,6 +12,7 @@ from tf_unet import util
 from tf_unet.layers import (weight_variable, weight_variable_devonc, bias_variable, 
                             conv2d, deconv2d, max_pool, crop_and_concat, pixel_wise_softmax_2,
                             cross_entropy, batch_norm, conv2d_fixed_padding, block_layer)
+from smoother import Smoother
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 
@@ -183,7 +184,6 @@ class Ugan(object):
             generator_logits = generator_logits[:, border_addition:-border_addition,border_addition:-border_addition, ...]
 
         self.predicter = pixel_wise_softmax_2(generator_logits)
-        print(self.predicter.shape)
         self.bce_loss, self.pred = self._get_cost(generator_logits, cost, cost_kwargs)
 
         self.cross_entropy = tf.reduce_mean(cross_entropy(tf.reshape(self.y, [-1, n_class]),
@@ -206,8 +206,13 @@ class Ugan(object):
         input_img = self.x[:, border:-border, border:-border, ...]
         input_img.set_shape((1, patch_size, patch_size, channels))
         prediction =self.predicter
-        smooth_labels = self.y[...,1]*np.random.normal(0.85, 0.15)
-        smooth_labels = tf.concat([1.0 -smooth_labels, smooth_labels], axis=3)
+        smoother = Smoother({'data': self.y}, 2, 0.1)
+        smooth_labels = smoother.get_output()*np.random.normal(0.95, 0.5)
+        print(smooth_labels.shape)
+        # smooth_labels = tf.reshape(self.y[:,:,:,1]*np.random.normal(0.85, 0.15), (1, patch_size, patch_size, 1))
+        # smooth_labels[...,0] = 1.0 - smooth_labels[...,1]
+        # smooth_labels = tf.reshape(smooth_labels, (1, patch_size, patch_size, n_class))
+        # smooth_labels = tf.concat([1.0 -smooth_labels, smooth_labels], axis=3)
         #prediction = tf.cast(tf.stack([1 - self.argmax, np.random.normal(0.85, self.argmax], axis=3), tf.float32)
         # image_patches = tf.extract_image_patches(
         #     image, PATCH_SIZE, PATCH_SIZE, [1, 1, 1, 1], 'VALID')
