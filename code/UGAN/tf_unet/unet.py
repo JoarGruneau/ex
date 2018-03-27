@@ -205,14 +205,14 @@ class Ugan(object):
         border = self.offset//2 + border_addition
         input_img = self.x[:, border:-border, border:-border, ...]
         input_img.set_shape((1, patch_size, patch_size, channels))
-        prediction =self.predicter
-        smooth_labels = smooth(self.y, 2, 0.1)*np.random.normal(0.95, 0.5)
-        print(smooth_labels.shape)
+       # prediction =self.predicter
+        # smooth_labels = smooth(self.y, 2, 0.1)*np.random.normal(0.95, 0.5)
+        # print(smooth_labels.shape)
         # smooth_labels = tf.reshape(self.y[:,:,:,1]*np.random.normal(0.85, 0.15), (1, patch_size, patch_size, 1))
         # smooth_labels[...,0] = 1.0 - smooth_labels[...,1]
         # smooth_labels = tf.reshape(smooth_labels, (1, patch_size, patch_size, n_class))
         # smooth_labels = tf.concat([1.0 -smooth_labels, smooth_labels], axis=3)
-        #prediction = tf.cast(tf.stack([1 - self.argmax, np.random.normal(0.85, self.argmax], axis=3), tf.float32)
+        prediction = tf.cast(tf.stack([1 - self.argmax, self.argmax], axis=3), tf.float32)
         # image_patches = tf.extract_image_patches(
         #     image, PATCH_SIZE, PATCH_SIZE, [1, 1, 1, 1], 'VALID')
 
@@ -221,7 +221,7 @@ class Ugan(object):
         fake_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, prediction], axis=3),
                                               resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
                                 [-1, 500, 500, 5])
-        real_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, smooth_labels], axis=3),
+        real_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, self.y], axis=3),
                                               resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
                                 [-1, 500, 500, 5])
         print(real_input.shape)
