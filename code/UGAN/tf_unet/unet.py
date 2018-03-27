@@ -503,7 +503,7 @@ class Trainer(object):
             discriminator_tags = ['discriminator_cost', 'fake_prob', 'real_prob']
             eval_tags = ['accuracy', 'precision', 'recall', 'f1']
             display_tags = epoch_tags + eval_tags
-            feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: dropout, self.net.is_training: True
+            feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: dropout, self.net.is_training: True,
                          self.net.g_beta1: 0.9}
 
             for epoch in range(curr_epoch,epochs):
