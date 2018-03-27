@@ -67,9 +67,9 @@ def create_conv_net(x, keep_prob, channels, n_class, unet_kwargs):
             b2 = bias_variable([features])
             
             conv1 = conv2d(in_node, w1, keep_prob)
-            tmp_h_conv = tf.nn.relu(conv1 + b1)
+            tmp_h_conv = tf.nn.leaky_relu(conv1 + b1)
             conv2 = conv2d(tmp_h_conv, w2, keep_prob)
-            dw_h_convs[layer] = tf.nn.relu(conv2 + b2)         
+            dw_h_convs[layer] = tf.nn.leaky_relu(conv2 + b2)
             
             size -= 4
             if layer < layers-1:
@@ -86,7 +86,7 @@ def create_conv_net(x, keep_prob, channels, n_class, unet_kwargs):
             
             wd = weight_variable_devonc([pool_size, pool_size, features//2, features], stddev)
             bd = bias_variable([features//2])
-            h_deconv = tf.nn.relu(deconv2d(in_node, wd, pool_size) + bd)
+            h_deconv = tf.nn.leaky_relu(deconv2d(in_node, wd, pool_size) + bd)
             h_deconv_concat = crop_and_concat(dw_h_convs[layer], h_deconv)
             deconv[layer] = h_deconv_concat
             
@@ -96,9 +96,9 @@ def create_conv_net(x, keep_prob, channels, n_class, unet_kwargs):
             b2 = bias_variable([features//2])
             
             conv1 = conv2d(h_deconv_concat, w1, keep_prob)
-            h_conv = tf.nn.relu(conv1 + b1)
+            h_conv = tf.nn.leaky_relu(conv1 + b1)
             conv2 = conv2d(h_conv, w2, keep_prob)
-            in_node = tf.nn.relu(conv2 + b2)
+            in_node = tf.nn.leaky_relu(conv2 + b2)
             up_h_convs[layer] = in_node
             
             size *= 2
@@ -108,7 +108,7 @@ def create_conv_net(x, keep_prob, channels, n_class, unet_kwargs):
         weight = weight_variable([1, 1, features_root, n_class], stddev)
         bias = bias_variable([n_class])
         conv = conv2d(in_node, weight, tf.constant(1.0))
-        output_map = tf.nn.relu(conv + bias)
+        output_map = tf.nn.leaky_relu(conv + bias)
         up_h_convs["out"] = output_map
         
     return output_map, tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,'generator'), int(in_size - size)
@@ -140,7 +140,7 @@ def create_resnet(x, training, resnet_kwargs, reuse=False):
               strides=block_strides[i], training=training)
 
         x = batch_norm(x, training)
-        x = tf.nn.relu(x)
+        x = tf.nn.leaky_relu(x)
         x = tf.layers.average_pooling2d(
             inputs=x, pool_size=second_pool_size,
             strides=second_pool_stride, padding='VALID')
@@ -217,14 +217,14 @@ class Ugan(object):
         # image_patches = tf.extract_image_patches(
         #     image, PATCH_SIZE, PATCH_SIZE, [1, 1, 1, 1], 'VALID')
 
-        resnet_patch_size = [1,100,100,1]
+        resnet_patch_size = [1,500,500,1]
          # = tf.reshape(image_patches, [-1, 7, 7, 1])
         fake_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, prediction], axis=3),
                                               resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
-                                [-1, 100, 100, 5])
+                                [-1, 500, 500, 5])
         real_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, smooth_labels], axis=3),
                                               resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
-                                [-1, 100, 100, 5])
+                                [-1, 500, 500, 5])
         print(real_input.shape)
 
         real_logits, self.discriminator_variables = create_resnet(real_input, self.is_training, resnet_kwargs)
@@ -391,14 +391,13 @@ class Trainer(object):
                                                    **self.opt_kwargs).minimize(self.net.cost,
                                                                                 global_step=self.global_step)
         elif self.optimizer == "adam":
-            self.g_beta1 = tf.placeholder(tf.float32, shape=[])
             # learning_rate = self.opt_kwargs.pop("learning_rate", 0.001)
             # self.learning_rate_node = tf.Variable(learning_rate)
 
-            g_optimizer = tf.train.AdamOptimizer(beta1=self.g_beta1).minimize(self.net.generator_cost,
+            g_optimizer = tf.train.AdamOptimizer(**self.g_opt_kwargs).minimize(self.net.generator_cost,
                                                                            global_step=self.global_step,
                                                                            var_list=self.net.generator_variables)
-            d_optimizer = tf.train.AdamOptimizer().minimize(self.net.discriminator_cost,
+            d_optimizer = tf.train.AdamOptimizer(**self.d_opt_kwargs).minimize(self.net.discriminator_cost,
                                                                            var_list=self.net.discriminator_variables)
 
         return g_optimizer, d_optimizer
@@ -503,11 +502,9 @@ class Trainer(object):
             discriminator_tags = ['discriminator_cost', 'fake_prob', 'real_prob']
             eval_tags = ['accuracy', 'precision', 'recall', 'f1']
             display_tags = epoch_tags + eval_tags
-            feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: dropout, self.net.is_training: True,
-                         self.net.g_beta1: 0.9}
+            feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: dropout, self.net.is_training: True}
 
             for epoch in range(curr_epoch,epochs):
-                feed_dict[self.net.g_beta1]= 0 if epoch % check_discriminator == 1 else 0.9
                 results = self.eval_epoch(sess, data_provider, training_iters, [self.g_optimizer],
                                 epoch_tags if epoch % display_step != 0 else display_tags, feed_dict)
 
@@ -525,16 +522,19 @@ class Trainer(object):
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                                           patch_size, input_size, "epoch_%s"%epoch, combine=True)
 
-                if epoch % check_discriminator == 0:
-                    d_cost = float('inf')
-                    d_updates = 0
-                    while d_cost > cut_off:
-                        d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
-                                                  discriminator_tags, feed_dict)
-                        d_cost=d_results[0]
-                        self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
-                        d_updates += 1
-                    self.write_summary(summary_writer, epoch,['update_steps'], [d_updates])
+                d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
+                                            discriminator_tags, feed_dict)
+                self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+                # if epoch % check_discriminator == 0:
+                #     d_cost = float('inf')
+                #     d_updates = 0
+                #     while d_cost > cut_off:
+                #         d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
+                #                                   discriminator_tags, feed_dict)
+                #         d_cost=d_results[0]
+                #         self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+                #         d_updates += 1
+                #     self.write_summary(summary_writer, epoch,['update_steps'], [d_updates])
 
 
             logging.info("Optimization Finished!")
@@ -552,8 +552,7 @@ class Trainer(object):
                 pred= sess.run((self.net.predicter), feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: 1.0,
-                                                                 self.net.is_training: False,
-                                                                self.net.g_beta1: 0.9})
+                                                                 self.net.is_training: False})
                 x, y = patch[2]
                 prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
 
@@ -584,8 +583,7 @@ class Trainer(object):
     
     def output_minibatch_stats(self, sess, summary_writer, eval_iters, step,
                                data_provider, tags, stats_type):
-        feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: 1.0, self.net.is_training: False,
-                     self.net.g_beta1:0.9}
+        feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: 1.0, self.net.is_training: False}
         results = self.eval_epoch(sess, data_provider, eval_iters, optimizers=[],
                                   tags=tags, feed_dict=feed_dict)
         self.write_summary(summary_writer, step, tags, results)

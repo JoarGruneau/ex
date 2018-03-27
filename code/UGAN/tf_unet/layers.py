@@ -42,7 +42,7 @@ def deconv2d(x, W,stride):
     return tf.nn.conv2d_transpose(x, W, output_shape, strides=[1, stride, stride, 1], padding='VALID')
 
 def max_pool(x,n):
-    return tf.nn.max_pool(x, ksize=[1, n, n, 1], strides=[1, n, n, 1], padding='VALID')
+    return tf.nn.avg_pool(x, ksize=[1, n, n, 1], strides=[1, n, n, 1], padding='VALID')
 
 def crop_and_concat(x1,x2):
     x1_shape = tf.shape(x1)
@@ -99,7 +99,7 @@ def conv2d_fixed_padding(inputs, filters, kernel_size, strides):
 def _building_block_v2(inputs, filters, training, projection_shortcut, strides):
     shortcut = inputs
     inputs = batch_norm(inputs, training)
-    inputs = tf.nn.relu(inputs)
+    inputs = tf.nn.leaky_relu(inputs)
 
     # The projection shortcut should come after the first batch norm and ReLU
     # since it performs a 1x1 convolution.
@@ -108,7 +108,7 @@ def _building_block_v2(inputs, filters, training, projection_shortcut, strides):
 
     inputs = conv2d_fixed_padding(inputs=inputs, filters=filters, kernel_size=3, strides=strides)
     inputs = batch_norm(inputs, training)
-    inputs = tf.nn.relu(inputs)
+    inputs = tf.nn.leaky_relu(inputs)
     inputs = conv2d_fixed_padding(inputs=inputs, filters=filters, kernel_size=3, strides=1)
     return inputs + shortcut
 
@@ -116,7 +116,7 @@ def _bottleneck_block_v2(inputs, filters, training, projection_shortcut,
                          strides):
   shortcut = inputs
   inputs = batch_norm(inputs, training)
-  inputs = tf.nn.relu(inputs)
+  inputs = tf.nn.leaky_relu(inputs)
 
   # The projection shortcut should come after the first batch norm and ReLU
   # since it performs a 1x1 convolution.
@@ -127,12 +127,12 @@ def _bottleneck_block_v2(inputs, filters, training, projection_shortcut,
       inputs=inputs, filters=filters, kernel_size=1, strides=1)
 
   inputs = batch_norm(inputs, training)
-  inputs = tf.nn.relu(inputs)
+  inputs = tf.nn.leaky_relu(inputs)
   inputs = conv2d_fixed_padding(
       inputs=inputs, filters=filters, kernel_size=3, strides=strides)
 
   inputs = batch_norm(inputs, training)
-  inputs = tf.nn.relu(inputs)
+  inputs = tf.nn.leaky_relu(inputs)
   inputs = conv2d_fixed_padding(
       inputs=inputs, filters=4 * filters, kernel_size=1, strides=1)
 
