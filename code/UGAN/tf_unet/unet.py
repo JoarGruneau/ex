@@ -552,7 +552,8 @@ class Trainer(object):
                 pred= sess.run((self.net.predicter), feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: 1.0,
-                                                                 self.net.is_training: False})
+                                                                 self.net.is_training: False
+                                                                self.net.g_beta1: 0.9})
                 x, y = patch[2]
                 prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
 
@@ -583,7 +584,8 @@ class Trainer(object):
     
     def output_minibatch_stats(self, sess, summary_writer, eval_iters, step,
                                data_provider, tags, stats_type):
-        feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: 1.0, self.net.is_training: False}
+        feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: 1.0, self.net.is_training: False,
+                     self.net.g_beta1:0.9}
         results = self.eval_epoch(sess, data_provider, eval_iters, optimizers=[],
                                   tags=tags, feed_dict=feed_dict)
         self.write_summary(summary_writer, step, tags, results)
