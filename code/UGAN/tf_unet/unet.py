@@ -522,10 +522,10 @@ class Trainer(object):
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                                           patch_size, input_size, "epoch_%s"%epoch, combine=True)
 
-                for _ in range(1):
-                    d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
-                                                discriminator_tags, feed_dict)
-                    self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
+                # for _ in range(1):
+                #     d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
+                #                                 discriminator_tags, feed_dict)
+                #     self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
                 if epoch % check_discriminator == 0:
                     for _ in range(check_discriminator):
                         d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
