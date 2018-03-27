@@ -522,24 +522,16 @@ class Trainer(object):
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                                           patch_size, input_size, "epoch_%s"%epoch, combine=True)
 
-                # for _ in range(1):
-                #     d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
-                #                                 discriminator_tags, feed_dict)
-                #     self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
                 if epoch % check_discriminator == 0:
-                    for _ in range(check_discriminator):
-                        d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
-                                                    discriminator_tags, feed_dict)
+                    d_cost = float('inf')
+                    d_updates = 0
+                    while d_cost > cut_off:
+                        d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
+                                                  discriminator_tags, feed_dict)
+                        d_cost=d_results[0]
                         self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
-                    # d_cost = float('inf')
-                    # d_updates = 0
-                    # while d_cost > cut_off:
-                    #     d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
-                    #                               discriminator_tags, feed_dict)
-                    #     d_cost=d_results[0]
-                    #     self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
-                    #     d_updates += 1
-                    # self.write_summary(summary_writer, epoch,['update_steps'], [d_updates])
+                        d_updates += 1
+                    self.write_summary(summary_writer, epoch,['update_steps'], [d_updates])
 
 
             logging.info("Optimization Finished!")
