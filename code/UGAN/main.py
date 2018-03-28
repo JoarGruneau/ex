@@ -11,8 +11,8 @@ import numpy as np
 
 # noinspection PyPackageRequirements
 if __name__ == '__main__':
-    unet_kwargs = {'layers':5, 'features_root':8}
-    resnet_kwargs={'init_num_filters':4, 'block_sizes': [2, 2, 2, 2], 'block_strides': [1, 2, 2, 2],}
+    unet_kwargs = {'layers':5, 'features_root':64}
+    resnet_kwargs={'init_num_filters':64, 'block_sizes': [2, 2, 2, 2], 'block_strides': [1, 2, 2, 2],}
 
 
     net = unet.Ugan(cost="cross_entropy", channels=3, n_class=2, border_addition=6, patch_size=1000, summaries=True, unet_kwargs=unet_kwargs, resnet_kwargs=resnet_kwargs)
