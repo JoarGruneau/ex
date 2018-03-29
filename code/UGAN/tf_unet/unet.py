@@ -216,14 +216,14 @@ class Ugan(object):
         # image_patches = tf.extract_image_patches(
         #     image, PATCH_SIZE, PATCH_SIZE, [1, 1, 1, 1], 'VALID')
 
-        resnet_patch_size = [1,500,500,1]
+        resnet_patch_size = [1,100,100,1]
          # = tf.reshape(image_patches, [-1, 7, 7, 1])
         fake_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, prediction], axis=3),
                                               resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
-                                [-1, 500, 500, 5])
+                                [-1, 100, 100, 5])
         real_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, self.y], axis=3),
                                               resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
-                                [-1, 500, 500, 5])
+                                [-1, 100, 100, 5])
         print(real_input.shape)
 
         real_logits, self.discriminator_variables = create_resnet(real_input, self.is_training, resnet_kwargs)
