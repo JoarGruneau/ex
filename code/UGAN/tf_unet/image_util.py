@@ -241,7 +241,7 @@ class ImageDataProvider(BaseDataProvider):
                 rotate = randint(0, 3)
 
                 image = self.agument(image, mirror, rotate)
-                label = self.agument(image, mirror, rotate)
+                label = self.agument(label, mirror, rotate)
 
             patches = self._get_patches(image,label, get_coordinates)
         return patches
