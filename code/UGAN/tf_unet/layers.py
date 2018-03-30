@@ -190,7 +190,6 @@ def smooth(input, filter_size, sigma, padding='SAME'):
     # Get the number of channels in the input
     c_i = input.shape[3]
     # Convolution for a given input and kernel
-    convolve = lambda i, k: tf.nn.depthwise_conv2d(i, k, [1, 1, 1, 1], padding=padding)
     kernel = gauss_kernel(filter_size, sigma, c_i)
-    output = convolve(input, kernel)
+    output = tf.nn.depthwise_conv2d(input, kernel, [1, 1, 1, 1], padding=padding)
     return output
