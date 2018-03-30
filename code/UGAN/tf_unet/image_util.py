@@ -23,6 +23,7 @@ import os
 import pickle
 import shutil
 from PIL import Image
+from random import randint
 mapping={0:[255, 255, 255], 1:[0, 0, 255], 2:[0, 255, 255], 3:[0, 255, 0], 4:[255, 255, 0], 5:[255, 0, 0]}
 inv_mapping={str(v): k for k, v in mapping.items()}
 
@@ -43,6 +44,9 @@ class BaseDataProvider(object):
     
     # channels = 1
     # n_class = 2
+
+
+
 
     def __init__(self, channels, n_class, border_size=0, a_min=None, a_max=None):
         self.channels = channels
@@ -211,6 +215,16 @@ class ImageDataProvider(BaseDataProvider):
         # self.channels = 1 if len(img.shape) == 2 else img.shape[-1]
         self.size = img.shape[0]
 
+    def agument(self, image, mirror, rotate):
+        if mirror == 1:
+            image = np.fliplr(image)
+        elif mirror == 2:
+            image = np.flipud(image)
+
+        if rotate > 0:
+            image = np.rot90(image, rotate)
+        return image
+
     def get_patches(self, batch_size=1, get_coordinates=False):
         self._cylce_file()
         image_name = self.data_files[self.file_idx]
@@ -219,9 +233,17 @@ class ImageDataProvider(BaseDataProvider):
         else:
             label_name = os.path.join(self.label_path, os.path.basename(image_name)
                     .replace(self.data_suffix, self.mask_suffix))
-            patches = self._get_patches(
-                self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32),
-                self._load_file(label_name, type=0, add_borders=False, dtype=np.uint8), get_coordinates)
+            image = self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32)
+            label = self._load_file(label_name, type=0, add_borders=False, dtype=np.uint8)
+
+            if self.shuffle_data:
+                mirror = randint(0, 2)
+                rotate = randint(0, 3)
+
+                image = self.agument(image, mirror, rotate)
+                label = self.agument(image, mirror, rotate)
+
+            patches = self._get_patches(image,label, get_coordinates)
         return patches
 
     def save_patches(self, save_path):
