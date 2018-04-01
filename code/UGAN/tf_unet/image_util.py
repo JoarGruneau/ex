@@ -22,6 +22,7 @@ import numpy as np
 import os
 import pickle
 import shutil
+from random import randint
 from PIL import Image
 mapping={0:[255, 255, 255], 1:[0, 0, 255], 2:[0, 255, 255], 3:[0, 255, 0], 4:[255, 255, 0], 5:[255, 0, 0]}
 inv_mapping={str(v): k for k, v in mapping.items()}
@@ -184,7 +185,16 @@ class ImageDataProvider(BaseDataProvider):
     :param n_class: (optional) number of classes, default=2
     
     """
-    
+    def agument(self, image, mirror, rotate):
+        if mirror == 1:
+            image = np.fliplr(image)
+        elif mirror == 2:
+            image = np.flipud(image)
+
+        if rotate > 0:
+            image = np.rot90(image, rotate)
+        return image
+
     def __init__(self, image_path, label_path=None, patch_size=1000, border_size=0,
                  a_min=None, a_max=None, data_suffix=".tif", mask_suffix='_mask.tif',
                  shuffle_data=True, channels=1, n_class = 2, load_saved=False):
@@ -219,9 +229,17 @@ class ImageDataProvider(BaseDataProvider):
         else:
             label_name = os.path.join(self.label_path, os.path.basename(image_name)
                     .replace(self.data_suffix, self.mask_suffix))
-            patches = self._get_patches(
-                self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32),
-                self._load_file(label_name, type=0, add_borders=False, dtype=np.uint8), get_coordinates)
+            image = self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32)
+            label = self._load_file(label_name, type=0, add_borders=False, dtype=np.uint8)
+
+            if self.shuffle_data:
+                mirror = randint(0, 2)
+                rotate = randint(0, 3)
+
+                image = self.agument(image, mirror, rotate)
+                label = self.agument(label, mirror, rotate)
+
+            patches = self._get_patches(image,label, get_coordinates)
         return patches
 
     def save_patches(self, save_path):
