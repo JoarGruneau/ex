@@ -470,7 +470,7 @@ class Trainer(object):
                     for patch in patches:
 
                         _, lr, patch_acc, patch_loss, patch_precision, patch_recall, patch_f1_score = sess.run((
-                            self.optimizer, self.learning_rate_node, self.net.accuracy, self.net.cost, self.net.precision, self.net.recall, self.net.f1, self.net.tp, self.net.fp, self.net.fn),
+                            self.optimizer, self.learning_rate_node, self.net.accuracy, self.net.cost, self.net.precision, self.net.recall, self.net.f1),
                                                       feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: dropout})
