@@ -364,7 +364,7 @@ class Trainer(object):
                                                    **self.opt_kwargs).minimize(self.net.cost, 
                                                                                 global_step=self.global_step)
         elif self.optimizer == "adam":
-            learning_rate = self.opt_kwargs.pop("learning_rate", 0.0001)
+            learning_rate = self.opt_kwargs.pop("learning_rate", 0.001)
             self.learning_rate_node = tf.Variable(learning_rate)
             
             optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate_node, 
@@ -469,13 +469,12 @@ class Trainer(object):
                     patches = data_provider.get_patches()
                     for patch in patches:
 
-                        _, lr, patch_acc, patch_loss, patch_precision, patch_recall, patch_f1_score, tp, fp, fn = sess.run((
+                        _, lr, patch_acc, patch_loss, patch_precision, patch_recall, patch_f1_score = sess.run((
                             self.optimizer, self.learning_rate_node, self.net.accuracy, self.net.cost, self.net.precision, self.net.recall, self.net.f1, self.net.tp, self.net.fp, self.net.fn),
                                                       feed_dict={self.net.x: patch[0],
                                                                  self.net.y: patch[1],
                                                                  self.net.keep_prob: dropout})
 
-                        print("tp: " + str(tp) +" fp: " +str(fp) + " fn: " +str(fn) + ' train')
                         acc.append(patch_acc)
                         loss.append(patch_loss)
                         precision.append(patch_precision)
