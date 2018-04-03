@@ -35,8 +35,8 @@ if __name__ == '__main__':
     # data_provider = image_util.ImageDataProvider("images/*.png", border_size=0, data_suffix=".png",
     #                                              mask_suffix='_mask.png')
     # #data_provider = image_gen.RgbDataProvider(1024, 1024, cnt=20, rectangles=False)
-    d_learning_opts={'learning_rate':1e-3,'beta1':0.5}
-    g_learning_opts = {'learning_rate': 1e-4, 'beta1': 0.5}
+    d_learning_opts={}
+    g_learning_opts = {}
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam', d_opt_kwargs=d_learning_opts, g_opt_kwargs=g_learning_opts)
     # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
     path = trainer.train(data_provider, eval_data_provider, "summaries/", cut_off = 1.0, check_discriminator=10, dropout=1.0,
