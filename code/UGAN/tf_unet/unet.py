@@ -67,40 +67,40 @@ def create_conv_net(x, keep_prob, channels, n_class, unet_kwargs):
             b2 = bias_variable([features])
             
             conv1 = conv2d(in_node, w1, keep_prob)
-            tmp_h_conv = tf.nn.leaky_relu(conv1 + b1)
+            tmp_h_conv = tf.nn.relu(conv1 + b1)
             conv2 = conv2d(tmp_h_conv, w2, keep_prob)
-            dw_h_convs[layer] = tf.nn.leaky_relu(conv2 + b2)
-            
+            dw_h_convs[layer] = tf.nn.relu(conv2 + b2)
+
             size -= 4
             if layer < layers-1:
                 pools[layer] = max_pool(dw_h_convs[layer], pool_size)
                 in_node = pools[layer]
                 size /= 2
-            
+
         in_node = dw_h_convs[layers-1]
-            
+
         # up layers
         for layer in range(layers-2, -1, -1):
             features = 2**(layer+1)*features_root
             stddev = np.sqrt(2 / (filter_size**2 * features))
-            
+
             wd = weight_variable_devonc([pool_size, pool_size, features//2, features], stddev)
             bd = bias_variable([features//2])
-            h_deconv = tf.nn.leaky_relu(deconv2d(in_node, wd, pool_size) + bd)
+            h_deconv = tf.nn.relu(deconv2d(in_node, wd, pool_size) + bd)
             h_deconv_concat = crop_and_concat(dw_h_convs[layer], h_deconv)
             deconv[layer] = h_deconv_concat
-            
+
             w1 = weight_variable([filter_size, filter_size, features, features//2], stddev)
             w2 = weight_variable([filter_size, filter_size, features//2, features//2], stddev)
             b1 = bias_variable([features//2])
             b2 = bias_variable([features//2])
-            
+
             conv1 = conv2d(h_deconv_concat, w1, keep_prob)
-            h_conv = tf.nn.leaky_relu(conv1 + b1)
+            h_conv = tf.nn.relu(conv1 + b1)
             conv2 = conv2d(h_conv, w2, keep_prob)
-            in_node = tf.nn.leaky_relu(conv2 + b2)
+            in_node = tf.nn.relu(conv2 + b2)
             up_h_convs[layer] = in_node
-            
+
             size *= 2
             size -= 4
 
@@ -108,69 +108,30 @@ def create_conv_net(x, keep_prob, channels, n_class, unet_kwargs):
         weight = weight_variable([1, 1, features_root, n_class], stddev)
         bias = bias_variable([n_class])
         conv = conv2d(in_node, weight, tf.constant(1.0))
-        output_map = tf.nn.leaky_relu(conv + bias)
+        output_map = tf.nn.relu(conv + bias)
         up_h_convs["out"] = output_map
-        
+
     return output_map, tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,'generator'), int(in_size - size)
-
-def create_resnet(x, training, resnet_kwargs, reuse=False):
-    init_num_filters =resnet_kwargs.get('init_num_filters', None)
-    block_sizes =resnet_kwargs.get('block_sizes', None)
-    block_strides =resnet_kwargs.get('block_strides', None)
-    kernel_size =resnet_kwargs.get('kernel_size', 7)
-    conv_stride =resnet_kwargs.get('conv_stride', 2)
-    first_pool_size =resnet_kwargs.get('first_pool_size', 3)
-    first_pool_stride =resnet_kwargs.get('first_pool_stride', 2)
-    second_pool_size =resnet_kwargs.get('second_pool_size', 7)
-    second_pool_stride =resnet_kwargs.get('second_pool_stride', 1)
-
-    with tf.variable_scope('adversarial', reuse=reuse):
-        x = conv2d_fixed_padding(
-            inputs=x, filters=init_num_filters, kernel_size=kernel_size,
-            strides=conv_stride)
-
-        x = tf.layers.max_pooling2d(
-              inputs=x, pool_size=first_pool_size,
-              strides=first_pool_stride, padding='SAME')
-
-        for i, num_blocks in enumerate(block_sizes):
-          num_filters = init_num_filters * (2**i)
-          x = block_layer(
-              inputs=x, filters=num_filters,  blocks=num_blocks,
-              strides=block_strides[i], training=training)
-
-        x = batch_norm(x, training)
-        x = tf.nn.leaky_relu(x)
-        x = tf.layers.average_pooling2d(
-            inputs=x, pool_size=second_pool_size,
-            strides=second_pool_stride, padding='VALID')
-
-        x = tf.reshape(x, [x.shape[0], -1])
-        x = tf.layers.dense(inputs=x, units=1)
-    if reuse:
-        return x
-    else:
-        return x, tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, 'adversarial')
 
 
 
 class Ugan(object):
     """
     A unet implementation
-    
+
     :param channels: (optional) number of channels in the input image
     :param n_class: (optional) number of output labels
     :param cost: (optional) name of the cost function. Default is 'cross_entropy'
     :param cost_kwargs: (optional) kwargs passed to the cost function. See Unet._get_cost for more options
     """
-    
+
     def __init__(self, channels=3, n_class=2, cost="cross_entropy", adversarial=True,
                  border_addition=0, patch_size=1000, summaries=True, cost_kwargs={}, unet_kwargs={}, resnet_kwargs={}):
         tf.reset_default_graph()
-        
+
         self.n_class = n_class
         self.summaries = summaries
-        
+
         self.x = tf.placeholder("float", shape=[None, None, None, channels])
         self.y = tf.placeholder("float", shape=[None, None, None, n_class])
         self.keep_prob = tf.placeholder(tf.float32) #dropout (keep probability)
@@ -202,11 +163,6 @@ class Ugan(object):
         self.recall = self.tp / (self.tp + self.fn)
         self.f1 = 2 * self.recall * self.precision / (self.recall + self.precision)
 
-        border = self.offset//2 + border_addition
-        input_img = self.x[:, border:-border, border:-border, ...]
-        input_img.set_shape((1, patch_size, patch_size, channels))
-        prediction =self.predicter
-        smooth_labels = smooth(self.y, 2, 0.1)
         # smooth_labels = smooth(self.y, 2, 0.1)*np.random.normal(0.95, 0.5)
         # print(smooth_labels.shape)
         # smooth_labels = tf.reshape(self.y[:,:,:,1]*np.random.normal(0.85, 0.15), (1, patch_size, patch_size, 1))
@@ -217,28 +173,7 @@ class Ugan(object):
         # image_patches = tf.extract_image_patches(
         #     image, PATCH_SIZE, PATCH_SIZE, [1, 1, 1, 1], 'VALID')
 
-        resnet_patch_size = [1,100,100,1]
-         # = tf.reshape(image_patches, [-1, 7, 7, 1])
-        fake_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, prediction], axis=3),
-                                              resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
-                                [-1, 100, 100, 5])
-        real_input = tf.reshape(tf.extract_image_patches(tf.concat([input_img, smooth_labels], axis=3),
-                                              resnet_patch_size, resnet_patch_size, [1, 1, 1, 1], 'VALID'),
-                                [-1, 100, 100, 5])
-        print(real_input.shape)
-
-        real_logits, self.discriminator_variables = create_resnet(real_input, self.is_training, resnet_kwargs)
-        fake_logits = create_resnet(fake_input, self.is_training, resnet_kwargs, reuse=True)
-        real_cost = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.ones_like(real_logits)))
-        fake_cost = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.zeros_like(fake_logits)))
-        self.discriminator_cost = real_cost + fake_cost
-        self.fake_prob = 1.0-tf.reduce_mean(tf.sigmoid(fake_logits))
-        self.real_prob = tf.reduce_mean(tf.sigmoid(real_logits))
-        self.generator_fake_cost = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.ones_like(fake_logits)))
-        self.generator_cost=self.bce_loss + 0.01*self.generator_fake_cost
+        self.generator_cost=self.bce_loss
 
 
     def _get_cost(self, logits, cost_name, cost_kwargs):
@@ -397,15 +332,13 @@ class Trainer(object):
             g_optimizer = tf.train.AdamOptimizer(**self.g_opt_kwargs).minimize(self.net.generator_cost,
                                                                            global_step=self.global_step,
                                                                            var_list=self.net.generator_variables)
-            d_optimizer = tf.train.AdamOptimizer(**self.d_opt_kwargs).minimize(self.net.discriminator_cost,
-                                                                           var_list=self.net.discriminator_variables)
 
-        return g_optimizer, d_optimizer
+        return g_optimizer
 
     def _initialize(self, training_iters, output_path, restore, prediction_path):
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
 
-        self.g_optimizer, self.d_optimizer = self._get_optimizer(training_iters, self.global_step)
+        self.g_optimizer= self._get_optimizer(training_iters, self.global_step)
 
         init = tf.global_variables_initializer()
 
@@ -498,8 +431,7 @@ class Trainer(object):
             curr_step=tf.train.global_step(sess, self.global_step)
             curr_epoch=curr_step//(training_iters*patch_len)
 
-            epoch_tags = ['generator_cost', 'generator_fake_cost', 'bce_loss']
-            discriminator_tags = ['discriminator_cost', 'fake_prob', 'real_prob']
+            epoch_tags = ['generator_cost']
             eval_tags = ['accuracy', 'precision', 'recall', 'f1']
             display_tags = epoch_tags + eval_tags
             feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: dropout, self.net.is_training: True}
@@ -521,25 +453,12 @@ class Trainer(object):
                 if epoch%predict_step == 0:
                     self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                                           patch_size, input_size, "epoch_%s"%epoch, combine=True)
-                # for _ in range(1 if epoch//50 == 0 else 2):
-                #     d_results = self.eval_epoch(sess, data_provider, 20, [self.d_optimizer],
-                #                                 discriminator_tags, feed_dict)
-                #     self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
-                if epoch % check_discriminator == 0:
-                    d_cost = float('inf')
-                    d_updates = 0
-                    while d_cost > cut_off:
-                        d_results=self.eval_epoch(sess, data_provider, 1, [self.d_optimizer],
-                                                  discriminator_tags, feed_dict)
-                        d_cost=d_results[0]
-                        self.write_logg(['type'] + discriminator_tags, ['training discriminator'] + d_results)
-                        d_updates += 1
-                    self.write_summary(summary_writer, epoch,['update_steps'], [d_updates])
+
 
 
             logging.info("Optimization Finished!")
             self.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size,
-                                  input_size, "epoch_%s"%100000, combine=True)
+                                  input_size, "epoch_%s"%epochs, combine=True)
 
     def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name, combine=False):
         for i in range(eval_iters):
