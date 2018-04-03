@@ -465,7 +465,7 @@ class Trainer(object):
                 recall  = []
                 f1_score = []
                 for step in range(
-                        (epoch*training_iters + 1), ((epoch+1)*training_iters)):
+                        (epoch*training_iters), ((epoch+1)*training_iters)):
                     patches = data_provider.get_patches()
                     for patch in patches:
 
