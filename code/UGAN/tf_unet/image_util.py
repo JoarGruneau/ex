@@ -232,12 +232,12 @@ class ImageDataProvider(BaseDataProvider):
             image = self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32)
             label = self._load_file(label_name, type=0, add_borders=False, dtype=np.uint8)
 
-            if self.shuffle_data:
-                mirror = randint(0, 2)
-                rotate = randint(0, 3)
-
-                image = self.agument(image, mirror, rotate)
-                label = self.agument(label, mirror, rotate)
+            # if self.shuffle_data:
+            #     mirror = randint(0, 2)
+            #     rotate = randint(0, 3)
+            #
+            #     image = self.agument(image, mirror, rotate)
+            #     label = self.agument(label, mirror, rotate)
 
             patches = self._get_patches(image,label, get_coordinates)
         return patches
