@@ -125,7 +125,7 @@ class Ugan(object):
     """
 
     def __init__(self, channels=3, n_class=2, cost="cross_entropy", adversarial=True,
-                 border_addition=0, patch_size=1000, summaries=True, cost_kwargs={}, unet_kwargs={}, resnet_kwargs={}):
+                 border_addition=0, patch_size=1000, summaries=True, cost_kwargs={}, unet_kwargs={}):
         tf.reset_default_graph()
 
         self.n_class = n_class
@@ -133,6 +133,7 @@ class Ugan(object):
 
         self.x = tf.placeholder("float", shape=[None, None, None, channels])
         self.y = tf.placeholder("float", shape=[None, None, None, n_class])
+        self.w = tf.placeholder("float", shape=[None, None, None])
         self.keep_prob = tf.placeholder(tf.float32) #dropout (keep probability)
         self.is_training = tf.placeholder(tf.bool)
 
@@ -146,9 +147,9 @@ class Ugan(object):
         self.predicter = pixel_wise_softmax_2(generator_logits)
         self.bce_loss, self.pred = self._get_cost(generator_logits, cost, cost_kwargs)
 
-        self.cross_entropy = tf.reduce_mean(cross_entropy(tf.reshape(self.y, [-1, n_class]),
-                                                          tf.reshape(pixel_wise_softmax_2(generator_logits),
-                                                                     [-1, n_class])))
+        # self.cross_entropy = tf.reduce_mean(cross_entropy(tf.reshape(self.y, [-1, n_class]),
+        #                                                   tf.reshape(pixel_wise_softmax_2(generator_logits),
+        #                                                              [-1, n_class])))
 
         self.argmax = tf.argmax(self.predicter, 3)
         self.correct_pred = tf.equal(self.argmax, tf.argmax(self.y, 3))
@@ -185,6 +186,7 @@ class Ugan(object):
 
         flat_logits = tf.reshape(logits, [-1, self.n_class])
         flat_labels = tf.reshape(self.y, [-1, self.n_class])
+        # flat_weights = tf.reshape(self.w,  [-1, 1])
         if cost_name == "cross_entropy":
             class_weights = cost_kwargs.pop("class_weights", None)
 
@@ -201,8 +203,13 @@ class Ugan(object):
                 loss = tf.reduce_mean(weighted_loss)
 
             else:
-                loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits,
-                                                                              labels=flat_labels))
+                loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.cast(self.y[...,1], tf.int32), logits=logits)
+                class_weight = tf.div(tf.reduce_sum(self.y[..., 0]),tf.reduce_sum(self.y[..., 1]))
+                weights=self.y[..., 0] + class_weight*self.y[..., 1]+10*self.w
+                # loss = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits,
+                #                                                               labels=flat_labels)
+                loss = tf.reduce_mean(tf.multiply(loss, weights))
+
                 # loss_map = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits,
                 #                                                                labels=flat_labels)
                 # weight = (1000000.0-tf.reduce_sum(loss_map[..., 1]))/tf.reduce_sum(loss_map[..., 1])
@@ -301,7 +308,7 @@ class Ugan(object):
                                                                  self.y: patch[1],
                                                                  self.keep_prob: 1.0,
                                                                  self.is_training: False})
-                x, y = patch[2]
+                x, y = patch[3]
                 prediction[:, x:x + patch_size, y:y + patch_size, ...] = pred
 
                 if combine:
@@ -412,11 +419,12 @@ class Trainer(object):
             for patch in patches:
                 feed_dict[self.net.x] = patch[0]
                 feed_dict[self.net.y] = patch[1]
+                feed_dict[self.net.w] = patch[2]
                 self.eval_net(sess, feed_dict, optimizers=optimizers, eval_metrics=metrics, eval_results=results)
         return [np.mean(result) for result in results]
 
 
-    def train(self, data_provider, eval_data_provider, output_path, cut_off = 0.7, check_discriminator=10,
+    def train(self, data_provider, eval_data_provider, output_path,
               training_iters=10, eval_iters=4, epochs=100, dropout=0.75, display_step=1,
               predict_step=50, restore=False, write_graph=False, prediction_path = 'prediction'):
         """

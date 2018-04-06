@@ -103,6 +103,9 @@ class BaseDataProvider(object):
                     pixel = list(label[x,y,:])
                     labels[x,y,inv_mapping[str(pixel)]]=1.0
         return labels
+
+    def _process_weights(selfself, weights):
+        return weights/255
     
     def _process_data(self, data):
         # normalization
@@ -190,11 +193,12 @@ class ImageDataProvider(BaseDataProvider):
     """
     
     def __init__(self, image_path, label_path=None, patch_size=1000, border_size=0,
-                 a_min=None, a_max=None, data_suffix=".tif", mask_suffix='_mask.tif',
+                 a_min=None, a_max=None, data_suffix=".tif", mask_suffix='_mask.tif', weight_suffix='_weight.tif',
                  shuffle_data=True, channels=1, n_class = 2, load_saved=False):
         super(ImageDataProvider, self).__init__(channels, n_class, border_size, a_min, a_max)
         self.data_suffix = data_suffix
         self.mask_suffix = mask_suffix
+        self.weight_suffix = weight_suffix
         self.file_idx = -1
         self.patch_size=patch_size
         self.load_saved = load_saved
@@ -231,10 +235,12 @@ class ImageDataProvider(BaseDataProvider):
         if self.load_saved:
             patches = pickle.load(open(image_name,'rb'))
         else:
-            label_name = os.path.join(self.label_path, os.path.basename(image_name)
-                    .replace(self.data_suffix, self.mask_suffix))
+            base_name = os.path.join(self.label_path, os.path.basename(image_name))
             image = self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32)
-            label = self._load_file(label_name, type=0, add_borders=False, dtype=np.uint8)
+            label = self._load_file(base_name.replace(self.data_suffix, self.mask_suffix),
+                                    type=0, add_borders=False, dtype=np.uint8)
+            weights = self._load_file(base_name.replace(self.data_suffix, self.weight_suffix),
+                                    type=0, add_borders=False, dtype=np.uint8)
 
             if self.shuffle_data:
                 mirror = randint(0, 2)
@@ -242,8 +248,9 @@ class ImageDataProvider(BaseDataProvider):
 
                 image = self.agument(image, mirror, rotate)
                 label = self.agument(label, mirror, rotate)
+                weights = self.agument(weights, mirror, rotate)
 
-            patches = self._get_patches(image,label, get_coordinates)
+            patches = self._get_patches(image,label, weights, get_coordinates)
         return patches
 
     def save_patches(self, save_path):
@@ -315,7 +322,7 @@ class ImageDataProvider(BaseDataProvider):
             if self.shuffle_data:
                 np.random.shuffle(self.data_files)
 
-    def _get_patches(self, img, label, get_coordinates=False):
+    def _get_patches(self, img, label, weights, get_coordinates=False):
         patches = []
         for x in range(self.border_size, self.size-self.border_size, self.patch_size):
             for y in range(self.border_size, self.size-self.border_size, self.patch_size):
@@ -324,15 +331,18 @@ class ImageDataProvider(BaseDataProvider):
                                 y-self.border_size:y + self.patch_size + self.border_size, ...]
                 patch_label=label[x-self.border_size:x + self.patch_size - self.border_size,
                                      y-self.border_size:y + self.patch_size -self.border_size, ...]
+                patch_weights= weights[x-self.border_size:x + self.patch_size - self.border_size,
+                                     y-self.border_size:y + self.patch_size -self.border_size, ...]
 
                 patch_img = self._process_data(patch_img)
                 patch_label = self._process_labels(patch_label)
+                patch_weights =self._process_weights(weights)
                 patch_img = patch_img.reshape(1, patch_img.shape[0], patch_img.shape[1], self.channels)
                 patch_label = patch_label.reshape(1, patch_label.shape[0], patch_label.shape[1], self.n_class)
-
+                patch_weights = patch_weights.reshape(1, patch_weights.shape[0], patch_weights.shape[1])
                 if get_coordinates:
-                    patches.append([patch_img, patch_label, [x-self.border_size, y-self.border_size]])
+                    patches.append([patch_img, patch_label, patch_weights, [x-self.border_size, y-self.border_size]])
                 else:
-                    patches.append([patch_img, patch_label])
+                    patches.append([patch_img, patch_label, patch_weights])
         return patches
 
