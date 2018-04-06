@@ -11,8 +11,7 @@ import tensorflow as tf
 from tf_unet import util
 from tf_unet.layers import (weight_variable, weight_variable_devonc, bias_variable, 
                             conv2d, deconv2d, max_pool, crop_and_concat, pixel_wise_softmax_2,
-                            cross_entropy, batch_norm, conv2d_fixed_padding, block_layer, smooth)
-from smoother import Smoother
+                            cross_entropy, batch_norm, conv2d_fixed_padding, block_layer)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 
@@ -242,7 +241,8 @@ class Ugan(object):
 
         return loss, logits
 
-    def predict(self, model_path, x_test):
+    def predict(self, model_path, test_data_provider, test_iters, border_size, patch_size, input_size, name,
+                prediction_path, verification_batch_size, combine, hard_prediction):
         """
         Uses the model to create a prediction for the given data
 
@@ -250,6 +250,9 @@ class Ugan(object):
         :param x_test: Data to predict on. Shape [n, nx, ny, channels]
         :returns prediction: The unet prediction Shape [n, px, py, labels] (px=nx-self.offset/2)
         """
+        if not os.path.exists(prediction_path):
+            logging.info("Allocating '{:}'".format(prediction_path))
+            os.makedirs(prediction_path)
 
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
@@ -258,11 +261,8 @@ class Ugan(object):
 
             # Restore model weights from previously saved model
             self.restore(sess, model_path)
-
-            y_dummy = np.empty((x_test.shape[0], x_test.shape[1], x_test.shape[2], self.n_class))
-            prediction = sess.run(self.predicter, feed_dict={self.x: x_test, self.y: y_dummy, self.keep_prob: 1.})
-
-        return prediction
+            self.store_prediction(sess, test_iters, test_data_provider, border_size, patch_size, input_size, name,
+                             prediction_path, verification_batch_size, combine=combine, hard_prediction=hard_prediction)
 
     def save(self, sess, model_path, global_step):
         """
@@ -287,6 +287,39 @@ class Ugan(object):
         saver = tf.train.Saver()
         saver.restore(sess, model_path)
         logging.info("Model restored from file: %s" % model_path)
+
+    def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name,
+                         prediction_path, verification_batch_size, combine=False, hard_prediction=False):
+        for i in range(eval_iters):
+            patches = eval_data_provider.get_patches(get_coordinates=True)
+            if combine:
+                image = np.zeros((verification_batch_size, input_size, input_size, 3))
+                label = np.zeros((verification_batch_size, input_size, input_size, 2))
+            prediction = np.zeros((verification_batch_size, input_size, input_size, self.n_class))
+            for patch in patches:
+                pred = sess.run((self.predicter), feed_dict={self.x: patch[0],
+                                                                 self.y: patch[1],
+                                                                 self.keep_prob: 1.0,
+                                                                 self.is_training: False})
+                x, y = patch[2]
+                prediction[:, x:x + patch_size, y:y + patch_size, ...] = pred
+
+                if combine:
+                    offset = border_size
+                    image[:, x:x + patch_size, y:y + patch_size, ...] = patch[0][:, offset:-offset, offset:-offset, ...]
+                    label[:, x:x + patch_size, y:y + patch_size, ...] = patch[1]
+
+            pred_shape = prediction.shape
+            if hard_prediction:
+                argmax = np.argmax(prediction, axis=3)
+                prediction = np.stack([1 - argmax, argmax], axis=3)
+            if combine:
+                img = util.combine_img_prediction(image, label, prediction)
+            else:
+                img = util.to_rgb(prediction[..., 1].reshape(-1, input_size, 1))
+            util.save_image(img, "%s/%s_%s.jpg" % (prediction_path, name, i))
+
+        return pred_shape
 
 class Trainer(object):
     """
@@ -421,8 +454,6 @@ class Trainer(object):
             patch_size = data_provider.get_patch_size()
             input_size = data_provider.get_input_size()
             patch_len=input_size//patch_size
-            pred_shape = self.store_prediction(sess, eval_iters, eval_data_provider, border_size,
-                                               patch_size, input_size, "_init", combine=True)
 
 
             summary_writer = tf.summary.FileWriter(os.path.join(output_path, 'train'), graph=sess.graph)
@@ -451,45 +482,50 @@ class Trainer(object):
                     self.write_summary(summary_writer, epoch,epoch_tags, results)
 
                 if epoch%predict_step == 0:
-                    self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
-                                          patch_size, input_size, "epoch_%s"%epoch, combine=True)
+                    self.net.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
+                                          patch_size, input_size, "epoch_%s"%epoch, self.prediction_path,
+                                          self.verification_batch_size, combine=True)
 
 
 
             logging.info("Optimization Finished!")
-            self.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size,
-                                  input_size, "epoch_%s"%epochs, combine=True)
+            save_path = self.net.save(sess, save_path, self.global_step)
+            self.net.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size,
+                                  input_size, "epoch_%s"%epochs, self.prediction_path,
+                                      self.verification_batch_size, combine=True)
+            return save_path
 
-    def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name, combine=False):
-        for i in range(eval_iters):
-            patches = eval_data_provider.get_patches(get_coordinates=True)
-            if combine:
-                image = np.zeros((self.verification_batch_size, input_size, input_size, 3))
-                label = np.zeros((self.verification_batch_size, input_size, input_size,2))
-            prediction = np.zeros((self.verification_batch_size, input_size, input_size, self.net.n_class))
-            for patch in patches:
-                pred= sess.run((self.net.predicter), feed_dict={self.net.x: patch[0],
-                                                                 self.net.y: patch[1],
-                                                                 self.net.keep_prob: 1.0,
-                                                                 self.net.is_training: False})
-                x, y = patch[2]
-                prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
-
-                if combine:
-                    offset = border_size
-                    image[:,x:x+patch_size,y:y+patch_size,...] = patch[0][:, offset:-offset, offset:-offset,...]
-                    label[:,x:x+patch_size,y:y+patch_size,...] = patch[1]
-
-            pred_shape = prediction.shape
-            if combine:
-                img = util.combine_img_prediction(image , label, prediction)
-            else:
-                img=util.to_rgb(prediction[..., 1].reshape(-1, input_size, 1))
-            #prediction=util.rgb_multi_prediction(prediction.reshape((input_size, input_size, 3)))
-            #prediction = util.rgb_multi_prediction(prediction)
-            util.save_image(img, "%s/%s_%s.jpg"%(self.prediction_path, name, i))
-        
-        return pred_shape
+    # def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name, combine=False, hard_prediction=False):
+    #     for i in range(eval_iters):
+    #         patches = eval_data_provider.get_patches(get_coordinates=True)
+    #         if combine:
+    #             image = np.zeros((self.verification_batch_size, input_size, input_size, 3))
+    #             label = np.zeros((self.verification_batch_size, input_size, input_size,2))
+    #         prediction = np.zeros((self.verification_batch_size, input_size, input_size, self.net.n_class))
+    #         for patch in patches:
+    #             pred= sess.run((self.net.predicter), feed_dict={self.net.x: patch[0],
+    #                                                              self.net.y: patch[1],
+    #                                                              self.net.keep_prob: 1.0,
+    #                                                              self.net.is_training: False})
+    #             x, y = patch[2]
+    #             prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
+    #
+    #             if combine:
+    #                 offset = border_size
+    #                 image[:,x:x+patch_size,y:y+patch_size,...] = patch[0][:, offset:-offset, offset:-offset,...]
+    #                 label[:,x:x+patch_size,y:y+patch_size,...] = patch[1]
+    #
+    #         pred_shape = prediction.shape
+    #         if hard_prediction:
+    #             argmax = tf.argmax(prediction, 3)
+    #             prediction = tf.cast(tf.stack([1 - argmax, argmax], axis=3), tf.float32)
+    #         if combine:
+    #             img = util.combine_img_prediction(image , label, prediction)
+    #         else:
+    #             img=util.to_rgb(prediction[..., 1].reshape(-1, input_size, 1))
+    #         util.save_image(img, "%s/%s_%s.jpg"%(self.prediction_path, name, i))
+    #
+    #     return pred_shape
     
     def write_logg(self, tags, results):
         logg_string = ''
