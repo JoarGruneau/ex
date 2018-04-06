@@ -45,7 +45,7 @@ def deconv2d(x, W,stride):
     return tf.nn.conv2d_transpose(x, W, output_shape, strides=[1, stride, stride, 1], padding='VALID')
 
 def max_pool(x,n):
-    return tf.nn.avg_pool(x, ksize=[1, n, n, 1], strides=[1, n, n, 1], padding='VALID')
+    return tf.nn.max_pool(x, ksize=[1, n, n, 1], strides=[1, n, n, 1], padding='VALID')
 
 def crop_and_concat(x1,x2):
     x1_shape = tf.shape(x1)
