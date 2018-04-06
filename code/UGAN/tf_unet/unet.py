@@ -11,8 +11,8 @@ import tensorflow as tf
 from tf_unet import util
 from tf_unet.layers import (weight_variable, weight_variable_devonc, bias_variable, 
                             conv2d, deconv2d, max_pool, crop_and_concat, pixel_wise_softmax_2,
-                            cross_entropy, batch_norm, conv2d_fixed_padding, block_layer, smooth)
-from smoother import Smoother
+                            cross_entropy, batch_norm, conv2d_fixed_padding, block_layer)
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 
