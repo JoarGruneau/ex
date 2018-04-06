@@ -42,9 +42,9 @@ if __name__ == '__main__':
     # path = trainer.train(data_provider, eval_data_provider, "summaries/", cut_off = 1.0, check_discriminator=10, dropout=1.0,
     #                         training_iters=20, eval_iters=6, epochs=601, display_step=25, predict_step=50,  restore=True)
 
-    net.predict('summaries/model/model.cpkt-18', eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
+    net.predict('summaries/model/model.cpkt-12020', eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
                 input_size=1000, name='eval_soft', prediction_path='prediction',
                 verification_batch_size=1,  combine=False, hard_prediction=False)
-    net.predict('summaries/model/model.cpkt-18', eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
+    net.predict('summaries/model/model.cpkt-12020', eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
                 input_size=1000, name='eval_hard', prediction_path='prediction',
                 verification_batch_size=1, combine=False, hard_prediction=True)
