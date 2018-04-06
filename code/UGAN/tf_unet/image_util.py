@@ -265,6 +265,7 @@ class ImageDataProvider(BaseDataProvider):
         return  self.border_size
 
     def get_patch_size(self):
+    def get_patch_size(self):
         return  self.patch_size
 
     def get_input_size(self):
