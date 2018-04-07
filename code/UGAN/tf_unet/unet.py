@@ -209,7 +209,7 @@ class Ugan(object):
                 # loss = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits,
                 #                                                               labels=flat_labels)
                 #loss = tf.reduce_mean(tf.multiply(loss, weights))
-                loss = tf.reduce_mean(tf.multiply(loss)
+                loss = tf.reduce_mean(tf.multiply(loss))
 
                 # loss_map = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits,
                 #                                                                labels=flat_labels)
