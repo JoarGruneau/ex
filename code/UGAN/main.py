@@ -33,9 +33,8 @@ if __name__ == '__main__':
                                      mask_suffix='_label_mask_mask.tif',
                                      weight_suffix ='_weight_map.tif', shuffle_data=False)
     #
-    d_learning_opts={}
-    g_learning_opts = {}
-    trainer = unet.Trainer(net, batch_size=1, optimizer='adam', d_opt_kwargs=d_learning_opts, g_opt_kwargs=g_learning_opts)
+    learning_opts = {'learning_rate':1e-3}
+    trainer = unet.Trainer(net, batch_size=1, optimizer='adam', g_opt_kwargs=learning_opts)
     # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
     path = trainer.train(data_provider, eval_data_provider, "summaries/", dropout=1.0,
                             training_iters=18, eval_iters=6, epochs=600, display_step=25, predict_step=50,  restore=False)

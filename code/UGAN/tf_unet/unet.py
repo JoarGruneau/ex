@@ -204,11 +204,12 @@ class Ugan(object):
 
             else:
                 loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.cast(self.y[...,1], tf.int32), logits=logits)
-                class_weight = tf.div(tf.reduce_sum(self.y[..., 0]),tf.reduce_sum(self.y[..., 1]))
-                weights=self.y[..., 0] + class_weight*self.y[..., 1]+200*self.w
+                # class_weight = tf.div(tf.reduce_sum(self.y[..., 0]),tf.reduce_sum(self.y[..., 1]))
+                # weights=self.y[..., 0] + class_weight*self.y[..., 1]+200*self.w
                 # loss = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits,
                 #                                                               labels=flat_labels)
-                loss = tf.reduce_mean(tf.multiply(loss, weights))
+                #loss = tf.reduce_mean(tf.multiply(loss, weights))
+                loss = tf.reduce_mean(tf.multiply(loss)
 
                 # loss_map = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits,
                 #                                                                labels=flat_labels)
@@ -503,38 +504,6 @@ class Trainer(object):
                                       self.verification_batch_size, combine=True)
             return save_path
 
-    # def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name, combine=False, hard_prediction=False):
-    #     for i in range(eval_iters):
-    #         patches = eval_data_provider.get_patches(get_coordinates=True)
-    #         if combine:
-    #             image = np.zeros((self.verification_batch_size, input_size, input_size, 3))
-    #             label = np.zeros((self.verification_batch_size, input_size, input_size,2))
-    #         prediction = np.zeros((self.verification_batch_size, input_size, input_size, self.net.n_class))
-    #         for patch in patches:
-    #             pred= sess.run((self.net.predicter), feed_dict={self.net.x: patch[0],
-    #                                                              self.net.y: patch[1],
-    #                                                              self.net.keep_prob: 1.0,
-    #                                                              self.net.is_training: False})
-    #             x, y = patch[2]
-    #             prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
-    #
-    #             if combine:
-    #                 offset = border_size
-    #                 image[:,x:x+patch_size,y:y+patch_size,...] = patch[0][:, offset:-offset, offset:-offset,...]
-    #                 label[:,x:x+patch_size,y:y+patch_size,...] = patch[1]
-    #
-    #         pred_shape = prediction.shape
-    #         if hard_prediction:
-    #             argmax = tf.argmax(prediction, 3)
-    #             prediction = tf.cast(tf.stack([1 - argmax, argmax], axis=3), tf.float32)
-    #         if combine:
-    #             img = util.combine_img_prediction(image , label, prediction)
-    #         else:
-    #             img=util.to_rgb(prediction[..., 1].reshape(-1, input_size, 1))
-    #         util.save_image(img, "%s/%s_%s.jpg"%(self.prediction_path, name, i))
-    #
-    #     return pred_shape
-    
     def write_logg(self, tags, results):
         logg_string = ''
         for i in range(len(tags)):
