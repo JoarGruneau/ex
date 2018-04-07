@@ -205,11 +205,11 @@ class Ugan(object):
             else:
                 loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.cast(self.y[...,1], tf.int32), logits=logits)
                 # class_weight = tf.div(tf.reduce_sum(self.y[..., 0]),tf.reduce_sum(self.y[..., 1]))
-                # weights=self.y[..., 0] + class_weight*self.y[..., 1]+200*self.w
+                weights=self.y[..., 0] + 2*self.y[..., 1]+4*self.w
                 # loss = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits,
                 #                                                               labels=flat_labels)
-                #loss = tf.reduce_mean(tf.multiply(loss, weights))
-                loss = tf.reduce_mean(loss)
+                loss = tf.reduce_mean(tf.multiply(loss, weights))
+                # loss = tf.reduce_mean(loss)
 
                 # loss_map = tf.nn.softmax_cross_entropy_with_logits(logits=flat_logits,
                 #                                                                labels=flat_labels)
