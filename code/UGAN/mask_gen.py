@@ -5,6 +5,7 @@ import os
 import shutil
 import glob
 import cv2
+import matplotlib.pyplot as plt
 
 num_classes = 10
 skip_targets = ['2', '4', '5', '7', '8']
@@ -246,10 +247,44 @@ def compute_weight_map(data_path, save_path, suffix):
         # weight_map_img = Image.fromarray(weight_map, 'L')
         cv2.imwrite(os.path.join(save_path, id + '_weight_map' + suffix), weight_map)
 
+def plot_weight_maps(data_path, save_path, label_suffix, weight_suffix):
+    image_paths = get_image_paths(data_path, label_suffix)
+    weight_paths = get_image_paths(data_path, weight_suffix)
+    save_path = os.path.join(os.getcwd(), save_path)
+    if os.path.exists(save_path):
+        shutil.rmtree(save_path)
+    os.makedirs(save_path)
+    for i in range(len(image_paths)):
+        image_path = image_paths[i]
+        weight_path = weight_paths[i]
+        print (weight_path)
+        id = os.path.basename(image_path).split('.')[0]
+        print(id)
+        img = cv2.imread(image_path, 0)
+        img = np.asarray(img)/255
+        print(np.amax(img))
+        weight = np.asarray(cv2.imread(weight_path, 0), dtype=np.float32)/255
+        print(np.amax(weight))
+        weight_map = 1.0 - img + 2*img+10*weight
+        # weight_map = weight_map/np.amax(weight_map)
+        # weight_map = weight_map * 255
+        # weight_map.astype(dtype=np.uint8)
+        print(np.amin(weight_map))
+        print(np.amax(weight_map))
+        plt.imshow(weight_map, vmin = 1, vmax=10)
+        plt.xticks([])
+        plt.yticks([])
+        plt.jet()
+        plt.colorbar()
+        plt.show()
+        # # weight_map_img = Image.fromarray(weight_map, 'L')
+        # cv2.imwrite(os.path.join(save_path, id + '_weight_map' + suffix), weight_map)
+
 
 if __name__ == "__main__":
-    compute_weight_map('Potsdam/bin_labels_resized', 'Potsdam/weight_maps', '.tif')
+    # compute_weight_map('Potsdam/bin_labels_resized', 'Potsdam/weight_maps', '.tif')
     # postdam_mapping()
     # down_sample(6)
     # create_ground_truth()
     # save_masks()
+    plot_weight_maps('Potsdam/bin_labels_resized', 'Potsdam/weight_maps', '_label_mask_mask.tif', '_weight_map.tif')

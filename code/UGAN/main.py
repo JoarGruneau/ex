@@ -11,7 +11,7 @@ import numpy as np
 
 # noinspection PyPackageRequirements
 if __name__ == '__main__':
-    unet_kwargs = {'layers':5, 'features_root':16}
+    unet_kwargs = {'layers':5, 'features_root':64}
     #
     #
     net = unet.Ugan(cost="cross_entropy", channels=3, n_class=2, border_addition=6, patch_size=1000, summaries=True, unet_kwargs=unet_kwargs)
@@ -36,13 +36,13 @@ if __name__ == '__main__':
     learning_opts = {'learning_rate':1e-3}
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam', g_opt_kwargs=learning_opts)
     # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
-    path = trainer.train(data_provider, eval_data_provider, "summaries/", dropout=1.0,
+    path = trainer.train(data_provider, eval_data_provider, "summaries/", dropout=0.75,
                             training_iters=18, eval_iters=6, epochs=600, display_step=25, predict_step=50,  restore=False)
     # x_test = a._load_file("images/00000000.png")
     # x_test = a._process_data([x_test])
-    # net.predict('summaries/model/model.cpkt-18', eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
-    #             input_size=1000, name='eval_soft', prediction_path='prediction',
-    #             verification_batch_size=1,  combine=False, hard_prediction=False)
-    # net.predict('summaries/model/model.cpkt-18', eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
-    #             input_size=1000, name='eval_hard', prediction_path='prediction',
-    #             verification_batch_size=1, combine=False, hard_prediction=True)
+    net.predict(path, eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
+                input_size=1000, name='eval_soft', prediction_path='prediction',
+                verification_batch_size=1,  combine=False, hard_prediction=False)
+    net.predict(path, eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
+                input_size=1000, name='eval_hard', prediction_path='prediction',
+                verification_batch_size=1, combine=False, hard_prediction=True)
