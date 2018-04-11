@@ -94,9 +94,9 @@ def create_conv_net(x, keep_prob, channels, n_class, unet_kwargs):
             b1 = bias_variable([features//2])
             b2 = bias_variable([features//2])
 
-            conv1 = conv2d(h_deconv_concat, w1, keep_prob)
+            conv1 = conv2d(h_deconv_concat, w1, 1)
             h_conv = tf.nn.relu(conv1 + b1)
-            conv2 = conv2d(h_conv, w2, keep_prob)
+            conv2 = conv2d(h_conv, w2, 1)
             in_node = tf.nn.relu(conv2 + b2)
             up_h_convs[layer] = in_node
 
