@@ -291,7 +291,7 @@ class ImageDataProvider(BaseDataProvider):
     
     def _load_file(self, path, type=-1, add_borders=False, dtype=np.float32, swap_channel=False):
         img = cv2.imread(path, type)
-        if type == -1 and swap_channel:
+        if type == -1 and  not swap_channel:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if add_borders:
             shape=list(img.shape)
