@@ -227,7 +227,7 @@ class ImageDataProvider(BaseDataProvider):
 
         if rotate > 0:
             image = np.rot90(image, rotate)
-        if swap_channels > 0:
+        if swap_channels:
             image =  cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         return image
 
