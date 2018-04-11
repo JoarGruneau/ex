@@ -247,7 +247,7 @@ class ImageDataProvider(BaseDataProvider):
                 swap_channel = randint(0, 1)
 
                 image = self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32,
-                                        swap_channel=swap_channel)
+                                        swap_channel=False)
                 image = self.agument(image, mirror, rotate)
                 label = self.agument(label, mirror, rotate)
                 weights = self.agument(weights, mirror, rotate)

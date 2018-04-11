@@ -5,6 +5,7 @@ import shutil
 import numpy as np
 from collections import OrderedDict
 import logging
+import time
 
 import tensorflow as tf
 
@@ -297,7 +298,8 @@ class Ugan(object):
         logging.info("Model restored from file: %s" % model_path)
 
     def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name,
-                         prediction_path, verification_batch_size, combine=False, hard_prediction=False):
+                         prediction_path, verification_batch_size, combine=False, hard_prediction=False,
+                         logg_time=True):
         for i in range(eval_iters):
             patches = eval_data_provider.get_patches(get_coordinates=True)
             if combine:
@@ -305,10 +307,15 @@ class Ugan(object):
                 label = np.zeros((verification_batch_size, input_size, input_size, 2))
             prediction = np.zeros((verification_batch_size, input_size, input_size, self.n_class))
             for patch in patches:
+                if logg_time:
+                    start_time = time.time()
                 pred = sess.run((self.predicter), feed_dict={self.x: patch[0],
                                                                  self.y: patch[1],
                                                                  self.keep_prob: 1.0,
                                                                  self.is_training: False})
+                if logg_time:
+                    duration = time.time() - start_time
+                    logging.info("time: " + str(duration))
                 x, y = patch[3]
                 prediction[:, x:x + patch_size, y:y + patch_size, ...] = pred
 
