@@ -219,7 +219,7 @@ class ImageDataProvider(BaseDataProvider):
         # self.channels = 1 if len(img.shape) == 2 else img.shape[-1]
         self.size = img.shape[0]
 
-    def agument(self, image, mirror, rotate, swap_channels):
+    def agument(self, image, mirror, rotate):
         if mirror == 1:
             image = np.fliplr(image)
         elif mirror == 2:
@@ -227,9 +227,6 @@ class ImageDataProvider(BaseDataProvider):
 
         if rotate > 0:
             image = np.rot90(image, rotate)
-        if swap_channels:
-            print(image.shape)
-            image =  cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         return image
 
     def get_patches(self, batch_size=1, get_coordinates=False):
@@ -239,7 +236,6 @@ class ImageDataProvider(BaseDataProvider):
             patches = pickle.load(open(image_name,'rb'))
         else:
             base_name = os.path.join(self.label_path, os.path.basename(image_name))
-            image = self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32)
             label = self._load_file(base_name.replace(self.data_suffix, self.mask_suffix),
                                     type=0, add_borders=False, dtype=np.uint8)
             weights = self._load_file(base_name.replace(self.data_suffix, self.weight_suffix),
@@ -250,9 +246,13 @@ class ImageDataProvider(BaseDataProvider):
                 rotate = randint(0, 3)
                 swap_channel = randint(0, 1)
 
-                image = self.agument(image, mirror, rotate, swap_channel)
-                label = self.agument(label, mirror, rotate, 0)
-                weights = self.agument(weights, mirror, rotate, 0)
+                image = self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32,
+                                        swap_channel=swap_channel)
+                image = self.agument(image, mirror, rotate)
+                label = self.agument(label, mirror, rotate)
+                weights = self.agument(weights, mirror, rotate)
+            else:
+                image = self._load_file(image_name, type=-1, add_borders=True, dtype=np.float32)
 
             patches = self._get_patches(image,label, weights, get_coordinates)
         return patches
@@ -289,9 +289,9 @@ class ImageDataProvider(BaseDataProvider):
             return [name for name in all_files if self.data_suffix in name and not self.mask_suffix in name]
     
     
-    def _load_file(self, path, type=-1, add_borders=False, dtype=np.float32):
+    def _load_file(self, path, type=-1, add_borders=False, dtype=np.float32, swap_channel=False):
         img = cv2.imread(path, type)
-        if type == -1:
+        if type == -1 and swap_channel:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if add_borders:
             shape=list(img.shape)
