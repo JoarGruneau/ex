@@ -67,7 +67,7 @@ def create_conv_net(x, keep_prob, channels, n_class, unet_kwargs):
             
             conv1 = conv2d(in_node, w1, keep_prob)
             tmp_h_conv = tf.nn.relu(conv1 + b1)
-            conv2 = conv2d(tmp_h_conv, w2, keep_prob)
+            conv2 = conv2d(tmp_h_conv, w2, 1)
             dw_h_convs[layer] = tf.nn.relu(conv2 + b2)
 
             size -= 4

@@ -219,7 +219,7 @@ class ImageDataProvider(BaseDataProvider):
         # self.channels = 1 if len(img.shape) == 2 else img.shape[-1]
         self.size = img.shape[0]
 
-    def agument(self, image, mirror, rotate):
+    def agument(self, image, mirror, rotate, swap_channels):
         if mirror == 1:
             image = np.fliplr(image)
         elif mirror == 2:
@@ -227,6 +227,8 @@ class ImageDataProvider(BaseDataProvider):
 
         if rotate > 0:
             image = np.rot90(image, rotate)
+        if swap_channels > 0:
+            image =  cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         return image
 
     def get_patches(self, batch_size=1, get_coordinates=False):
@@ -245,10 +247,11 @@ class ImageDataProvider(BaseDataProvider):
             if self.shuffle_data:
                 mirror = randint(0, 2)
                 rotate = randint(0, 3)
+                swap_channel = randint(0, 1)
 
-                image = self.agument(image, mirror, rotate)
-                label = self.agument(label, mirror, rotate)
-                weights = self.agument(weights, mirror, rotate)
+                image = self.agument(image, mirror, rotate, swap_channel)
+                label = self.agument(label, mirror, rotate, 0)
+                weights = self.agument(weights, mirror, rotate, 0)
 
             patches = self._get_patches(image,label, weights, get_coordinates)
         return patches
