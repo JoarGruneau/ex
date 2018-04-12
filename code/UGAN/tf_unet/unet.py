@@ -164,6 +164,7 @@ class Ugan(object):
         self.recall = self.tp / (self.tp + self.fn)
         self.f1 = 2 * self.recall * self.precision / (self.recall + self.precision)
 
+
         # smooth_labels = smooth(self.y, 2, 0.1)*np.random.normal(0.95, 0.5)
         # print(smooth_labels.shape)
         # smooth_labels = tf.reshape(self.y[:,:,:,1]*np.random.normal(0.85, 0.15), (1, patch_size, patch_size, 1))
@@ -251,7 +252,8 @@ class Ugan(object):
         return loss, logits
 
     def predict(self, model_path, test_data_provider, test_iters, border_size, patch_size, input_size, name,
-                prediction_path, verification_batch_size, combine, hard_prediction):
+                prediction_path, verification_batch_size=1, combine=False, hard_prediction=True,
+                filter_size=15, overlay=True, evaluate_scores = True):
         """
         Uses the model to create a prediction for the given data
 
@@ -271,7 +273,8 @@ class Ugan(object):
             # Restore model weights from previously saved model
             self.restore(sess, model_path)
             self.store_prediction(sess, test_iters, test_data_provider, border_size, patch_size, input_size, name,
-                             prediction_path, verification_batch_size, combine=combine, hard_prediction=hard_prediction)
+                             prediction_path, verification_batch_size, combine=combine, hard_prediction=hard_prediction,
+                                  filter_size=filter_size, overlay=overlay, evaluate_scores=evaluate_scores)
 
     def save(self, sess, model_path, global_step):
         """
@@ -298,14 +301,18 @@ class Ugan(object):
         logging.info("Model restored from file: %s" % model_path)
 
     def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name,
-                         prediction_path, verification_batch_size, combine=False, hard_prediction=False,
-                         logg_time=True):
+                         prediction_path, verification_batch_size, combine=False, hard_prediction=True,
+                         logg_time=True, overlay = True, filter_size = 5, evaluate_scores=False):
+        if evaluate_scores:
+            scores = [[] for _ in range(6)]
         for i in range(eval_iters):
             patches = eval_data_provider.get_patches(get_coordinates=True)
-            if combine:
-                image = np.zeros((verification_batch_size, input_size, input_size, 3))
-                label = np.zeros((verification_batch_size, input_size, input_size, 2))
-            prediction = np.zeros((verification_batch_size, input_size, input_size, self.n_class))
+            if combine or overlay or evaluate_scores:
+                label = np.zeros((input_size, input_size, 2))
+                if combine:
+                    image = np.zeros((input_size, input_size, 3))
+
+            prediction = np.zeros((input_size, input_size, self.n_class))
             for patch in patches:
                 if logg_time:
                     start_time = time.time()
@@ -317,22 +324,34 @@ class Ugan(object):
                     duration = time.time() - start_time
                     logging.info("time: " + str(duration))
                 x, y = patch[3]
-                prediction[:, x:x + patch_size, y:y + patch_size, ...] = pred
+                prediction[x:x + patch_size, y:y + patch_size, ...] = pred
 
-                if combine:
-                    offset = border_size
-                    image[:, x:x + patch_size, y:y + patch_size, ...] = patch[0][:, offset:-offset, offset:-offset, ...]
-                    label[:, x:x + patch_size, y:y + patch_size, ...] = patch[1]
+                if combine or overlay or evaluate_scores:
+                    label[x:x + patch_size, y:y + patch_size, ...] = patch[1]
+                    if combine:
+                        image[x:x + patch_size, y:y + patch_size, ...] = \
+                            patch[0][0, border_size:-border_size, border_size:-border_size, ...]
 
             pred_shape = prediction.shape
-            if hard_prediction:
-                argmax = np.argmax(prediction, axis=3)
-                prediction = np.stack([1 - argmax, argmax], axis=3)
             if combine:
                 img = util.combine_img_prediction(image, label, prediction)
             else:
-                img = util.to_rgb(prediction[..., 1].reshape(-1, input_size, 1))
+                if hard_prediction:
+                    img = np.argmax(prediction, axis=2)
+                    if overlay:
+                        img = util.combine(util.filter_image(label[..., 1], filter_size),
+                                                  util.filter_image(img, filter_size))
+
+                img = util.to_rgb(img)
             util.save_image(img, "%s/%s_%s.jpg" % (prediction_path, name, i))
+
+            if evaluate_scores:
+                label = util.filter_image(label[..., 1], filter_size)
+                prediction = util.filter_image(np.argmax(prediction, axis=2), filter_size)
+                tmp_scores = util.calculate_f1_score(label, prediction)
+                for i in range(len(scores)):
+                    scores[i].append(tmp_scores[i])
+        print([np.mean(score) for score in scores])
 
         return pred_shape
 
@@ -482,6 +501,11 @@ class Trainer(object):
             eval_tags = ['accuracy', 'precision', 'recall', 'f1']
             display_tags = epoch_tags + eval_tags
             feed_dict = {self.net.x: None, self.net.y: None, self.net.keep_prob: dropout, self.net.is_training: True}
+
+            self.net.store_prediction(sess, eval_iters, eval_data_provider, border_size,
+                                      patch_size, input_size, "epoch_%s" % 'init', self.prediction_path,
+                                      self.verification_batch_size, combine=False, hard_prediction=True, filter_size=15,
+                                      overlay=True, evaluate_scores=True)
 
             for epoch in range(curr_epoch,epochs):
                 results = self.eval_epoch(sess, data_provider, training_iters, [self.g_optimizer],

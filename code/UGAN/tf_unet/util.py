@@ -20,6 +20,8 @@ author: jakeret
 from __future__ import print_function, division, absolute_import, unicode_literals
 import numpy as np
 from PIL import Image
+import cv2
+import operator
 
 def plot_prediction(x_test, y_test, prediction, save=False):
     import matplotlib
@@ -98,6 +100,79 @@ def crop_to_shape(data, shape):
     offset1 = (data.shape[2] - shape[2])//2
     return data[:, offset0:(-offset0), offset1:(-offset1)]
 
+
+def compute_occurrences(n_labels, component_image):
+    occurrences = [0] * (n_labels - 1)
+
+    for x in range(component_image.shape[0]):
+        for y in range(component_image.shape[1]):
+            if component_image[x, y] != 0:
+                occurrences[component_image[x, y] - 1] += 1
+    return occurrences
+
+
+def filter_image(image, filter_size):
+    n_labels, component_image = cv2.connectedComponents(image.astype(dtype=np.uint8), 4)
+    occurrences = compute_occurrences(n_labels, component_image)
+    remove_lables = [True if occurrence < filter_size else False for occurrence in occurrences]
+
+    for x in range(image.shape[0]):
+        for y in range(image.shape[1]):
+            if component_image[x, y] != 0 and remove_lables[component_image[x, y] - 1]:
+                image[x, y] = 0
+    return image
+
+
+def combine(ground_truth, prediction):
+    blue_channel = np.zeros(prediction.shape, dtype=np.float32)
+    red_channel = np.abs(prediction - ground_truth)
+    return np.stack([red_channel, ground_truth, blue_channel], axis=2)
+
+
+def calculate_f1_score(ground_truth, prediction):
+    n_found = 0
+    n_ground_labels, ground_component_image = cv2.connectedComponents(ground_truth.astype(dtype=np.uint8), 4)
+    n_pred_labels, pred_component_image = cv2.connectedComponents(prediction.astype(dtype=np.uint8), 4)
+    ground_occurrences = compute_occurrences(n_ground_labels, ground_component_image)
+    pred_occurrences = compute_occurrences(n_pred_labels, pred_component_image)
+    label_pixels = [[] for _ in range(n_ground_labels - 1)]
+    print(len(label_pixels))
+    print(n_ground_labels)
+    print (np.amax(ground_component_image))
+    for x in range(ground_truth.shape[0]):
+        for y in range(ground_truth.shape[1]):
+            if ground_component_image[x,y] != 0:
+                label_pixels[ground_component_image[x,y] - 1].append([x,y])
+
+    for label in range(n_ground_labels - 1):
+        intersections = {}
+        for x, y in label_pixels[label]:
+            corresponding_label = pred_component_image[x, y]
+            if corresponding_label != 0:
+                if not intersections.get(corresponding_label):
+                    intersections[corresponding_label] = 1
+                else:
+                    intersections[corresponding_label] += 1
+        if intersections:
+            pred_label, intersect = max(intersections.items(), key=operator.itemgetter(1))
+            if float(intersect)/(ground_occurrences[label - 1] + pred_occurrences[pred_label - 1] - intersect) >= 0.5:
+                n_found += 1
+    tp = n_found
+    fp = n_pred_labels - 1 -n_found
+    fn = n_ground_labels -1 -n_found
+    with np.errstate(divide='ignore', invalid='ignore'):
+        precision = np.divide(n_found, n_pred_labels - 1)
+        recall = np.divide(n_found, n_ground_labels -1)
+        f1_score = np.divide(2*precision*recall, precision + recall)
+
+    return [tp, fp, fn,  precision, recall, f1_score]
+
+
+
+
+
+
+
 def combine_img_prediction(data, gt, pred, crop=False):
     """
     Combines the data, grouth thruth and the prediction into one rgb image
@@ -108,11 +183,11 @@ def combine_img_prediction(data, gt, pred, crop=False):
     
     :returns img: the concatenated rgb image 
     """
-    ny = pred.shape[2]
-    ch = data.shape[3]
+    ny = pred.shape[1]
+    ch = data.shape[2]
     if crop:
         img = np.concatenate((to_rgb(crop_to_shape(data, pred.shape).reshape(-1, ny, ch)),
-                          to_rgb(crop_to_shape(gt[..., 1], pred.shape).reshape(-1, ny, 1)), 
+                          to_rgb(crop_to_shape(gt[..., 1], pred.shape).reshape(-1, ny, 1)),
                           to_rgb(pred[..., 1].reshape(-1, ny, 1))), axis=1)
     else:
         img = np.concatenate((to_rgb(data.reshape(-1, ny, ch)),
