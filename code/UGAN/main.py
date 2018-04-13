@@ -45,4 +45,4 @@ if __name__ == '__main__':
                 verification_batch_size=1,  combine=False, hard_prediction=False)
     net.predict(path, eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
                 input_size=1000, name='eval_hard', prediction_path='prediction',
-                verification_batch_size=1, combine=False, hard_prediction=True, evaluate_scores=True, overlay=True)
+                verification_batch_size=1, combine=False, hard_prediction=True, evaluate_scores=True, overlay=True, filter_size=20)
