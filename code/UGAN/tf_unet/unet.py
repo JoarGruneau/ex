@@ -341,7 +341,8 @@ class Ugan(object):
                     if overlay:
                         img = util.combine(util.filter_image(label[..., 1], filter_size),
                                                   util.filter_image(img, filter_size))
-
+                else:
+                    img = prediction
                 img = util.to_rgb(img)
             util.save_image(img, "%s/%s_%s.jpg" % (prediction_path, name, i))
 
