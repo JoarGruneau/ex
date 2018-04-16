@@ -232,12 +232,11 @@ class Ugan(object):
         real_cost = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=real_logits, labels=tf.ones_like(real_logits)))
         fake_cost = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.zeros_like(fake_logits)))
-        self.discriminator_cost = real_cost + fake_cost
+            tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.ones_like(fake_logits)))
+        self.discriminator_cost = -real_cost + fake_cost
         self.fake_prob = 1.0-tf.reduce_mean(tf.sigmoid(fake_logits))
         self.real_prob = tf.reduce_mean(tf.sigmoid(real_logits))
-        self.generator_fake_cost = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(logits=fake_logits, labels=tf.ones_like(fake_logits)))
+        self.generator_fake_cost = fake_cost
         self.generator_cost=self.bce_loss + 0.01*self.generator_fake_cost
 
 
@@ -431,7 +430,7 @@ class Trainer(object):
             g_optimizer = tf.train.AdamOptimizer(**self.g_opt_kwargs).minimize(self.net.generator_cost,
                                                                            global_step=self.global_step,
                                                                            var_list=self.net.generator_variables)
-            d_optimizer = tf.train.AdamOptimizer(**self.d_opt_kwargs).minimize(self.net.discriminator_cost,
+            d_optimizer = tf.train.AdamOptimizer(**self.d_opt_kwargs).maximize(self.net.discriminator_cost,
                                                                            var_list=self.net.discriminator_variables)
 
         return g_optimizer, d_optimizer
