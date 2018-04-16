@@ -206,7 +206,7 @@ class Ugan(object):
         input_img = self.x[:, border:-border, border:-border, ...]
         input_img.set_shape((1, patch_size, patch_size, channels))
         prediction =self.predicter
-        smooth_labels = smooth(self.y, 2, 0.1)
+        smooth_labels = self.y
         # smooth_labels = smooth(self.y, 2, 0.1)*np.random.normal(0.95, 0.5)
         # print(smooth_labels.shape)
         # smooth_labels = tf.reshape(self.y[:,:,:,1]*np.random.normal(0.85, 0.15), (1, patch_size, patch_size, 1))
@@ -572,7 +572,7 @@ class Trainer(object):
             logging.info("Optimization Finished!")
             save_path = self.net.save(sess, save_path, self.global_step)
             self.net.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size,
-                                  input_size, "epoch_%s"%epoch, output_path, self.verification_batch_size, combine=True)
+                                  input_size, "epoch_%s"%epoch, output_path, self.verification_batch_size, combine=False)
             return save_path
 
     
