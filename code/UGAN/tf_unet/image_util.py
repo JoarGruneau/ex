@@ -236,6 +236,7 @@ class ImageDataProvider(BaseDataProvider):
             patches = pickle.load(open(image_name,'rb'))
         else:
             base_name = os.path.join(self.label_path, os.path.basename(image_name))
+            print(base_name)
             label = self._load_file(base_name.replace(self.data_suffix, self.mask_suffix),
                                     type=0, add_borders=False, dtype=np.uint8)
             weights = self._load_file(base_name.replace(self.data_suffix, self.weight_suffix),
