@@ -350,6 +350,7 @@ class Ugan(object):
                 label = util.filter_image(label[..., 1], filter_size)
                 prediction = util.filter_image(np.argmax(prediction, axis=2), filter_size)
                 tmp_scores = util.calculate_f1_score(label, prediction)
+                print(tmp_scores)
                 for i in range(len(scores)):
                     scores[i].append(tmp_scores[i])
         print([np.mean(score) for score in scores])

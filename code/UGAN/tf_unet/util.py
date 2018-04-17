@@ -165,7 +165,7 @@ def calculate_f1_score(ground_truth, prediction):
         recall = np.divide(n_found, n_ground_labels -1)
         f1_score = np.divide(2*precision*recall, precision + recall)
 
-    return [tp, fp, fn,  precision, recall, f1_score]
+    return [n_pred_labels, tp, fp, fn,  precision, recall, f1_score]
 
 
 
