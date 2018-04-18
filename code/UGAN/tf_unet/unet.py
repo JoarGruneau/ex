@@ -479,8 +479,8 @@ class Trainer(object):
                 if epoch%predict_step == 0:
                     precision, recall, f1_score = self.net.calc_object_f1_scores(sess, eval_iters, eval_data_provider,
                                                                                  border_size, patch_size, input_size)
-                    self.write_logg(['type'] + ['precision', 'recall', 'F1'], ['eval'] + [precision, recall, f1_score])
-                    self.write_summary(summary_writer, epoch, ['precision', 'recall', 'F1'], [precision, recall, f1_score])
+                    self.write_logg(['type'] + ['precision', 'recall', 'F1'], ['eval_objects'] + [precision, recall, f1_score])
+                    self.write_summary(summary_writer, epoch, ['o_precision', 'o_recall', 'o_F1'], [precision, recall, f1_score])
                     # self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                     #                       patch_size, input_size, "epoch_%s"%epoch, combine=True)
 
