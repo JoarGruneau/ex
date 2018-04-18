@@ -20,6 +20,7 @@ author: jakeret
 from __future__ import print_function, division, absolute_import, unicode_literals
 import numpy as np
 from PIL import Image
+import cv2
 
 def plot_prediction(x_test, y_test, prediction, save=False):
     import matplotlib
