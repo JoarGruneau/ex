@@ -49,7 +49,7 @@ if __name__ == '__main__':
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam', d_opt_kwargs=d_learning_opts, g_opt_kwargs=g_learning_opts)
     # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
     path = trainer.train(data_provider, eval_data_provider, "summaries/", cut_off = 1.0, check_discriminator=10, dropout=1.0,
-                            training_iters=166, eval_iters=8, epochs=600, display_step=25, predict_step=50,  restore=True)
+                            training_iters=166, eval_iters=100, epochs=600, display_step=25, predict_step=50,  restore=True)
     # x_test = a._load_file("images/00000000.png")
     # x_test = a._process_data([x_test])
     # prediction = net.predict(path, x_test)
