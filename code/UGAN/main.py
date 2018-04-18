@@ -13,9 +13,9 @@ import numpy as np
 if __name__ == '__main__':
     unet_kwargs = {'layers':5, 'features_root':16}
     resnet_kwargs={'init_num_filters':64, 'block_sizes': [2, 2, 2], 'block_strides': [1, 2, 2],}
+    border_addition = 2
 
-
-    net = unet.Ugan(cost="cross_entropy", channels=3, n_class=2, border_addition=6, patch_size=1000, summaries=True, unet_kwargs=unet_kwargs, resnet_kwargs=resnet_kwargs)
+    net = unet.Ugan(cost="cross_entropy", channels=3, n_class=2, border_addition=border_addition, patch_size=512, summaries=True, unet_kwargs=unet_kwargs, resnet_kwargs=resnet_kwargs)
     # data_provider = image_util.ImageDataProvider("Potsdam/RGB/*.tif", "Potsdam/Labels", patch_size=1000, border_size=20,
     #                                              data_suffix="_RGB.tif", mask_suffix='_label.tif',
     #                                              channels=3, n_class=6, load_saved=False)
@@ -24,14 +24,23 @@ if __name__ == '__main__':
     #                                              channels=3, n_class=6, load_saved=True)
     # data_provider.save_patches('Potsdam/train_RGB/')
     print(net.offset)
+    # data_provider = \
+    #     image_util.ImageDataProvider("Potsdam/resized2/train/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
+    #                                              channels=3, n_class=2, border_size=net.offset//2+6, data_suffix="_RGB.tif",
+    #                                              mask_suffix='_label_mask_mask.tif')
+    # eval_data_provider = \
+    #     image_util.ImageDataProvider("Potsdam/resized2/eval/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
+    #                                              channels=3, n_class=2, border_size=net.offset//2+6, data_suffix="_RGB.tif",
+    #                                              mask_suffix='_label_mask_mask.tif', shuffle_data=False)
+
     data_provider = \
-        image_util.ImageDataProvider("Potsdam/resized2/train/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
-                                                 channels=3, n_class=2, border_size=net.offset//2+6, data_suffix="_RGB.tif",
-                                                 mask_suffix='_label_mask_mask.tif')
+        image_util.ImageDataProvider("vedai/Ve512/train/*.png", "vedai/ground_truth_masks/", patch_size=512,
+                                                 channels=3, n_class=2, border_size=net.offset//2+border_addition, data_suffix=".png",
+                                                 mask_suffix='_mask.png')
     eval_data_provider = \
-        image_util.ImageDataProvider("Potsdam/resized2/eval/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
-                                                 channels=3, n_class=2, border_size=net.offset//2+6, data_suffix="_RGB.tif",
-                                                 mask_suffix='_label_mask_mask.tif', shuffle_data=False)
+        image_util.ImageDataProvider("vedai/Ve512/val_small/*.png", "vedai/ground_truth_masks/", patch_size=512,
+                                                 channels=3, n_class=2, border_size=net.offset//2+border_addition, data_suffix=".png",
+                                                 mask_suffix='_mask.png', shuffle_data=False)
     # data_provider = image_util.ImageDataProvider("images/*.png", border_size=0, data_suffix=".png",
     #                                              mask_suffix='_mask.png')
     # #data_provider = image_gen.RgbDataProvider(1024, 1024, cnt=20, rectangles=False)
@@ -40,7 +49,7 @@ if __name__ == '__main__':
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam', d_opt_kwargs=d_learning_opts, g_opt_kwargs=g_learning_opts)
     # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
     path = trainer.train(data_provider, eval_data_provider, "summaries/", cut_off = 1.0, check_discriminator=10, dropout=1.0,
-                            training_iters=20, eval_iters=4, epochs=600, display_step=25, predict_step=50,  restore=True)
+                            training_iters=166, eval_iters=8, epochs=600, display_step=25, predict_step=50,  restore=True)
     # x_test = a._load_file("images/00000000.png")
     # x_test = a._process_data([x_test])
     # prediction = net.predict(path, x_test)

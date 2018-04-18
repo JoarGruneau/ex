@@ -279,6 +279,7 @@ class ImageDataProvider(BaseDataProvider):
     
     
     def _load_file(self, path, type=-1, add_borders=False, dtype=np.float32):
+        print(path)
         img = cv2.imread(path, type)
         if type == -1:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
