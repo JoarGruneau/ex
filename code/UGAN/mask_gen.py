@@ -8,7 +8,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 num_classes = 10
-skip_targets = ['2', '4', '5', '7', '8']
+skip_targets = ['2', '5', '7', '8']
 # 001 -> car 1378                                  0
 # 002 -> truck (and somtimes schoolbusses) 307     1
 # 004 -> tractor 190                               2
@@ -21,11 +21,11 @@ skip_targets = ['2', '4', '5', '7', '8']
 # 023 -> boat 171                                  7
 # 031 -> plane 48                                  8
 script_dir = os.path.dirname(__file__)
-annotation_dir = os.path.join(os.getcwd(), 'dataset/Annotations1024/')
+annotation_dir = os.path.join(os.getcwd(), 'vedai/Annotations512/')
 
 
 def create_mask(id, fill=1):
-    annotation = os.path.join(os.getcwd(), 'dataset/Annotations1024/' + id +'.txt')
+    annotation = os.path.join(os.getcwd(), 'vedai/Annotations512/' + id +'.txt')
     if not os.path.exists(annotation):
         print (id)
         return False
@@ -97,34 +97,47 @@ def save_masks():
             else:
                 masks[str(i)][0].save(os.path.join(save_path, id+'_'+str(i)+'.png'))
 
-def create_binary_mask(id, fill=1):
-    annotation = os.path.join(os.getcwd(), 'dataset/Annotations1024/' + id +'.txt')
+def create_binary_mask(id, fill=255, cutoff_count=0):
+    annotation = os.path.join(os.getcwd(), 'vedai/Annotations512/' + id +'.txt')
+    valid_targets = 0
     if not os.path.exists(annotation):
+        print(annotation)
         print (id)
         return False
     targets = open(annotation, 'r').read().splitlines()
-    img = Image.new('L', (1024, 1024))
+    img = Image.new('L', (512, 512))
     draw = ImageDraw.Draw(img)
 
     for target in targets:
         target = target.split()
         if target[3] not in skip_targets:
+            valid_targets += 1
             poly = [(float(target[i]), float(target[i + 4])) for i in range(6, 10, 1)]
+            border_size=2
+            # print(poly)
+            diff = [(-border_size,-border_size), (border_size, -border_size),
+                    (border_size, border_size), (-border_size, border_size)]
+            poly2 =[(poly[i][0] + diff[i][0], poly[i][1] + diff[i][1]) for i in range(len(poly))]
+            draw.polygon(poly2, fill=0)
+
             draw.polygon(poly, fill=fill)
 
-    return img
+    if valid_targets < cutoff_count:
+        return False
+    else:
+        return img
 
 
-def save_binary_masks():
+def save_binary_masks(cutoff_count=0):
     save_path = os.path.join(os.getcwd(), 'ground_truth_masks')
-    image_path = os.path.join(os.getcwd(), 'images')
+    image_path = os.path.join(os.getcwd(), 'vedai/Ve512_2')
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
     os.makedirs(save_path)
     for image_name in sorted(glob.glob(image_path + '/*.png')):
         id = os.path.basename(image_name).split('.')[0]
         print(id)
-        mask = create_binary_mask(id, fill=0)
+        mask = create_binary_mask(id, fill=255, cutoff_count=cutoff_count)
         if mask:
             mask.save(os.path.join(save_path, id + '_mask.png'))
         else:
@@ -282,9 +295,10 @@ def plot_weight_maps(data_path, save_path, label_suffix, weight_suffix):
 
 
 if __name__ == "__main__":
+    save_binary_masks()
     # compute_weight_map('Potsdam/bin_labels_resized', 'Potsdam/weight_maps', '.tif')
     # postdam_mapping()
     # down_sample(6)
     # create_ground_truth()
     # save_masks()
-    plot_weight_maps('Potsdam/bin_labels_resized', 'Potsdam/weight_maps', '_label_mask_mask.tif', '_weight_map.tif')
+   # plot_weight_maps('Potsdam/bin_labels_resized', 'Potsdam/weight_maps', '_label_mask_mask.tif', '_weight_map.tif')
