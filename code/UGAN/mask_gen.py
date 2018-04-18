@@ -8,7 +8,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 num_classes = 10
-skip_targets = ['2', '5', '7', '8']
+skip_targets = ['2', '7', '8']
 # 001 -> car 1378                                  0
 # 002 -> truck (and somtimes schoolbusses) 307     1
 # 004 -> tractor 190                               2
@@ -113,14 +113,16 @@ def create_binary_mask(id, fill=255, cutoff_count=0):
         if target[3] not in skip_targets:
             valid_targets += 1
             poly = [(float(target[i]), float(target[i + 4])) for i in range(6, 10, 1)]
-            border_size=2
-            # print(poly)
-            diff = [(-border_size,-border_size), (border_size, -border_size),
-                    (border_size, border_size), (-border_size, border_size)]
-            poly2 =[(poly[i][0] + diff[i][0], poly[i][1] + diff[i][1]) for i in range(len(poly))]
-            draw.polygon(poly2, fill=0)
-
+            # border_size=5
+            # diff = [(-border_size,-border_size), (border_size, -border_size),
+            #         (border_size, border_size), (-border_size, border_size)]
+            # poly2 =[(poly[i][0] + diff[i][0], poly[i][1] + diff[i][1]) for i in range(len(poly))]
+            # draw.polygon(poly2, fill=0)
+            line_points = poly + [poly[0]]
             draw.polygon(poly, fill=fill)
+            draw.line(line_points, fill=0, width=3)
+            # for point in line_points:
+            #     draw.ellipse((point[0] - 1, point[1] - 1, point[0] + 1, point[1] + 1), fill=0)
 
     if valid_targets < cutoff_count:
         return False

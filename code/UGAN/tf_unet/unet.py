@@ -357,6 +357,34 @@ class Ugan(object):
 
         return pred_shape
 
+    def calc_object_f1_scores(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, filter_size = 5):
+        tp, fp, fn = 0.0
+        for i in range(eval_iters):
+            patches = eval_data_provider.get_patches(get_coordinates=True)
+            label = np.zeros((input_size, input_size, 2))
+            prediction = np.zeros((input_size, input_size, self.n_class))
+            for patch in patches:
+                pred = sess.run((self.predicter), feed_dict={self.x: patch[0],
+                                                                 self.y: patch[1],
+                                                                 self.keep_prob: 1.0,
+                                                                 self.is_training: False})
+                x, y = patch[3]
+                prediction[x:x + patch_size, y:y + patch_size, ...] = pred
+                label[x:x + patch_size, y:y + patch_size, ...] = patch[1]
+            label = label[..., 1]
+            prediction = util.filter_image(np.argmax(prediction, axis=2), filter_size)
+            tmp_scores = util.calculate_f1_score(label, prediction)
+            tp += tmp_scores[1]
+            fp += tmp_scores[2]
+            fn += tmp_scores[3]
+
+            precission = tp/(tp+fp)
+            recall = tp/(tp+fn)
+            f1_score =2*precission*recall/(recall+precission)
+            
+
+
+
 class Trainer(object):
     """
     Trains a unet instance
