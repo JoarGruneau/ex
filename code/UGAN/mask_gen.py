@@ -8,7 +8,7 @@ import cv2
 import matplotlib.pyplot as plt
 
 num_classes = 10
-skip_targets = ['2', '7', '8']
+skip_targets = ['2', '5', '7', '8']
 # 001 -> car 1378                                  0
 # 002 -> truck (and somtimes schoolbusses) 307     1
 # 004 -> tractor 190                               2
@@ -239,21 +239,22 @@ def weight_function(component_img, x, y, not_labels, cut_off):
     return value
 
 
-def compute_weight_map(data_path, save_path, suffix):
+def compute_weight_map(data_path, train_path, mask_suffix, suffix, save_path):
     image_paths = get_image_paths(data_path, suffix)
     save_path = os.path.join(os.getcwd(), save_path)
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
     os.makedirs(save_path)
-    for image_path in image_paths:
-        id = os.path.basename(image_path).split('.')[0]
-        print(id)
-        img = cv2.imread(image_path, 0)
+    for image_path in list(list(glob.glob(os.path.join(train_path, '*'+suffix)))):
+        print(image_path)
+        id = os.path.basename(image_path)
+        label = os.path.join(data_path, id.replace(suffix, mask_suffix))
+        img = cv2.imread(label, 0)
         img = np.asarray(img)
         weight_map = np.zeros(img.shape)
         _, component_image = cv2.connectedComponents(img)
         for x in range(img.shape[0]):
-            print(x)
+            print (x)
             for y in range(img.shape[1]):
                 if img[x, y] == 0:
                     weight_map[x, y] = weight_function(component_image, x, y, [0], 5)
@@ -298,7 +299,7 @@ def plot_weight_maps(data_path, save_path, label_suffix, weight_suffix):
 
 if __name__ == "__main__":
     save_binary_masks()
-    # compute_weight_map('Potsdam/bin_labels_resized', 'Potsdam/weight_maps', '.tif')
+    #compute_weight_map('ground_truth_masks', 'vedai/Ve512/val_small', '_mask.png', '.png', 'vedai/weight_maps')
     # postdam_mapping()
     # down_sample(6)
     # create_ground_truth()

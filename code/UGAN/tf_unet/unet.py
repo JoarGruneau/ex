@@ -357,7 +357,7 @@ class Ugan(object):
 
         return pred_shape
 
-    def calc_object_f1_scores(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, filter_size = 5):
+    def calc_object_f1_scores(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, filter_size = 10):
         tp, fp, fn = 0.0
         for i in range(eval_iters):
             patches = eval_data_provider.get_patches(get_coordinates=True)
@@ -378,10 +378,12 @@ class Ugan(object):
             fp += tmp_scores[2]
             fn += tmp_scores[3]
 
-            precission = tp/(tp+fp)
-            recall = tp/(tp+fn)
-            f1_score =2*precission*recall/(recall+precission)
-            
+        precision = tp/(tp+fp)
+        recall = tp/(tp+fn)
+        f1_score =2*precision*recall/(recall+precision)
+        return precision, recall, f1_score
+
+
 
 
 
