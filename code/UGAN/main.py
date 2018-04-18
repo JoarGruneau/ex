@@ -38,7 +38,7 @@ if __name__ == '__main__':
                                                  channels=3, n_class=2, border_size=net.offset//2+border_addition, data_suffix=".png",
                                                  mask_suffix='_mask.png')
     eval_data_provider = \
-        image_util.ImageDataProvider("vedai/Ve512/val_small/*.png", "vedai/ground_truth_masks/", patch_size=512,
+        image_util.ImageDataProvider("vedai/Ve512/validation/*.png", "vedai/ground_truth_masks/", patch_size=512,
                                                  channels=3, n_class=2, border_size=net.offset//2+border_addition, data_suffix=".png",
                                                  mask_suffix='_mask.png', shuffle_data=False)
     # data_provider = image_util.ImageDataProvider("images/*.png", border_size=0, data_suffix=".png",

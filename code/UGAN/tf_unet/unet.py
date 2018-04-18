@@ -287,6 +287,33 @@ class Ugan(object):
         saver.restore(sess, model_path)
         logging.info("Model restored from file: %s" % model_path)
 
+    def calc_object_f1_scores(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size,
+                              filter_size=10):
+        tp = fp = fn = 0.0
+        for i in range(eval_iters):
+            patches = eval_data_provider.get_patches(get_coordinates=True)
+            label = np.zeros((input_size, input_size, 2))
+            prediction = np.zeros((input_size, input_size, self.n_class))
+            for patch in patches:
+                pred = sess.run((self.predicter), feed_dict={self.x: patch[0],
+                                                             self.y: patch[1],
+                                                             self.keep_prob: 1.0,
+                                                             self.is_training: False})
+                x, y = patch[3]
+                prediction[x:x + patch_size, y:y + patch_size, ...] = pred
+                label[x:x + patch_size, y:y + patch_size, ...] = patch[1]
+            label = label[..., 1]
+            prediction = util.filter_image(np.argmax(prediction, axis=2), filter_size)
+            tmp_scores = util.calculate_f1_score(label, prediction)
+            tp += tmp_scores[1]
+            fp += tmp_scores[2]
+            fn += tmp_scores[3]
+
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
+        f1_score = 2 * precision * recall / (recall + precision)
+        return precision, recall, f1_score
+
 class Trainer(object):
     """
     Trains a unet instance
@@ -450,8 +477,12 @@ class Trainer(object):
                     self.write_summary(summary_writer, epoch,epoch_tags, results)
 
                 if epoch%predict_step == 0:
-                    self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
-                                          patch_size, input_size, "epoch_%s"%epoch, combine=True)
+                    precision, recall, f1_score = self.net.calc_object_f1_scores(sess, eval_iters, eval_data_provider,
+                                                                                 border_size, patch_size, input_size)
+                    self.write_logg(['type'] + ['precision', 'recall', 'F1'], ['eval'] + [precision, recall, f1_score])
+                    self.write_summary(summary_writer, epoch, ['precision', 'recall', 'F1'], [precision, recall, f1_score])
+                    # self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
+                    #                       patch_size, input_size, "epoch_%s"%epoch, combine=True)
 
 
 
