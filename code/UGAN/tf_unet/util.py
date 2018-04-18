@@ -21,6 +21,7 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 import numpy as np
 from PIL import Image
 import cv2
+import operator
 
 def plot_prediction(x_test, y_test, prediction, save=False):
     import matplotlib
