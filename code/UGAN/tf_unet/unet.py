@@ -299,7 +299,7 @@ class Ugan(object):
                                                              self.y: patch[1],
                                                              self.keep_prob: 1.0,
                                                              self.is_training: False})
-                x, y = patch[3]
+                x, y = patch[2]
                 prediction[x:x + patch_size, y:y + patch_size, ...] = pred
                 label[x:x + patch_size, y:y + patch_size, ...] = patch[1]
             label = label[..., 1]
