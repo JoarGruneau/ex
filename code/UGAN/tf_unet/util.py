@@ -167,9 +167,6 @@ def calculate_f1_score(ground_truth, prediction):
     ground_occurrences = compute_occurrences(n_ground_labels, ground_component_image)
     pred_occurrences = compute_occurrences(n_pred_labels, pred_component_image)
     label_pixels = [[] for _ in range(n_ground_labels - 1)]
-    print(len(label_pixels))
-    print(n_ground_labels)
-    print(np.amax(ground_component_image))
     for x in range(ground_truth.shape[0]):
         for y in range(ground_truth.shape[1]):
             if ground_component_image[x, y] != 0:
