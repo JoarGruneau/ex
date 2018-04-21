@@ -5,6 +5,8 @@ import shutil
 import numpy as np
 from collections import OrderedDict
 import logging
+import time
+import cv2
 
 import tensorflow as tf
 
@@ -14,6 +16,8 @@ from tf_unet.layers import (weight_variable, weight_variable_devonc, bias_variab
                             cross_entropy, batch_norm, conv2d_fixed_padding, block_layer)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+
+
 
 def create_conv_net(x, keep_prob, channels, n_class, unet_kwargs):
     """
@@ -241,14 +245,19 @@ class Ugan(object):
 
         return loss, logits
 
-    def predict(self, model_path, x_test):
+    def predict(self, model_path, test_data_provider, test_iters, border_size, patch_size, input_size, name,
+                prediction_path, verification_batch_size=1, save_prediction= True, eval_scores= True,
+                combine=False, hard_prediction=True, logg_time=False,
+                filter_size=15, overlay=True, label_components=False, threshold=0.5):
         """
         Uses the model to create a prediction for the given data
-
-        :param model_path: path to the model checkpoint to restore
+        :param model_path: path to the model checkpoint to restoretest_data_provider
         :param x_test: Data to predict on. Shape [n, nx, ny, channels]
         :returns prediction: The unet prediction Shape [n, px, py, labels] (px=nx-self.offset/2)
         """
+        if not os.path.exists(prediction_path):
+            logging.info("Allocating '{:}'".format(prediction_path))
+            os.makedirs(prediction_path)
 
         init = tf.global_variables_initializer()
         with tf.Session() as sess:
@@ -257,11 +266,15 @@ class Ugan(object):
 
             # Restore model weights from previously saved model
             self.restore(sess, model_path)
-
-            y_dummy = np.empty((x_test.shape[0], x_test.shape[1], x_test.shape[2], self.n_class))
-            prediction = sess.run(self.predicter, feed_dict={self.x: x_test, self.y: y_dummy, self.keep_prob: 1.})
-
-        return prediction
+            if save_prediction:
+                self.store_prediction(sess, test_iters, test_data_provider, border_size, patch_size, input_size, name,
+                                 prediction_path, verification_batch_size, combine=combine, hard_prediction=hard_prediction,
+                                      filter_size=filter_size, overlay=overlay, logg_time=logg_time,
+                                      label_components=label_components)
+            if eval_scores:
+                precision, recall, f1_score = self.calc_object_f1_scores(sess, test_iters, test_data_provider, border_size, patch_size,
+                                           input_size, filter_size=filter_size, threshold=threshold)
+                write_logg(['threshold', 'precsion', 'recall', 'f1_score'], [threshold, precision, recall, f1_score])
 
     def save(self, sess, model_path, global_step):
         """
@@ -287,8 +300,80 @@ class Ugan(object):
         saver.restore(sess, model_path)
         logging.info("Model restored from file: %s" % model_path)
 
+    def restore(self, sess, model_path):
+        """
+        Restores a session from a checkpoint
+        :param sess: current session instance
+        :param model_path: path to file system checkpoint location
+        """
+
+        saver = tf.train.Saver()
+        saver.restore(sess, model_path)
+        logging.info("Model restored from file: %s" % model_path)
+
+
+    def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name,
+                         prediction_path, verification_batch_size, combine=False, hard_prediction=False,
+                         logg_time=False, overlay = False, label_components=False,
+                         filter_size = 5):
+        for i in range(eval_iters):
+            patches = eval_data_provider.get_patches(get_coordinates=True)
+            if combine or overlay:
+                label = np.zeros((input_size, input_size, 2))
+                if combine:
+                    image = np.zeros((input_size, input_size, 3))
+
+            prediction = np.zeros((input_size, input_size, self.n_class))
+            for patch in patches:
+                if logg_time:
+                    start_time = time.time()
+                pred = sess.run((self.predicter), feed_dict={self.x: patch[0],
+                                                                 self.y: patch[1],
+                                                                 self.keep_prob: 1.0,
+                                                                 self.is_training: False})
+                if logg_time:
+                    duration = time.time() - start_time
+                    logging.info("time: " + str(duration))
+                x, y = patch[2]
+                prediction[x:x + patch_size, y:y + patch_size, ...] = pred
+
+                if combine or overlay:
+                    label[x:x + patch_size, y:y + patch_size, ...] = patch[1]
+                    if combine:
+                        image[x:x + patch_size, y:y + patch_size, ...] = \
+                            patch[0][0, border_size:-border_size, border_size:-border_size, ...]
+
+            pred_shape = prediction.shape
+            if combine:
+                img = util.combine_img_prediction(image, label, prediction)
+            else:
+                if hard_prediction:
+                    img = np.argmax(prediction, axis=2)
+                    if overlay:
+                        img = util.combine(util.filter_image(label[..., 1], filter_size),
+                                                  util.filter_image(img, filter_size))
+                    if label_components:
+                        ret, labels = cv2.connectedComponents(img)
+                        label_hue = np.uint8(179 * labels / np.max(img))
+                        blank_ch = 255 * np.ones_like(label_hue)
+                        img = cv2.merge([label_hue, blank_ch, blank_ch])
+
+                        # cvt to BGR for display
+                        img = cv2.cvtColor(img, cv2.COLOR_HSV2RGB_FULL)
+
+                        # set bg label to black
+                        img[label_hue == 0] = 0
+                else:
+                    img = prediction[..., 1]
+                img = util.to_rgb(img)
+            util.save_image(img, "%s/%s_%s.jpg" % (prediction_path, name, i))
+
+
+        return pred_shape
+
+
     def calc_object_f1_scores(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size,
-                              filter_size=10):
+                              filter_size=10, threshold=0.5):
         tp = fp = fn = 0.0
         for i in range(eval_iters):
             patches = eval_data_provider.get_patches(get_coordinates=True)
@@ -303,15 +388,15 @@ class Ugan(object):
                 prediction[x:x + patch_size, y:y + patch_size, ...] = pred
                 label[x:x + patch_size, y:y + patch_size, ...] = patch[1]
             label = label[..., 1]
-            prediction = util.filter_image(np.argmax(prediction, axis=2), filter_size)
+            prediction = util.filter_image(np.where(prediction[..., 1] > threshold, 255, 0), filter_size)
             tmp_scores = util.calculate_f1_score(label, prediction)
             tp += tmp_scores[1]
             fp += tmp_scores[2]
             fn += tmp_scores[3]
-
-        precision = tp / (tp + fp)
-        recall = tp / (tp + fn)
-        f1_score = 2 * precision * recall / (recall + precision)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            precision = np.divide(tp, tp + fp)
+            recall = np.divide(tp, tp + fn)
+            f1_score = np.divide(2 * precision * recall, precision + recall)
         return precision, recall, f1_score
 
 class Trainer(object):
@@ -447,8 +532,9 @@ class Trainer(object):
             patch_size = data_provider.get_patch_size()
             input_size = data_provider.get_input_size()
             patch_len=input_size//patch_size
-            pred_shape = self.store_prediction(sess, eval_iters, eval_data_provider, border_size,
-                                               patch_size, input_size, "_init", combine=True)
+            pred_shape = self.net.store_prediction(sess, eval_iters, eval_data_provider, border_size,
+                                               patch_size, input_size, "_init", self.prediction_path,
+                                                   self.verification_batch_size, combine=True)
 
 
             summary_writer = tf.summary.FileWriter(os.path.join(output_path, 'train'), graph=sess.graph)
@@ -469,17 +555,17 @@ class Trainer(object):
                 if epoch % display_step == 0:
                     save_path = self.net.save(sess, save_path, self.global_step)
                     self.write_summary(summary_writer, epoch, display_tags, results)
-                    self.write_logg(['epoch', 'type']+display_tags, [epoch, 'train'] + results)
+                    write_logg(['epoch', 'type']+display_tags, [epoch, 'train'] + results)
                     self.output_minibatch_stats(sess, eval_summary_writer, eval_iters, epoch,
                                                 eval_data_provider, eval_tags, 'eval')
                 else:
-                    self.write_logg(['epoch']+epoch_tags, [epoch]+results)
+                    write_logg(['epoch']+epoch_tags, [epoch]+results)
                     self.write_summary(summary_writer, epoch,epoch_tags, results)
 
                 if epoch%predict_step == 0:
                     precision, recall, f1_score = self.net.calc_object_f1_scores(sess, eval_iters, eval_data_provider,
                                                                                  border_size, patch_size, input_size)
-                    self.write_logg(['type'] + ['precision', 'recall', 'F1'], ['eval_objects'] + [precision, recall, f1_score])
+                    write_logg(['type'] + ['precision', 'recall', 'F1'], ['eval_objects'] + [precision, recall, f1_score])
                     self.write_summary(summary_writer, epoch, ['o_precision', 'o_recall', 'o_F1'], [precision, recall, f1_score])
                     # self.store_prediction(sess, eval_iters, eval_data_provider,  border_size,
                     #                       patch_size, input_size, "epoch_%s"%epoch, combine=True)
@@ -487,48 +573,10 @@ class Trainer(object):
 
 
             logging.info("Optimization Finished!")
-            self.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size,
+            self.net.store_prediction(sess, eval_iters, eval_data_provider,  border_size, patch_size,
                                   input_size, "epoch_%s"%epochs, combine=True)
 
-    def store_prediction(self, sess, eval_iters, eval_data_provider, border_size, patch_size, input_size, name, combine=False):
-        for i in range(eval_iters):
-            patches = eval_data_provider.get_patches(get_coordinates=True)
-            if combine:
-                image = np.zeros((self.verification_batch_size, input_size, input_size, 3))
-                label = np.zeros((self.verification_batch_size, input_size, input_size,2))
-            prediction = np.zeros((self.verification_batch_size, input_size, input_size, self.net.n_class))
-            for patch in patches:
-                pred= sess.run((self.net.predicter), feed_dict={self.net.x: patch[0],
-                                                                 self.net.y: patch[1],
-                                                                 self.net.keep_prob: 1.0,
-                                                                 self.net.is_training: False})
-                x, y = patch[2]
-                prediction[:,x:x+patch_size,y:y+patch_size,...] = pred
 
-                if combine:
-                    offset = border_size
-                    image[:,x:x+patch_size,y:y+patch_size,...] = patch[0][:, offset:-offset, offset:-offset,...]
-                    label[:,x:x+patch_size,y:y+patch_size,...] = patch[1]
-
-            pred_shape = prediction.shape
-            if combine:
-                img = util.combine_img_prediction(image , label, prediction)
-            else:
-                img=util.to_rgb(prediction[..., 1].reshape(-1, input_size, 1))
-            #prediction=util.rgb_multi_prediction(prediction.reshape((input_size, input_size, 3)))
-            #prediction = util.rgb_multi_prediction(prediction)
-            util.save_image(img, "%s/%s_%s.jpg"%(self.prediction_path, name, i))
-        
-        return pred_shape
-    
-    def write_logg(self, tags, results):
-        logg_string = ''
-        for i in range(len(tags)):
-            if type(results[i]) == np.float32:
-                logg_string += ', {:}= {:.4f}'.format(tags[i], results[i])
-            else:
-                logg_string += ', {:}= {:}'.format(tags[i], results[i])
-        logging.info(logg_string)
     
     def output_minibatch_stats(self, sess, summary_writer, eval_iters, step,
                                data_provider, tags, stats_type):
@@ -536,7 +584,7 @@ class Trainer(object):
         results = self.eval_epoch(sess, data_provider, eval_iters, optimizers=[],
                                   tags=tags, feed_dict=feed_dict)
         self.write_summary(summary_writer, step, tags, results)
-        self.write_logg(['epoch', 'type']+tags, [step, stats_type] + results)
+        write_logg(['epoch', 'type']+tags, [step, stats_type] + results)
 
     def write_summary(self, summary_writer, step, tags, results):
         summary = tf.Summary()
@@ -544,3 +592,14 @@ class Trainer(object):
             summary.value.add(tag=tags[i], simple_value=results[i])
         summary_writer.add_summary(summary, step)
         summary_writer.flush()
+
+
+
+def write_logg(tags, results):
+    logg_string = ''
+    for i in range(len(tags)):
+        if type(results[i]) == np.float32:
+            logg_string += ', {:}= {:.4f}'.format(tags[i], results[i])
+        else:
+            logg_string += ', {:}= {:}'.format(tags[i], results[i])
+    logging.info(logg_string)

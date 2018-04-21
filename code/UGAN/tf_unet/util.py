@@ -110,8 +110,8 @@ def combine_img_prediction(data, gt, pred, crop=False):
     
     :returns img: the concatenated rgb image 
     """
-    ny = pred.shape[2]
-    ch = data.shape[3]
+    ny = pred.shape[1]
+    ch = data.shape[2]
     if crop:
         img = np.concatenate((to_rgb(crop_to_shape(data, pred.shape).reshape(-1, ny, ch)),
                           to_rgb(crop_to_shape(gt[..., 1], pred.shape).reshape(-1, ny, 1)), 
@@ -183,7 +183,7 @@ def calculate_f1_score(ground_truth, prediction):
                     intersections[corresponding_label] += 1
         if intersections:
             pred_label, intersect = max(intersections.items(), key=operator.itemgetter(1))
-            if float(intersect) / (ground_occurrences[label - 1] + pred_occurrences[pred_label - 1] - intersect) >= 0.5:
+            if float(intersect) / (ground_occurrences[label - 1] + pred_occurrences[pred_label - 1] - intersect) > 0.5:
                 n_found += 1
     tp = n_found
     fp = n_pred_labels - 1 - n_found
