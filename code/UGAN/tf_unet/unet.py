@@ -353,7 +353,7 @@ class Ugan(object):
                         img = util.combine(util.filter_image(label[..., 1], filter_size),
                                                   util.filter_image(img, filter_size))
                     if label_components:
-                        ret, labels = cv2.connectedComponents(img)
+                        ret, labels = cv2.connectedComponents(img.astype(dtype=np.ui))
                         label_hue = np.uint8(179 * labels / np.max(img))
                         blank_ch = 255 * np.ones_like(label_hue)
                         img = cv2.merge([label_hue, blank_ch, blank_ch])
