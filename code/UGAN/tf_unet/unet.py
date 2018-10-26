@@ -537,7 +537,7 @@ class Trainer(object):
             self.net.store_prediction(sess, eval_iters, eval_data_provider, border_size,
                                       patch_size, input_size, "epoch_%s" % 'init', self.prediction_path,
                                       self.verification_batch_size, combine=False, hard_prediction=True, filter_size=15,
-                                      overlay=True, evaluate_scores=True)
+                                      overlay=True, evaluate_scores=False)
 
             for epoch in range(curr_epoch,epochs):
                 results = self.eval_epoch(sess, data_provider, training_iters, [self.g_optimizer],
