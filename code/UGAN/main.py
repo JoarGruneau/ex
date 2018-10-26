@@ -28,7 +28,7 @@ if __name__ == '__main__':
                                                  channels=3, n_class=2, border_size=net.offset//2+6, data_suffix=".tif",
                                                  mask_suffix='_label_mask.tif', weight_suffix ='_weight_map.tif')
     eval_data_provider = \
-        image_util.ImageDataProvider("Potsdam/RGB/top_potsdam_6_10_label_mask.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
+        image_util.ImageDataProvider("Potsdam/RGB/top_potsdam_6_10.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
                                                  channels=3, n_class=2, border_size=net.offset//2+6, data_suffix=".tif",
                                                  mask_suffix='_label_mask.tif', weight_suffix ='_weight_map.tif')
     #
