@@ -236,7 +236,6 @@ class ImageDataProvider(BaseDataProvider):
             patches = pickle.load(open(image_name,'rb'))
         else:
             base_name = os.path.join(self.label_path, os.path.basename(image_name))
-            print(base_name)
             label = self._load_file(base_name.replace(self.data_suffix, self.mask_suffix),
                                     type=0, add_borders=False, dtype=np.uint8)
             weights = self._load_file(base_name.replace(self.data_suffix, self.weight_suffix),
@@ -264,7 +263,6 @@ class ImageDataProvider(BaseDataProvider):
         os.makedirs(os.path.dirname(save_path))
         for image_name in self.data_files:
             save_name = os.path.basename(image_name.replace(self.data_suffix, '.pkl'))
-            print (save_name)
             label_name = os.path.join(self.label_path, os.path.basename(image_name)
                     .replace(self.data_suffix, self.mask_suffix))
             patches = self._get_patches(

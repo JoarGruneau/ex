@@ -37,13 +37,13 @@ if __name__ == '__main__':
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam', g_opt_kwargs=learning_opts)
     # # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
     path = trainer.train(data_provider, data_provider, "summaries/", dropout=1.0,
-                            training_iters=2, eval_iters=2, epochs=2, display_step=2, predict_step=50,  restore=False)
+                            training_iters=2, eval_iters=2, epochs=50, display_step=1, predict_step=5,  restore=False)
     # x_test = a._load_file("images/00000000.png")
     # x_test = a._process_data([x_test])
     #path = "summaries/model/model.cpkt-156"
-    net.predict(path, eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
-                input_size=1000, name='eval_soft', prediction_path='prediction',
-                verification_batch_size=1,  combine=False, hard_prediction=False, filter_size=0)
-    net.predict(path, eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
+    # net.predict(path, data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
+    #             input_size=1000, name='eval_soft', prediction_path='prediction',
+    #             verification_batch_size=1,  combine=False, hard_prediction=False, filter_size=0)
+    net.predict(path, data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
                 input_size=1000, name='eval_hard', prediction_path='prediction',
-                verification_batch_size=1, combine=False, hard_prediction=True, evaluate_scores=True, overlay=True, filter_size=0)
+                verification_batch_size=1, combine=True, hard_prediction=True, evaluate_scores=True, overlay=True, filter_size=0)
