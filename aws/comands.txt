@@ -3,3 +3,7 @@ export LC_ALL=C
 tensorboard --logdir=/tmp  --port=6006
 scp -r -i /home/joar/.ssh/aws_agt_ae.pem ubuntu@34.244.214.203:/home/ubuntu/ext_volume/ex/code/UGAN/prediction pred3
 
+
+
+scp -r -i /home/joar/.ssh/aws-key-fast-ai.pem  Potsdam ubuntu@34.252.140.204:/home/ubuntu/ext/ex/code/UGAN/
+
