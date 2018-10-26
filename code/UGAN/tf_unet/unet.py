@@ -353,7 +353,7 @@ class Ugan(object):
                 print(tmp_scores)
                 for i in range(len(scores)):
                     scores[i].append(tmp_scores[i])
-        print([np.mean(score) for score in scores])
+                print([np.mean(score) for score in scores])
 
         return pred_shape
 

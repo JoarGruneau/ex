@@ -24,22 +24,23 @@ if __name__ == '__main__':
     # # data_provider.save_patches('Potsdam/train_RGB/')
     # print(net.offset)
     data_provider = \
-        image_util.ImageDataProvider("Potsdam/resized2/train/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
-                                                 channels=3, n_class=2, border_size=net.offset//2+6, data_suffix="_RGB.tif",
-                                                 mask_suffix='_label_mask_mask.tif', weight_suffix ='_weight_map.tif')
-    eval_data_provider = \
-        image_util.ImageDataProvider("Potsdam/resized2/eval/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
-                                     channels=3, n_class=2, border_size=net.offset//2+6, data_suffix="_RGB.tif",
-                                     mask_suffix='_label_mask_mask.tif',
-                                     weight_suffix ='_weight_map.tif', shuffle_data=False)
+        image_util.ImageDataProvider("Potsdam/RGB/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
+                                                 channels=3, n_class=2, border_size=net.offset//2+6, data_suffix=".tif",
+                                                 mask_suffix='_label_mask.tif', weight_suffix ='_weight_map.tif')
+    # eval_data_provider = \
+    #     image_util.ImageDataProvider("Potsdam/resized2/eval/*.tif", "Potsdam/bin_labels_resized/", patch_size=1000,
+    #                                  channels=3, n_class=2, border_size=net.offset//2+6, data_suffix="_RGB.tif",
+    #                                  mask_suffix='_label_mask_mask.tif',
+    #                                  weight_suffix ='_weight_map.tif', shuffle_data=False)
     #
     learning_opts = {'learning_rate':1e-3}
     trainer = unet.Trainer(net, batch_size=1, optimizer='adam', g_opt_kwargs=learning_opts)
-    # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
-    path = trainer.train(data_provider, eval_data_provider, "summaries/", dropout=0.9,
-                            training_iters=18, eval_iters=6, epochs=601, display_step=2, predict_step=50,  restore=False)
+    # # # #                      opt_kwargs={'momentum': 0.9, "learning_rate": 0.2, "decay_rate": 0.9})
+    path = trainer.train(data_provider, data_provider, "summaries/", dropout=1.0,
+                            training_iters=2, eval_iters=2, epochs=2, display_step=2, predict_step=50,  restore=False)
     # x_test = a._load_file("images/00000000.png")
     # x_test = a._process_data([x_test])
+    #path = "summaries/model/model.cpkt-156"
     net.predict(path, eval_data_provider, test_iters=6, border_size=net.offset//2+6, patch_size=1000,
                 input_size=1000, name='eval_soft', prediction_path='prediction',
                 verification_batch_size=1,  combine=False, hard_prediction=False, filter_size=0)

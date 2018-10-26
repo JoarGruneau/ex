@@ -249,7 +249,10 @@ def compute_weight_map(data_path, train_path, mask_suffix, suffix, save_path):
         print(image_path)
         id = os.path.basename(image_path)
         label = os.path.join(data_path, id.replace(suffix, mask_suffix))
+        # print('label', label)
         img = cv2.imread(label, 0)
+        # print(img)
+        # print(img.shape)
         img = np.asarray(img)
         weight_map = np.zeros(img.shape)
         _, component_image = cv2.connectedComponents(img)
@@ -298,10 +301,10 @@ def plot_weight_maps(data_path, save_path, label_suffix, weight_suffix):
 
 
 if __name__ == "__main__":
-    save_binary_masks()
-    #compute_weight_map('ground_truth_masks', 'vedai/Ve512/val_small', '_mask.png', '.png', 'vedai/weight_maps')
-    # postdam_mapping()
-    # down_sample(6)
+    #save_binary_masks()
+    compute_weight_map('Potsdam/bin_lables_resized', 'Potsdam/RGB', '_label_mask.tif', '.tif', 'Potsdam/weight_maps')
+    #postdam_mapping()
+    #down_sample(6)
     # create_ground_truth()
     # save_masks()
    # plot_weight_maps('Potsdam/bin_labels_resized', 'Potsdam/weight_maps', '_label_mask_mask.tif', '_weight_map.tif')

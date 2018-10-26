@@ -1,9 +1,9 @@
 {
   "ImageId": "ami-7730580e",
-  "KeyName": "aws_agt_ae",
+  "KeyName": "aws-key-fast-ai",
   "InstanceType": "p2.xlarge",
   "Placement": {
-    "AvailabilityZone": "eu-west-1b"
+    "AvailabilityZone": "eu-west-1a"
   },
   "BlockDeviceMappings": [
     {
@@ -19,10 +19,10 @@
   "NetworkInterfaces": [
     {
       "DeviceIndex": 0,
-      "SubnetId": "subnet-858eb6de",
+      "SubnetId": "subnet-0819075c8b3e6b636",
       "DeleteOnTermination": true,
       "Groups": [
-        "sg-57e2602d"
+        "sg-016d28985d77a17e1"
       ],
       "AssociatePublicIpAddress": true
     }

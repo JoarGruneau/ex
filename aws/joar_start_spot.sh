@@ -8,6 +8,6 @@ aws ec2 wait instance-running --instance-ids $instanceId
 
 export ip=`aws ec2 describe-instances --instance-ids $instanceId --filter Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].PublicIpAddress" --output=text`
 
-echo Then connect to your instance: ssh -i ~/.ssh/aws_agt_ae.pem ubuntu@$ip
+echo Then connect to your instance: ssh -i ~/.ssh/aws-key-fast-ai.pem ubuntu@$ip
 
-aws ec2 attach-volume --volume-id vol-0c52e6a8c9fff7245 --instance-id $instanceId --device /dev/sdf
+aws ec2 attach-volume --volume-id vol-0290dc55304d9ebfc --instance-id $instanceId --device /dev/sdf
